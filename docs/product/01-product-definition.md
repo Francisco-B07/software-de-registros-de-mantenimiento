@@ -657,11 +657,13 @@ No es usuario del SaaS en el MVP.
 | Asignar clientes a usuarios | No | Sí, sólo de su empresa | No |
 | Administrar clientes/ubicaciones/equipos | No por defecto | Sí | No |
 | Crear/editar formularios | No por defecto | Sí | No |
-| Ejecutar mantenimientos | Sólo si soporte expresamente habilitado y la sección lo permite | Sí dentro de alcance | Sí dentro de clientes autorizados |
+| Ejecutar mantenimientos | No como operación normal; un `SupportAccessGrant` no debe inferir ejecución inicial | No | Sí dentro de clientes autorizados |
 | Corregir mantenimientos | Sólo si soporte expresamente habilitado | Sí | Sí dentro de clientes autorizados |
 | Administrar/finalizar informes | Sólo si soporte expresamente habilitado | Sí | No |
 | Usar IA | No como operación normal | Sí | No |
 | Administrar suscripción/créditos | Sólo soporte autorizado | Sí | No |
+
+> **Nota de armonización de permisos:** la ejecución inicial de un mantenimiento corresponde a `TECHNICIAN` dentro de sus clientes autorizados. `COMPANY_ADMIN` puede leer mantenimientos cuando corresponda a sus funciones, corregir mantenimientos finalizados y resolver conflictos dentro de su alcance; esas capacidades pueden generar una nueva `MaintenanceRevision`, pero no conceden ejecución inicial. Un `SupportAccessGrant` concede únicamente el acceso excepcional expresamente autorizado por sus scopes y no genera capacidades operativas nuevas para `SUPER_ADMIN`. Esta corrección armoniza una fila histórica de la matriz con las reglas ya aprobadas y no constituye una ampliación ni una reducción nueva del alcance del producto.
 
 ### 9.1 Herencia de acceso del técnico
 
