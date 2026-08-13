@@ -1,9 +1,11 @@
 # 01 — Definición normativa del producto
 
-> **Revisión consolidada:** 2026-08-10 — regenerado desde cero como archivo de entrega independiente e incorpora todas las decisiones aprobadas hasta DO-072, incluyendo DO-062 y DO-068.
+> **Revisión de cierre documental:** 2026-08-13 — aprobación explícita de la baseline normativa de producto y resolución de DO-075, sin cambios en requisitos aprobados.
 
-**Ruta objetivo:** `docs/product/01-product-definition.md`  
-**Estado:** Fase 0 — DOCUMENTACIÓN DERIVADA GENERADA / PENDIENTE APROBACIÓN  
+**Ruta de entrega:** `docs/product/01-product-definition.md`  
+**Documento normativo:** `docs/product/01-product-definition.md`  
+**Estado del documento:** **APROBADO — baseline normativa de producto**  
+**Estado de Fase 0:** **EN CURSO — pendientes documentos derivados y ADRs**  
 **Carácter:** especificación maestra y normativa del producto  
 **Fuente principal:** `00-master-product-brief.md` y decisiones de producto aprobadas durante Fase 0  
 
@@ -24,7 +26,7 @@ Este documento NO autoriza todavía:
 - escribir código de producto;
 - avanzar a Fase 1.
 
-La Fase 0 sólo podrá aprobarse cuando esta definición y los documentos maestros derivados sean coherentes y las decisiones abiertas bloqueantes estén resueltas.
+La definición normativa contenida en este documento está aprobada. La Fase 0 sólo podrá cerrarse cuando los documentos maestros derivados y los ADRs requeridos hayan sido realmente creados, revisados y aprobados, y las decisiones que deban resolverse antes de cada fase hayan sido tratadas conforme a su fecha límite.
 
 ### 1.1 Palabras normativas
 
@@ -1184,7 +1186,7 @@ Restricciones:
 | RSK-001 | Fuga entre tenants | Crítica | RLS obligatorio + pruebas negativas |
 | RSK-002 | Permisos de cliente mal derivados | Alta | Modelo explícito usuario→cliente y herencia sólo descendente |
 | RSK-003 | Soporte SUPER_ADMIN se convierte en bypass | Crítica | Grants explícitos, alcance granular, revocación y auditoría |
-| RSK-004 | Revocación no corta sesiones efectivamente | Crítica | bloqueo por membresía/RLS online + revocación de sesión; límite offline pendiente de aprobación |
+| RSK-004 | Revocación no corta sesiones efectivamente | Crítica | bloqueo por membresía/RLS online + revocación de sesión; autorización offline de identidad limitada a un máximo de 7 días desde la última validación online conforme a DO-075 aprobado |
 | RSK-005 | Pérdida de datos offline | Crítica | local-first + outbox durable + idempotencia |
 | RSK-006 | Conflictos sobrescritos | Alta | Prohibir LWW silencioso |
 | RSK-007 | Fotos perdidas antes de upload | Crítica | conservar local hasta confirmación remota |
@@ -1237,13 +1239,13 @@ Restricciones:
 
 **C-R15 — Límites de evidencia/archivos.** Resuelto a nivel de producto: el MVP no impone límites funcionales/comerciales propios sobre formatos, tamaños o cantidades. Las restricciones técnicas inevitables de plataforma/infrastructura deberán documentarse sin presentarlas como cuotas de producto.
 
+**C-A06 — Revocación de usuario estando totalmente offline.** **RESUELTA/APROBADA mediante DO-075.** La autorización offline de identidad puede mantenerse durante un máximo de 7 días desde la última validación online; una revocación conocida por el servidor debe aplicarse al recuperar conectividad; vencidos los 7 días no pueden iniciarse nuevas operaciones sin revalidación online; el trabajo ya capturado localmente no debe eliminarse.
+
 ### 25.2 Ambigüedades todavía abiertas
 
-**C-A05 — Compatibilidad DOCX verificable.** Existe una propuesta concreta en `docs/product/07-reporting-engine-spec.md`: limitar el MVP a maquetación portable de flujo normal (texto, estilos, tablas, imágenes simples, encabezado/pie y saltos estándar) y validar un fixture en Microsoft Word, Google Docs y LibreOffice. **Pendiente de aprobación de producto; bloquea Fase 6, no Fase 1.**
+**C-A05 — Compatibilidad DOCX verificable.** Debe definirse y aprobarse, antes de Fase 6, el subconjunto portable de maquetación y su criterio de verificación práctica en Microsoft Word, Google Docs y LibreOffice. **Pendiente de aprobación de producto; bloquea Fase 6, no Fase 1.**
 
-**C-A06 — Revocación de usuario estando totalmente offline.** Una revocación remota no puede conocerse instantáneamente sin conectividad. `03-permissions-rls-strategy.md` y `04-offline-sync-strategy.md` proponen reutilizar el máximo de 7 días desde la última validación como vencimiento de autorización local de identidad. **Pendiente de aprobación; bloquea el cierre de la política offline/security de Fase 0.**
-
-**C-A07 — Fin del año promocional y gracia.** El producto define un año a $0 y una gracia general de 20 días tras vencimiento. `09-subscriptions-payments-spec.md` propone que la primera obligación de pago al finalizar el año también pueda entrar en esos 20 días de gracia. **Pendiente de aprobación; bloquea el detalle comercial de Fase 8, no Fase 1.**
+**C-A07 — Fin del año promocional y gracia.** El producto define un año a $0 y una gracia general de 20 días tras vencimiento. Debe resolverse antes de Fase 8 si la primera obligación de pago al finalizar el año también entra en esos 20 días de gracia. **Pendiente de aprobación; bloquea el detalle comercial de Fase 8, no Fase 1.**
 
 ---
 
@@ -1257,23 +1259,21 @@ Las decisiones ya resueltas no deben reaparecer como abiertas.
 
 **DO-074 — Métricas del dashboard.** Definir métricas y filtros del MVP. **No bloquea Fase 1–9; resolver antes de Fase 10.**
 
-**DO-075 — Límite de autorización de identidad estando offline.** Propuesta: reutilizar el máximo de **7 días desde la última validación online**; una revocación se aplica inmediatamente al recuperar conectividad y, vencido el lease, no se inician nuevas operaciones sin revalidar. El trabajo ya capturado no se elimina. **Requiere aprobación para cerrar seguridad/offline de Fase 0.**
-
 **DO-076 — Gracia al finalizar el primer año a $0.** Propuesta: la primera obligación de pago al terminar el año promocional se trata como un vencimiento y dispone de los mismos **20 días de gracia** antes de suspensión. **Requiere aprobación antes de Fase 8; no bloquea Fase 1.**
 
-**DO-077 — Subconjunto DOCX portable.** Propuesta detallada en `07-reporting-engine-spec.md`: flujo normal, texto/estilos, tablas, imágenes simples, encabezado/pie y saltos estándar; verificación sin corrupción en Word, Google Docs y LibreOffice. **Requiere aprobación antes de Fase 6; no bloquea Fase 1.**
+**DO-077 — Subconjunto DOCX portable.** Definir y aprobar antes de Fase 6 el subconjunto de maquetación portable y la verificación práctica requerida en Microsoft Word, Google Docs y LibreOffice. **No bloquea Fase 1.**
 
 **DO-078 — Cancelación/renovación comercial.** Definir antes de Fase 8 si mensual/anual renuevan automáticamente, cómo se cancela y si existe alguna regla de prorrateo. El brief actual no lo define.
 
 ### 26.2 Decisiones arquitectónicas/técnicas
 
-**DO-T01 — Protocolo del ledger IA. PROPUESTO.** Reserva idempotente → ejecución → confirmación de consumo o liberación/compensación. Documentado en `08-ai-credits-spec.md` y ADR-0006.
+**DO-T01 — Protocolo del ledger IA. PROPUESTO.** Reserva idempotente → ejecución → confirmación de consumo o liberación/compensación. Debe documentarse y aprobarse antes de Fase 7 en el documento derivado y ADR que correspondan.
 
-**DO-T02 — State machine de Mercado Pago. PROPUESTO.** Ingesta verificada, eventos idempotentes, resolución/reconciliación y protección ante eventos fuera de orden. Documentado en `09-subscriptions-payments-spec.md` y ADR-0007.
+**DO-T02 — State machine de Mercado Pago. PROPUESTO.** Ingesta verificada, eventos idempotentes, resolución/reconciliación y protección ante eventos fuera de orden. Debe documentarse y aprobarse antes de Fase 8 en el documento derivado y ADR que correspondan.
 
-**DO-T03 — Invalidación efectiva de sesiones. PARCIALMENTE PROPUESTO.** Online: membresía/estado debe bloquear acceso en RLS aunque exista token, más revocación de sesión/credenciales renovables. Offline: depende de DO-075.
+**DO-T03 — Invalidación efectiva de sesiones. PARCIALMENTE PROPUESTO.** Online: membresía/estado debe bloquear acceso en RLS aunque exista token, más revocación de sesión/credenciales renovables. Offline: DO-075 ya fija la política de producto aprobada de máximo 7 días y revalidación; la implementación técnica debe respetarla.
 
-**DO-T04 — Protección local. PROPUESTO.** Persistencia particionada por identidad; una sesión sólo abre su propia réplica; logout no borra outbox pendiente. Cifrado adicional queda sujeto a análisis de amenazas/legal. Documentado en ADR-0008.
+**DO-T04 — Protección local. PROPUESTO.** Persistencia particionada por identidad; una sesión sólo abre su propia réplica; logout no borra outbox pendiente. Cifrado adicional queda sujeto a análisis de amenazas/legal. Debe documentarse y aprobarse en la estrategia offline y ADR que correspondan antes de Fase 5.
 
 **DO-T05 — Escala y rendimiento objetivo. DIFERIDO.** No existen volúmenes de negocio aprobados para fijar números sin inventarlos. Debe cuantificarse antes de pruebas de performance/piloto; no bloquea Fase 1.
 
@@ -1283,7 +1283,9 @@ Las decisiones ya resueltas no deben reaparecer como abiertas.
 
 ## 27. Documentos derivados requeridos para cerrar Fase 0
 
-Los documentos derivados ya fueron materialmente generados:
+La especificación maestra `docs/product/01-product-definition.md` está **APROBADA** como baseline normativa de producto.
+
+Para cerrar completamente la Fase 0 todavía deben ser realmente creados, revisados y aprobados, según corresponda:
 
 1. `docs/product/02-domain-model.md`;
 2. `docs/product/03-permissions-rls-strategy.md`;
@@ -1293,25 +1295,33 @@ Los documentos derivados ya fueron materialmente generados:
 6. `docs/product/07-reporting-engine-spec.md`;
 7. `docs/product/08-ai-credits-spec.md`;
 8. `docs/product/09-subscriptions-payments-spec.md`;
-9. ADRs propuestos `ADR-0001` a `ADR-0008` en `docs/architecture/adr/`.
+9. los ADRs arquitectónicos que resulten necesarios conforme se documenten las decisiones relevantes.
 
-Índice: `docs/product/00-phase-0-index.md`.
+Si se mantiene un índice de Fase 0, deberá crearse o actualizarse `docs/product/00-phase-0-index.md` cuando corresponda.
 
-Estos documentos no contienen implementación ni diseño SQL. Deben ser aprobados y mantenerse coherentes con esta especificación.
+Este documento NO declara que los documentos `02` a `09`, el índice ni los ADRs anteriores ya existan o estén aprobados. Su existencia y aprobación deberán verificarse individualmente antes de cerrar la Fase 0.
 
 ---
 
 ## 28. Gate de Fase 0
 
-**Estado actual: DOCUMENTACIÓN DERIVADA GENERADA / PENDIENTE APROBACIÓN.**
+**Estado de la especificación maestra `01-product-definition.md`: APROBADA — baseline normativa de producto.**
 
-La Fase 0 ya cuenta con la especificación maestra, documentos derivados y ADRs base. Para marcarla **APROBADA** quedan los siguientes pasos de validación:
+**Estado de Fase 0: EN CURSO — pendientes documentos derivados y ADRs.**
 
-1. aprobar o modificar **DO-075**, porque afecta la coherencia entre revocación de usuario y operación totalmente offline;
-2. aprobar los documentos derivados y ADRs propuestos como baseline de arquitectura;
-3. `DO-076`, `DO-077`, `DO-078`, `DO-073` y `DO-074` pueden permanecer abiertos con fecha de resolución previa a sus módulos porque no bloquean Setup/Fase 1;
-4. `DO-T05`, `DO-T06` y `DO-T07` quedan explícitamente diferidos a capacidad/piloto/producción y no deben rellenarse con cifras o obligaciones inventadas.
+`DO-075` está **RESUELTO/APROBADO** con la política ya definida: la autorización offline de identidad puede mantenerse durante un máximo de 7 días desde la última validación online; una revocación conocida por el servidor debe aplicarse al recuperar conectividad; vencidos los 7 días no pueden iniciarse nuevas operaciones sin revalidación online; el trabajo ya capturado localmente no debe eliminarse.
 
-Decisiones de producto ya cerradas y consolidadas incluyen: eliminación de sucursales, asignaciones, QR, recurrencias, calendario, órdenes de compra y órdenes de trabajo; acceso de técnico por cliente; versionado de formularios; finalización offline; correcciones/revisiones; evidencias históricas; numeración/versionado de informes; IA/créditos; primer año a $0; plan único y autorización comercial offline de 7 días.
+Para cerrar completamente la Fase 0 todavía corresponde:
 
-Hasta aprobar este gate NO corresponde inicializar Next.js ni iniciar Fase 1.
+1. crear, revisar y aprobar los documentos derivados enumerados en la sección 27;
+2. crear, revisar y aprobar los ADRs que resulten necesarios para las decisiones arquitectónicas relevantes;
+3. mantener `DO-073` diferida hasta antes de Fase 9;
+4. mantener `DO-074` diferida hasta antes de Fase 10;
+5. resolver `DO-076` y `DO-078` antes de Fase 8;
+6. resolver `DO-077` antes de Fase 6;
+7. documentar y resolver las decisiones técnicas `DO-T01` a `DO-T04` antes de las fases indicadas en la sección 26.2;
+8. mantener `DO-T05`, `DO-T06` y `DO-T07` diferidas hasta los hitos expresamente indicados, sin inventar cifras, obligaciones o políticas no aprobadas.
+
+La aprobación de `01-product-definition.md` NO equivale al cierre completo de la Fase 0.
+
+Hasta cerrar el Gate completo de Fase 0, **NO corresponde inicializar Next.js, diseñar SQL, crear migraciones, escribir código ni iniciar Fase 1**.
