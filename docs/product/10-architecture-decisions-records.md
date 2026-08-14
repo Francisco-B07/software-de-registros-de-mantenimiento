@@ -3,7 +3,7 @@
 > **Ruta normativa/objetivo:** `docs/product/10-architecture-decisions-records.md`  
 > **Estado:** **APROBADO — registro maestro de decisiones arquitectónicas, catálogo de futuros ADR y Gate arquitectónico de Fase 0**  
 > **Fase:** Fase 0 — registro maestro de arquitectura  
-> **Estado de Fase 0:** **EN CURSO**  
+> **Estado de Fase 0:** **COMPLETADA**  
 > **Naturaleza:** registro maestro de decisiones, índice de futuros ADR, mapa de dependencias y Gate arquitectónico; **NO constituye implementación ni genera ADRs individuales**
 
 ---
@@ -580,23 +580,23 @@ No se detecta pérdida de un candidato relevante después de la consolidación.
 
 Se proponen **18 ADR definitivos**.
 
-Los estados de esta tabla pertenecen exclusivamente al **futuro documento ADR**. No modifican el estado de ningún `DO` ni `OPEN`.
+Los estados de esta tabla reflejan el estado documental actual de cada ADR. No modifican el estado de ningún `DO` ni `OPEN`.
 
-| ID | Título | Problema arquitectónico | Fuentes/candidatos consolidados | Open dependencies | Estado futuro | Aprobar antes de |
+| ID | Título | Problema arquitectónico | Fuentes/candidatos consolidados | Open dependencies | Estado del ADR | Aprobar antes de |
 |---|---|---|---|---|---|---|
-| `ADR-0001` | Arquitectura modular del SaaS en Next.js | Mantener un único sistema modular y evitar distribución prematura | `00`, `01` | Ninguna | `READY TO DRAFT` | Cierre Fase 0 / Fase 1 |
-| `ADR-0002` | Multi-tenancy, tenant ownership y aislamiento | Establecer frontera de tenant, RLS, ownership, integridad cross-tenant y `service-role` | `ADR-CAND-SEC-01/05/07`, Evidence Storage boundary | Ninguna | `READY TO DRAFT` | Fase 2 |
+| `ADR-0001` | Arquitectura modular del SaaS en Next.js | Mantener un único sistema modular y evitar distribución prematura | `00`, `01` | Ninguna | `ACCEPTED` | Cierre Fase 0 / Fase 1 |
+| `ADR-0002` | Multi-tenancy, tenant ownership y aislamiento | Establecer frontera de tenant, RLS, ownership, integridad cross-tenant y `service-role` | `ADR-CAND-SEC-01/05/07`, Evidence Storage boundary | Ninguna | `ACCEPTED` | Fase 2 |
 | `ADR-0003` | Autorización, client scope y soporte excepcional | Resolver actor, membership, `UserClientAccess`, grants, revocación y sesión | `ADR-CAND-01/02`, `ADR-CAND-SEC-02/03/06` | `DO-T03` | `BLOCKED BY OPEN DECISIONS` | Fase 2 |
 | `ADR-0004` | Offline local-first y aislamiento de réplica | Delimitar PWA, Service Worker, IndexedDB, réplica por identidad, logout y autorización offline | candidatos Offline + `ADR-CAND-06/09` | `DO-T03`, `DO-T04`, `OFF-OPEN-001`, `OFF-OPEN-002`, `FORM-OPEN-004` | `BLOCKED BY OPEN DECISIONS` | Fase 5 |
-| `ADR-0005` | Protocolo de sincronización, idempotencia y conflictos | Fijar identidad de operaciones, retries, concurrencia optimista, conflicto explícito y convergencia | `ADR-CAND-07/08`, candidatos Offline sync, `EVID-ADR-CAND-001..003` | Ninguna decisión funcional abierta necesaria para el núcleo | `READY TO DRAFT` | Fase 5 |
+| `ADR-0005` | Protocolo de sincronización, idempotencia y conflictos | Fijar identidad de operaciones, retries, concurrencia optimista, conflicto explícito y convergencia | `ADR-CAND-07/08`, candidatos Offline sync, `EVID-ADR-CAND-001..003` | Ninguna decisión funcional abierta necesaria para el núcleo | `ACCEPTED` | Fase 5 |
 | `ADR-0006` | Ledger de créditos IA y settlement de `AIUsageOperation` | Preservar ledger inmutable, reserva/consumo/liberación/compensación, idempotencia y concurrencia | `ADR-CAND-12`, `AI-ADR-CAND-001..006/010..012` | `DO-T01`, `DM-OPEN-007`, `AI-OPEN-001..004`; `AI-OPEN-007` si se incluyen ajustes | `BLOCKED BY OPEN DECISIONS` | Fase 7 |
 | `ADR-0007` | `PaymentEvent`, adapter de Mercado Pago e idempotencia comercial | Aislar proveedor, verificar eventos, deduplicar, tolerar orden arbitrario y reconciliar | `ADR-CAND-13` + candidatos Payments 3..7 | `DO-T02`; `PAY-OPEN-006` para effects de disputes | `BLOCKED BY OPEN DECISIONS` | Fase 8 |
 | `ADR-0008` | Form Engine: versionado, estructura y aplicabilidad | Documentar lifecycle, inmutabilidad, pinning, condiciones y estructuras compuestas | `ADR-CAND-03`, `FORM-ADR-CAND-001..008` | `DM-OPEN-001..004`, `FORM-OPEN-001..003`, `FORM-OPEN-005..008` | `BLOCKED BY OPEN DECISIONS` | Fase 4 |
-| `ADR-0009` | Modelo de `MaintenanceRevision` e histórico de mantenimiento | Separar identidad lógica, revisión vigente, correcciones e histórico | `ADR-CAND-04` | Ninguna | `READY TO DRAFT` | Fase 5 |
+| `ADR-0009` | Modelo de `MaintenanceRevision` e histórico de mantenimiento | Separar identidad lógica, revisión vigente, correcciones e histórico | `ADR-CAND-04` | Ninguna | `ACCEPTED` | Fase 5 |
 | `ADR-0010` | Evidence histórica, replacement y continuidad entre revisiones | Preservar identidad/origen y definir effective Evidence set | `ADR-CAND-05`, `EVID-ADR-CAND-004/007/008` | `EVID-OPEN-001..006`; especialmente `004..006` | `BLOCKED BY OPEN DECISIONS` | Fase 5 |
 | `ADR-0011` | Reporting: versionado, snapshots y finalización | Establecer Report/Version/Snapshot, numeración, regeneración, fuentes y staleness | `ADR-CAND-10`, `RPT-ADR-CAND-001..004/007..010/012` | `DM-OPEN-005/006/008`, `RPT-OPEN-001..012`, `EVID-OPEN-004..006` para Evidence | `BLOCKED BY OPEN DECISIONS` | Fase 6 |
-| `ADR-0012` | `ReportDocumentModel` y renderizadores PDF/DOCX | Mantener una única semántica documental con salidas PDF y DOCX | `ADR-CAND-11`, `RPT-ADR-CAND-005/006` | Ninguna para decidir la arquitectura; `DO-077` bloquea implementación/aceptación DOCX, no el ADR de modelo común | `READY TO DRAFT` | Fase 6 |
-| `ADR-0013` | IA server-side, provider boundary y minimización de datos | Desacoplar dominio del proveedor y limitar datos/exposición | `RPT-ADR-CAND-011`, `AI-ADR-CAND-007/008` | Ninguna para la frontera base; retención queda fuera y depende de `AI-OPEN-005`/`DO-T07` | `READY TO DRAFT` | Fase 7 |
+| `ADR-0012` | `ReportDocumentModel` y renderizadores PDF/DOCX | Mantener una única semántica documental con salidas PDF y DOCX | `ADR-CAND-11`, `RPT-ADR-CAND-005/006` | Ninguna para decidir la arquitectura; `DO-077` bloquea implementación/aceptación DOCX, no el ADR de modelo común | `ACCEPTED` | Fase 6 |
+| `ADR-0013` | IA server-side, provider boundary y minimización de datos | Desacoplar dominio del proveedor y limitar datos/exposición | `RPT-ADR-CAND-011`, `AI-ADR-CAND-007/008` | Ninguna para la frontera base; retención queda fuera y depende de `AI-OPEN-005`/`DO-T07` | `ACCEPTED` | Fase 7 |
 | `ADR-0014` | Subscription lifecycle y commercial entitlement | Modelar promotional/paid/grace/inactive/reactivation y modalidades | candidatos Payments 1/2/8/9/11/12/13/14 | `DO-076`, `DO-078`, `PAY-OPEN-001/003/004/005/006/007/008` | `BLOCKED BY OPEN DECISIONS` | Fase 8 |
 | `ADR-0015` | Pricing comercial versionado | Preservar precios aplicados e histórico ante cambios | candidato Payments pricing/versioning | `PAY-OPEN-002` | `BLOCKED BY OPEN DECISIONS` | Fase 8 |
 | `ADR-0016` | Observabilidad, capacidad y performance | Definir objetivos medibles y estrategia transversal sin inventar volúmenes | `DO-T05`, riesgos de escala | `DO-T05` | `DEFERRED` | Antes de performance/piloto |
@@ -607,7 +607,7 @@ Los estados de esta tabla pertenecen exclusivamente al **futuro documento ADR**.
 
 # 8. ADR de multi-tenancy y tenant isolation
 
-Se propone `ADR-0002`.
+`ADR-0002` fue creado, revisado y aprobado posteriormente con estado `ACCEPTED`.
 
 Debe documentar conceptualmente:
 
@@ -627,9 +627,9 @@ No debe contener políticas SQL.
 
 ## Estado
 
-`READY TO DRAFT`.
+`ACCEPTED`.
 
-La baseline ya determina las invariantes necesarias y no existe un `OPEN` que deba resolverse para documentar esta decisión arquitectónica.
+`ADR-0002` fue creado, revisado y aprobado sin resolver ningún `OPEN`; la baseline ya determinaba las invariantes necesarias para esta decisión arquitectónica.
 
 ---
 
@@ -712,7 +712,7 @@ Las decisiones Evidence pueden condicionar subflujos de archivos, pero no deben 
 
 # 11. ADR de sincronización y conflictos
 
-Se propone separarlo del ADR offline como `ADR-0005`.
+La separación respecto del ADR offline fue documentada en `ADR-0005`, posteriormente creado, revisado y aprobado con estado `ACCEPTED`.
 
 La separación está justificada porque:
 
@@ -741,9 +741,9 @@ No debe fijar un algoritmo físico, cantidad de retries ni protocolo HTTP concre
 
 ## Estado
 
-`READY TO DRAFT`.
+`ACCEPTED`.
 
-Las reglas esenciales ya están aprobadas. Los `OFF-OPEN` gobiernan qué hacer con autorización revocada y conservación local, no la decisión base de idempotencia/conflict model.
+`ADR-0005` fue creado, revisado y aprobado. Los `OFF-OPEN` continúan gobernando qué hacer con autorización revocada y conservación local y no fueron resueltos por ese ADR.
 
 ---
 
@@ -809,9 +809,9 @@ Debe capturar:
 
 ### Estado
 
-`READY TO DRAFT`.
+`ACCEPTED`.
 
-La regla de revisiones ya está cerrada.
+`ADR-0009` fue creado, revisado y aprobado; la regla de revisiones permanece cerrada sin resolver la continuidad de Evidence ni Reporting.
 
 ## 13.2 `ADR-0010` — Evidence histórica
 
@@ -882,7 +882,7 @@ Debe estar aprobado antes de Fase 6.
 
 # 15. ADR del modelo intermedio PDF/DOCX
 
-Se propone `ADR-0012`.
+`ADR-0012` fue creado, revisado y aprobado posteriormente con estado `ACCEPTED`.
 
 Debe registrar la decisión ya aprobada de:
 
@@ -905,15 +905,15 @@ Por tanto:
 
 ## Estado
 
-`READY TO DRAFT`.
+`ACCEPTED`.
 
-El ADR no deberá anticipar qué layouts forman parte del subconjunto portable.
+`ADR-0012` fue creado, revisado y aprobado sin anticipar qué layouts forman parte del subconjunto portable. `DO-077` continúa pendiente y condiciona la implementación concreta del renderer DOCX.
 
 ---
 
 # 16. ADR de IA server-side/provider abstraction
 
-Se propone `ADR-0013`.
+`ADR-0013` fue creado, revisado y aprobado posteriormente con estado `ACCEPTED`.
 
 Debe considerar:
 
@@ -941,7 +941,9 @@ El ADR puede establecer la obligación de **minimizar** y delegar la retención 
 
 ## Estado
 
-`READY TO DRAFT`.
+`ACCEPTED`.
+
+`ADR-0013` fue creado, revisado y aprobado sin resolver ledger/settlement, retención ni decisiones `AI-OPEN-*`.
 
 ---
 
@@ -1324,24 +1326,20 @@ aplican sobre múltiples ramas una vez que sus decisiones diferidas estén dispo
 
 ---
 
-# 28. ADRs que pueden redactarse ahora
+# 28. ADRs inicialmente `READY TO DRAFT` — estado actual
 
-Los siguientes poseen baseline suficiente y no necesitan resolver ningún `OPEN` para ser redactados como futuros ADR `PROPOSED`:
+Los seis ADR que este registro identificó como suficientemente decididos para el Gate de Fase 0 fueron creados, revisados y aprobados:
 
-1. `ADR-0001` — Arquitectura modular del SaaS en Next.js;
-2. `ADR-0002` — Multi-tenancy, tenant ownership y aislamiento;
-3. `ADR-0005` — Sincronización, idempotencia y conflictos;
-4. `ADR-0009` — Modelo de `MaintenanceRevision`;
-5. `ADR-0012` — `ReportDocumentModel` y renderizadores;
-6. `ADR-0013` — IA server-side/provider boundary.
+1. `ADR-0001` — Arquitectura modular del SaaS en Next.js = `ACCEPTED`;
+2. `ADR-0002` — Multi-tenancy, tenant ownership y aislamiento = `ACCEPTED`;
+3. `ADR-0005` — Sincronización, idempotencia y conflictos = `ACCEPTED`;
+4. `ADR-0009` — Modelo de `MaintenanceRevision` = `ACCEPTED`;
+5. `ADR-0012` — `ReportDocumentModel` y renderizadores = `ACCEPTED`;
+6. `ADR-0013` — IA server-side/provider boundary = `ACCEPTED`.
 
-Estado de registro:
+No queda ningún ADR `READY TO DRAFT` obligatorio pendiente para el Gate de Fase 0.
 
-**`READY TO DRAFT`**
-
-Esto **NO autoriza a generarlos automáticamente**.
-
-La futura redacción tampoco los convertiría automáticamente en `ACCEPTED`.
+La aceptación de estos ADR no resuelve decisiones `DO-*` o `*-OPEN-*` ni autoriza implementación por sí misma.
 
 ---
 
@@ -1663,9 +1661,15 @@ Este documento **NO crea esos archivos**.
 
 ## 36.1 Regla general
 
-Este documento **NO declara Fase 0 cerrada**.
+El Gate documental y arquitectónico de Fase 0 se considera **superado** cuando se verifican conjuntamente:
 
-Para declarar Fase 0 completa debe verificarse que la documentación necesaria para comenzar implementación se encuentra realmente aprobada y que ninguna decisión con deadline inmediato permanece sin tratar.
+- aprobación documental de `00..10`;
+- aprobación de los seis ADR requeridos por este Gate;
+- ausencia de decisiones con deadline anterior a Fase 1;
+- preservación de decisiones abiertas y ADR bloqueados/diferidos para sus fases correspondientes;
+- ausencia de contradicciones materiales que impidan iniciar Fase 1.
+
+La revisión final explícita confirma actualmente esas condiciones.
 
 ## 36.2 Documentos
 
@@ -1685,20 +1689,18 @@ Los documentos `00..10` están aprobados documentalmente:
 
 **Estado de `docs/product/10-architecture-decisions-records.md`: APROBADO — registro maestro de decisiones arquitectónicas, catálogo de futuros ADR y Gate arquitectónico de Fase 0.**
 
-La aprobación documental de `00..10` **NO cierra por sí sola Fase 0**.
+## 36.3 ADR requeridos por el Gate
 
-## 36.3 ADR que pueden resolverse ahora
+Los seis ADR que originalmente estaban `READY TO DRAFT` y que el registro exigía crear, revisar y aprobar antes de declarar completa Fase 0 se encuentran actualmente:
 
-Antes de declarar Fase 0 completa, deben crearse, revisarse y aprobarse los ADR que este registro identifica como suficientemente decididos ahora:
+- `ADR-0001 = ACCEPTED`;
+- `ADR-0002 = ACCEPTED`;
+- `ADR-0005 = ACCEPTED`;
+- `ADR-0009 = ACCEPTED`;
+- `ADR-0012 = ACCEPTED`;
+- `ADR-0013 = ACCEPTED`.
 
-- `ADR-0001`;
-- `ADR-0002`;
-- `ADR-0005`;
-- `ADR-0009`;
-- `ADR-0012`;
-- `ADR-0013`.
-
-La razón es que ya no existe un `OPEN` que justifique postergar su documentación arquitectónica.
+No queda ningún ADR `READY TO DRAFT` obligatorio pendiente para el Gate de Fase 0.
 
 ## 36.4 ADR bloqueados por decisiones con deadline posterior
 
@@ -1721,6 +1723,8 @@ siempre que:
 - exista un deadline previo a la fase que los necesita;
 - no se implemente la capacidad dependiente antes de resolverlos.
 
+Esas condiciones permanecen satisfechas en este cierre.
+
 ## 36.5 Decisiones diferidas legítimamente
 
 No impiden por sí mismas cerrar Fase 0:
@@ -1732,6 +1736,8 @@ No impiden por sí mismas cerrar Fase 0:
 - `DO-T07`.
 
 Deben mantenerse con sus deadlines actuales.
+
+Los ADR diferidos `ADR-0016`, `ADR-0017` y `ADR-0018` permanecen igualmente diferidos conforme a sus deadlines posteriores.
 
 ## 36.6 Decisiones que bloquean comenzar Fase 1
 
@@ -1749,17 +1755,27 @@ En particular:
 - `DO-T03/T04` poseen deadlines posteriores;
 - `DO-075` ya está resuelta.
 
-## 36.7 Bloqueo real actual para comenzar Fase 1
+## 36.7 Resultado final del Gate
 
-Aunque no exista una **decisión abierta** que bloquee Fase 1, permanece un **bloqueo de proceso de Fase 0**:
+Los tres bloqueos de proceso identificados anteriormente han sido satisfechos:
 
-1. crear, revisar y aprobar los seis ADR marcados `READY TO DRAFT`;
-2. efectuar una revisión final explícita del Gate de Fase 0;
-3. verificar que ningún ADR requerido para Fase 1 permanezca ausente.
+1. los seis ADR inicialmente `READY TO DRAFT` fueron creados, revisados y aprobados;
+2. se efectuó la revisión final explícita del Gate de Fase 0;
+3. ningún ADR requerido para iniciar Fase 1 permanece ausente.
 
-Hasta entonces:
+Además:
 
-**Estado de Fase 0: EN CURSO.**
+- blockers documentales de Fase 0: ninguno;
+- decisiones abiertas de fases posteriores: preservadas;
+- ADR bloqueados: preservados;
+- ADR diferidos: preservados;
+- contradicciones materiales que impidan Fase 1: ninguna conocida.
+
+**Estado de Fase 0: COMPLETADA.**
+
+El inicio de Fase 1 queda **permitido documentalmente únicamente después de incorporar formalmente este cierre al repositorio**.
+
+Esta declaración supera el Gate documental y no constituye por sí misma una autorización de implementación.
 
 ## 36.8 Lo que el Gate no exige
 
@@ -1778,7 +1794,7 @@ El Gate no obliga a:
 
 ## 37.1 Contradicciones bloqueantes
 
-**No se detectan contradicciones bloqueantes conocidas** entre `00..09` que impidan mantener este registro.
+**No se detectan contradicciones bloqueantes conocidas** entre `00..10` y los seis ADR aceptados requeridos por el Gate que impidan iniciar Fase 1 documentalmente.
 
 Se conserva la interpretación restrictiva de permisos:
 
@@ -1824,9 +1840,9 @@ Todos quedan trazados al catálogo consolidado.
 
 **ADRs definitivos propuestos: 18.**
 
-Distribución:
+Distribución actual:
 
-- `READY TO DRAFT`: **6**;
+- `ACCEPTED`: **6**;
 - `BLOCKED BY OPEN DECISIONS`: **9**;
 - `DEFERRED`: **3**.
 
@@ -1834,7 +1850,7 @@ Distribución:
 
 **Ninguna.**
 
-El bloqueo actual para Fase 1 es documental/gobernanza de Fase 0, no una decisión funcional abierta.
+El bloqueo documental/gobernanza de Fase 0 ha sido satisfecho mediante la aprobación de los seis ADR requeridos y esta revisión final explícita del Gate. El inicio de Fase 1 queda permitido documentalmente después de incorporar formalmente este cierre al repositorio.
 
 ## 37.6 Decisiones que pueden permanecer abiertas
 
@@ -1875,48 +1891,42 @@ Pueden permanecer diferidas:
 
 **Estado de Fase 0:**
 
-`EN CURSO`
+`COMPLETADA`
 
-La aprobación de este documento:
+La aprobación original de este documento, por sí sola:
 
-- aprueba únicamente el registro maestro;
-- aprueba su clasificación;
-- aprueba el catálogo propuesto de futuros ADR;
-- aprueba el mapa de dependencias;
-- aprueba el Gate arquitectónico.
+- aprobó únicamente el registro maestro;
+- aprobó su clasificación;
+- aprobó el catálogo propuesto de futuros ADR;
+- aprobó el mapa de dependencias;
+- aprobó el Gate arquitectónico;
+- no generó ADRs;
+- no resolvió `OPEN`;
+- no resolvió `DO` pendientes;
+- no autorizó código, SQL, migrations, RLS ejecutable ni implementación;
+- no inició Fase 1;
+- no cerró automáticamente Fase 0.
 
-La aprobación de este documento **NO**:
+Posteriormente fueron creados, revisados y aprobados de forma independiente los seis ADR requeridos por el Gate:
 
-- genera ADRs;
-- marca ningún ADR `ACCEPTED`;
-- resuelve `OPEN`;
-- resuelve `DO` pendientes;
-- autoriza código;
-- autoriza SQL;
-- autoriza migrations;
-- autoriza RLS ejecutable;
-- autoriza implementación Supabase;
-- autoriza implementación Dexie;
-- autoriza Service Worker;
-- autoriza OpenAI;
-- selecciona modelo/API/SDK de IA;
-- autoriza Mercado Pago;
-- selecciona SDK/endpoints de Mercado Pago;
-- autoriza React;
-- autoriza APIs;
-- autoriza Server Actions;
-- autoriza Codex;
-- modifica documentos `00..09`;
-- inicia Fase 1;
-- cierra automáticamente Fase 0.
+- `ADR-0001 = ACCEPTED`;
+- `ADR-0002 = ACCEPTED`;
+- `ADR-0005 = ACCEPTED`;
+- `ADR-0009 = ACCEPTED`;
+- `ADR-0012 = ACCEPTED`;
+- `ADR-0013 = ACCEPTED`.
 
-Los ADR individuales seguirán necesitando:
+Los ADR bloqueados y diferidos restantes siguen necesitando:
 
-1. creación explícita;
-2. revisión;
-3. resolución previa de sus dependencias cuando corresponda;
-4. aprobación independiente.
+1. resolución previa de sus dependencias cuando corresponda;
+2. creación explícita;
+3. revisión;
+4. aprobación independiente antes de la fase que los requiera.
+
+Las decisiones `DO-*` y `*-OPEN-*` conservan sus estados vigentes y sus deadlines.
 
 **Estado final del documento:** `APROBADO — registro maestro de decisiones arquitectónicas, catálogo de futuros ADR y Gate arquitectónico de Fase 0`.
 
-**Estado final de Fase 0:** `EN CURSO`.
+**Estado final de Fase 0:** `COMPLETADA`.
+
+**Implementación autorizada por este cierre:** no.
