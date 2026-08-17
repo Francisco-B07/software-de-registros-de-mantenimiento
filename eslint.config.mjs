@@ -5,6 +5,16 @@ import nextTypeScript from "eslint-config-next/typescript";
 const sourceFiles = ["src/**/*.{js,jsx,ts,tsx}"];
 const appFiles = ["app/**/*.{js,jsx,ts,tsx}"];
 
+const environmentAccessRestriction = [
+  "error",
+  {
+    object: "process",
+    property: "env",
+    message:
+      "Application environment access belongs in src/infrastructure/config.",
+  },
+];
+
 const appImports = {
   regex: "^(?:app(?:/|$)|@/app(?:/|$)|(?:\\.\\./)+app(?:/|$))",
   message: "Code under src must not depend on the Next.js app boundary.",
@@ -33,6 +43,7 @@ export default defineConfig([
   {
     files: sourceFiles,
     rules: {
+      "no-restricted-properties": environmentAccessRestriction,
       "no-restricted-imports": [
         "error",
         { patterns: [appImports, moduleInternalAliases] },
@@ -42,6 +53,7 @@ export default defineConfig([
   {
     files: appFiles,
     rules: {
+      "no-restricted-properties": environmentAccessRestriction,
       "no-restricted-imports": [
         "error",
         { patterns: [moduleInternalAliases] },
@@ -70,6 +82,12 @@ export default defineConfig([
         "error",
         { patterns: [appImports, moduleInternalAliases] },
       ],
+    },
+  },
+  {
+    files: ["src/infrastructure/config/**/*.{js,jsx,ts,tsx}"],
+    rules: {
+      "no-restricted-properties": "off",
     },
   },
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),

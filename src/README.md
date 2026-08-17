@@ -42,6 +42,39 @@ The explicit aliases are:
 - `@shared/*` for `src/shared/*`;
 - `@infrastructure/*` for `src/infrastructure/*`.
 
+## Environment configuration
+
+`src/infrastructure/config/` owns future access to application environment
+variables. The only versioned list of application variables is the root
+`.env.example`; this README describes the policy without duplicating that list.
+No application-specific environment variables are currently required.
+
+Each future variable must be classified when introduced:
+
+- public or private server-side;
+- secret or non-secret;
+- required or optional;
+- available during build, server runtime, or both;
+- applicable environments and technical owner.
+
+Public configuration must be deliberately non-secret and safe to bundle. It
+uses `NEXT_PUBLIC_*` when browser access is required and never grants
+authorization or determines tenancy. Private configuration remains server-side,
+does not use the public prefix, and must not be reexported through a client-safe
+surface. Public and private entrypoints remain separate; no mixed barrel is
+allowed.
+
+A required value must be validated before use and fail with an error that names
+the variable without revealing its value. An optional value keeps an honest
+type that represents absence. Availability during build and runtime must be
+declared independently from public/private exposure. No validation object,
+parser, or entrypoint is created until a real variable requires it.
+
+Application code reads `process.env` only inside
+`src/infrastructure/config/`. Explicit framework or tooling configuration may
+retain a direct technical access when genuinely required. Next.js-managed
+`.env*` files remain at the project root, and local variants stay unversioned.
+
 ESLint enforces the robust static import/export patterns available today:
 `src` to `app`, `shared` to modules or common infrastructure, common
 infrastructure to `app`, modular deep imports through `@modules`, and modular
