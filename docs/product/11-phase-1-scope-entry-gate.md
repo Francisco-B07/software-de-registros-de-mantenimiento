@@ -127,7 +127,7 @@ Fase 1 debe preparar:
 - TypeScript estricto y tooling base;
 - una estructura inicial compatible con el monolito modular de `ADR-0001`;
 - CI para comprobar la salud básica del repositorio;
-- Supabase local como infraestructura de desarrollo;
+- el baseline reproducible de Supabase para Development aprobado por `CORR-002`;
 - documentación y comandos mínimos para que el desarrollo posterior sea repetible y verificable.
 
 Fase 1 **no tiene como propósito implementar un bounded context funcional del producto**.
@@ -140,7 +140,7 @@ Al finalizar Fase 1 debe existir una base de desarrollo que pueda ser usada para
 - compile con TypeScript estricto;
 - respete el marco de monolito modular;
 - tenga checks automáticos básicos de calidad;
-- disponga de Supabase local arrancable/configurable para desarrollo;
+- disponga de Supabase CLI fijada, `supabase/` inicializado y `supabase/config.toml` versionado para Development;
 - no contenga schema físico de producto adelantado;
 - no contenga migrations de dominio adelantadas;
 - no implemente autenticación, multitenancy funcional, roles o RLS de Fase 2;
@@ -156,7 +156,7 @@ Los objetivos de Fase 1, derivados del nombre normativo y de las restricciones a
 2. **Materializar un skeleton modular inicial** compatible con `ADR-0001`, sin convertir una organización de carpetas inicial en una taxonomía arquitectónica irreversible.
 3. **Configurar la infraestructura de desarrollo** necesaria para instalar, ejecutar, validar y construir el proyecto.
 4. **Configurar CI** para ejecutar los checks básicos que el método de trabajo del proyecto exige desde las primeras tareas.
-5. **Configurar Supabase local** como infraestructura disponible para fases posteriores, sin diseñar todavía el modelo físico de datos del producto.
+5. **Configurar el baseline Supabase de Development** aprobado por `CORR-002`, sin diseñar el modelo físico de datos ni integrar todavía la aplicación.
 6. **Establecer gobernanza técnica básica** para que las futuras tareas de Codex sean pequeñas, verificables, documentadas y compatibles con el baseline.
 7. **Conservar la frontera de fases**, evitando implementar por anticipado cualquier capacidad cuyo ADR, `DO` u `OPEN` tenga deadline posterior.
 
@@ -239,20 +239,20 @@ No entra:
 - dashboard;
 - notificaciones.
 
-## 5.5 Supabase local
+## 5.5 Baseline Supabase de Development
 
-`Supabase local` está expresamente dentro del nombre de Fase 1.
+El nombre normativo de Fase 1 conserva literalmente `Supabase local` por trazabilidad histórica. `TASK-005` queda como antecedente histórico; `CORR-002` reemplaza su método operativo por Supabase Cloud Development y `CORR-003` sincroniza este Gate con esa corrección.
 
-Por tanto, entra:
+Por tanto, entra exclusivamente:
 
-- instalar/configurar la herramienta necesaria para ejecutar Supabase local;
-- inicializar la configuración local de Supabase;
-- documentar cómo arrancar/detener el entorno local;
-- configurar variables de entorno locales necesarias para conexión de desarrollo;
-- verificar que los servicios locales requeridos arrancan correctamente;
-- preparar una frontera de infraestructura para conexión futura de la aplicación, sin implementar reglas de dominio ni autorización.
+- declarar en el repositorio una versión fijada y reproducible de Supabase CLI;
+- inicializar `supabase/` y versionar `supabase/config.toml`;
+- mantener temporales, sesiones y credenciales fuera de Git;
+- disponer de exactamente un proyecto Supabase Cloud exclusivo de Development, creado manualmente por Francisco;
+- documentar que `login`, `link` y toda operación remota son manuales y responsabilidad de Francisco;
+- verificar localmente la presencia y configuración del baseline sin requerir Docker ni ejecutar un ciclo local `start/status/stop`.
 
-La infraestructura interna que Supabase necesite para arrancar localmente no se considera diseño del schema de producto. En cambio, cualquier tabla, policy, función, constraint o migration propia del SaaS sí pertenece al diseño físico del producto y queda fuera de Fase 1.
+Codex no recibe credenciales ni acceso remoto. `db push` no es requisito de Fase 1. Tampoco entran integración de la aplicación, cliente Supabase, variables de conexión, schema, migrations, SQL, RLS, Auth, tenancy, Storage, Realtime, `service-role`, Staging ni Production.
 
 ## 5.6 Decisiones físicas permitidas
 
@@ -263,7 +263,7 @@ Fase 1 puede tomar decisiones físicas **sólo sobre el setup y la organización
 - configuración de TypeScript;
 - configuración de lint/build/test;
 - scripts de desarrollo;
-- configuración local de Supabase;
+- configuración reproducible de Supabase CLI y `supabase/config.toml` conforme a `CORR-002`;
 - contrato de variables de entorno;
 - configuración de CI;
 - archivos de configuración necesarios para el toolchain.
@@ -299,7 +299,7 @@ Entra documentación operativa mínima para que el setup sea mantenible, por eje
 
 - instrucciones de desarrollo local;
 - cómo ejecutar lint/typecheck/tests/build;
-- cómo arrancar Supabase local;
+- cómo verificar el baseline Supabase de Development y su frontera de operaciones remotas manuales, sin credenciales;
 - variables de entorno requeridas sin secretos;
 - convenciones de estructura modular adoptadas para el skeleton;
 - actualización de `AGENTS.md` cuando corresponda para que Codex conozca las reglas vigentes del proyecto;
@@ -675,8 +675,8 @@ La clasificación siguiente corresponde al **Gate de Fase 1 formalmente aprobado
 | Configurar CI | **PERMITIDO EN FASE 1** | `CI` forma parte literal del nombre de Fase 1. El proveedor concreto no está fijado por la baseline. |
 | Crear skeleton modular inicial | **PERMITIDO EN FASE 1** | Materializa `ADR-0001` sin implementar módulos de negocio; la estructura física inicial no debe presentarse como taxonomía final obligatoria. |
 | Configurar variables de entorno y placeholders seguros | **PERMITIDO EN FASE 1** | Necesario para setup; secretos no deben exponerse ni versionarse. |
-| Configurar Supabase local | **PERMITIDO EN FASE 1** | Está expresamente incluido en el nombre de Fase 1. |
-| Verificar conectividad técnica de la app con Supabase local sin dominio | **PERMITIDO EN FASE 1** | Es una comprobación de infraestructura del setup, siempre que no implemente auth, tenant resolution, tablas o reglas funcionales. |
+| Configurar el baseline Supabase de Development conforme a `CORR-002` | **PERMITIDO EN FASE 1** | El nombre normativo conserva `Supabase local`, pero `CORR-002` reemplaza el método operativo por CLI/configuración reproducible y un proyecto Cloud exclusivo de Development. |
+| Integrar o verificar conectividad de la app con Supabase durante este Gate | **NO PERMITIDO TODAVÍA** | El baseline aprobado no incluye cliente Supabase, variables de conexión ni integración de la aplicación. |
 | Inicializar/configurar Supabase Auth funcional para usuarios del producto | **NO PERMITIDO TODAVÍA** | Autenticación, roles y RLS pertenecen a Fase 2 y `ADR-0003` aún no está aceptado. |
 | Crear migrations de producto | **NO PERMITIDO TODAVÍA** | Fase 1 no contiene diseño físico de dominio; Fase 2+ implementan los bounded contexts que requieren schema y RLS. |
 | Crear una migration vacía sólo para “probar” el mecanismo | **NO PERMITIDO TODAVÍA** | No aporta una capacidad necesaria al setup y abriría prematuramente el flujo de schema/migrations de producto. La existencia de una carpeta generada por tooling no equivale a crear una migration de producto. |
@@ -696,7 +696,7 @@ La clasificación siguiente corresponde al **Gate de Fase 1 formalmente aprobado
 
 La expresión “comenzar migrations” se clasifica como **NO PERMITIDO TODAVÍA** cuando significa crear migrations propias del producto o empezar a fijar schema.
 
-Configurar Supabase local puede crear archivos/directorios de infraestructura requeridos por la herramienta, pero eso no autoriza introducir una migration de dominio, una tabla, una policy RLS o un schema físico adelantado.
+Inicializar el baseline Supabase puede crear archivos/directorios de configuración requeridos por la herramienta, pero eso no autoriza introducir una migration de dominio, una tabla, una policy RLS o un schema físico adelantado.
 
 ## 9.2 Sobre “diseñar schema”
 
@@ -730,7 +730,7 @@ Fase 1 termina cuando el setup aprobado está completo y verificable:
 - skeleton modular compatible con `ADR-0001`;
 - tooling base funcional;
 - CI funcional;
-- Supabase local configurable/arrancable;
+- baseline Supabase de Development completo conforme a `CORR-002`, sin Docker ni ciclo de vida local;
 - documentación de desarrollo suficiente;
 - checks básicos pasando;
 - ningún schema/migration/capacidad de Fase 2+ implementado por anticipado.
@@ -785,7 +785,7 @@ Los siguientes entregables se proponen únicamente porque corresponden al alcanc
 
 - documentación de setup/desarrollo local;
 - instrucciones para instalar/ejecutar/verificar el proyecto;
-- documentación de Supabase local;
+- documentación del baseline Supabase de Development y de la frontera operativa manual;
 - contrato/documentación de variables de entorno sin secretos;
 - nota de estructura modular inicial y límites de dependencia;
 - `AGENTS.md` actualizado cuando corresponda para reflejar las reglas de implementación y lectura obligatoria de `/docs`.
@@ -798,7 +798,7 @@ Los siguientes entregables se proponen únicamente porque corresponden al alcanc
 - configuración de lint/typecheck/test/build;
 - configuración segura de entorno;
 - configuración de CI;
-- configuración local de Supabase.
+- configuración reproducible de Supabase CLI y `supabase/config.toml`.
 
 ## 11.3 Código
 
@@ -823,15 +823,15 @@ No se incluyen entidades de negocio, CRUD, auth funcional ni reglas de fases pos
 
 No se incluyen suites funcionales de módulos que todavía no existen.
 
-## 11.5 Infraestructura local
+## 11.5 Infraestructura Supabase de Development
 
-- Supabase local inicializado/configurado;
-- comandos/documentación para arrancarlo y detenerlo;
-- variables locales requeridas;
-- verificación de disponibilidad del entorno;
-- sin schema de producto;
-- sin migrations de producto;
-- sin policies RLS de producto.
+- versión fijada y reproducible de Supabase CLI en el repositorio;
+- `supabase/` inicializado y `supabase/config.toml` versionado;
+- temporales, sesiones y credenciales fuera de Git;
+- exactamente un proyecto Supabase Cloud exclusivo de Development, creado y vinculado manualmente por Francisco;
+- operaciones remotas manuales, sin credenciales ni acceso remoto para Codex;
+- sin requisito de Docker, ciclo local `start/status/stop` ni `db push`;
+- sin integración de aplicación, schema, migrations, SQL, RLS, Auth, tenancy, Storage, Realtime, `service-role`, Staging ni Production.
 
 ## 11.6 Governance
 
@@ -908,7 +908,7 @@ En Fase 1 sus tareas pueden cubrir exclusivamente:
 - skeleton modular;
 - CI;
 - tests/smoke de setup;
-- Supabase local;
+- baseline Supabase de Development conforme a `CORR-002`;
 - documentación operativa directamente asociada al setup.
 
 Cada tarea futura debe:
@@ -992,7 +992,7 @@ Fase 1 puede considerarse completada cuando se verifique conjuntamente:
 3. el skeleton respeta `ADR-0001` y no introduce dependencias circulares o acoplamiento arbitrario evidente;
 4. el proyecto dispone de lint, tests base y build verificables;
 5. CI ejecuta los checks acordados para el baseline de Fase 1;
-6. Supabase local puede inicializarse/arrancarse conforme a la documentación de desarrollo;
+6. el baseline Supabase de Development cumple `CORR-002`: CLI fijada, `supabase/` inicializado, `supabase/config.toml` versionado y proyecto Cloud exclusivo de Development bajo operación manual de Francisco;
 7. la configuración de entorno no expone secretos al cliente ni al repositorio;
 8. la documentación mínima de desarrollo está actualizada;
 9. no existen migrations/schema/policies RLS de producto introducidos prematuramente;
@@ -1080,15 +1080,16 @@ No añadir secretos reales ni integraciones productivas.
 
 ## Paso 6 — Supabase local
 
-Inicializar/configurar Supabase local:
+El título conserva el nombre histórico/normativo de la fase. Operativamente, este paso implementa el baseline de Supabase Cloud Development aprobado por `CORR-002`:
 
-- tooling local;
-- configuración;
-- comandos de arranque/parada;
-- variables necesarias;
-- verificación de disponibilidad.
+- versión fijada y reproducible de Supabase CLI en el repositorio;
+- `supabase/` inicializado y `supabase/config.toml` versionado;
+- temporales, sesiones y credenciales fuera de Git;
+- exactamente un proyecto Cloud exclusivo de Development, creado y vinculado manualmente por Francisco;
+- operaciones remotas manuales y sin acceso remoto ni credenciales para Codex;
+- ausencia de requisito de Docker, ciclo local `start/status/stop` y `db push`.
 
-No crear schema, migrations ni RLS de producto.
+No integrar la aplicación ni crear cliente Supabase, variables de conexión, schema, migrations, SQL, RLS, Auth, tenancy, Storage, Realtime, `service-role`, Staging o Production.
 
 ## Paso 7 — CI
 
@@ -1108,7 +1109,7 @@ Verificar:
 
 - setup reproducible;
 - aplicación ejecutable;
-- Supabase local operativo;
+- baseline Supabase de Development verificado conforme a `CORR-002`;
 - checks pasando;
 - documentación suficiente;
 - ausencia de secretos;
@@ -1136,7 +1137,7 @@ Este paso no se ejecuta en el presente documento y no forma parte de una impleme
 
 **Riesgo:** aprovechar la configuración de Supabase para empezar tablas, auth, roles o RLS.
 
-**Control:** Supabase local en Fase 1 se limita a infraestructura; schema y autorización esperan a Fase 2 y a `ADR-0003`.
+**Control:** el baseline Supabase de Development en Fase 1 se limita a CLI/configuración reproducible y al proyecto Cloud bajo operación manual; la integración funcional de la aplicación permanece fuera de Fase 1, y schema y autorización esperan a Fase 2 y a `ADR-0003`.
 
 ## `P1-RSK-002` — Diseñar schema a partir del modelo conceptual
 
@@ -1206,7 +1207,7 @@ El único ADR con deadline directo antes de Fase 1 es `ADR-0001`, además del ci
 
 La existencia de otros ADR aceptados no amplía Fase 1: las capacidades de Fase 2+ conservan sus deadlines y bloqueos propios.
 
-Con esta aprobación, Fase 1 queda autorizada documentalmente. La implementación limitada de Fase 1 podrá comenzar una vez que este documento aprobado sea incorporado formalmente al repositorio y se complete el preflight operativo correspondiente; a partir de entonces Codex podrá recibir una única tarea `TASK-###` PR-sized a la vez. Esa autorización comprende bootstrap/configuración, skeleton modular, CI, tooling base y Supabase local; no comprende schema, migrations, RLS, autenticación funcional ni ninguna capacidad de Fase 2+.
+Con esta aprobación, Fase 1 queda autorizada documentalmente. La implementación limitada de Fase 1 podrá comenzar una vez que este documento aprobado sea incorporado formalmente al repositorio y se complete el preflight operativo correspondiente; a partir de entonces Codex podrá recibir una única tarea `TASK-###` PR-sized a la vez. Esa autorización comprende bootstrap/configuración, skeleton modular, CI, tooling base y el baseline Supabase de Development conforme a `CORR-002`; no comprende integración de la aplicación, schema, migrations, RLS, autenticación funcional ni ninguna capacidad de Fase 2+.
 
 `ADR-0003` continúa bloqueado por `DO-T03` y debe quedar `ACCEPTED` antes de implementar Fase 2. Este documento no lo redacta ni resuelve su dependencia.
 
