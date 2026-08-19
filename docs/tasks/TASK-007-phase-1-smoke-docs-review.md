@@ -18,23 +18,31 @@ No es una tarea de desarrollo funcional, no introduce arquitectura nueva y no au
 
 # 4. Estado
 
-`READY FOR REVIEW`
+`APPROVED FOR EXECUTION`
 
 **Archivo de entrega:**
 
 `TASK-007-phase-1-smoke-docs-review.md`
 
-**Ruta canónica futura propuesta:**
+**Ruta canónica:**
 
 `docs/tasks/TASK-007-phase-1-smoke-docs-review.md`
 
-Este documento no es canónico todavía.
+**Canonical commit de referencia:**
 
-Su estado `READY FOR REVIEW` no autoriza ejecución, uso de Codex, modificación del repositorio ni avance de fase.
+`5bde25d96fa73537ebc912115f53c55be8366db9`
+
+Este documento fue revisado y canonicalizado en la ruta y commit de referencia indicados.
+
+El estado `APPROVED FOR EXECUTION` significa que la especificación está aprobada para poder ser ejecutada cuando exista una autorización humana separada y explícita para una ejecución concreta.
+
+La especificación canónica por sí sola no inicia una ejecución, no constituye una autorización concreta de uso de Codex y no modifica el repositorio.
+
+Cada ejecución concreta de `TASK-007` requiere una autorización humana separada. Una autorización humana externa posterior puede autorizar esa ejecución sin contradecir esta especificación.
 
 # 5. Objetivo
 
-Ejecutar, una vez que esta especificación sea revisada, aprobada y canonicalizada, el `Paso 8 — Smoke, documentación y revisión de Fase 1` definido por el Gate canónico, mediante una validación integral, reproducible y no destructiva del estado real del repositorio.
+Ejecutar, cuando una ejecución concreta de esta especificación ya revisada, aprobada y canonicalizada haya sido autorizada de forma humana, separada y explícita, el `Paso 8 — Smoke, documentación y revisión de Fase 1` definido por el Gate canónico, mediante una validación integral, reproducible y no destructiva del estado real del repositorio.
 
 La tarea debe determinar con evidencia si el baseline de Fase 1 continúa coherente después de `TASK-001`…`TASK-006` y `CORR-001`…`CORR-003`, cubriendo conjuntamente:
 
@@ -223,11 +231,11 @@ Para esta versión corregida se revisaron íntegramente y se reconciliaron:
 
 La versión canónica actual de `11` ya refleja la sincronización de `CORR-003`: conserva el nombre histórico `Fase 1 — Setup, repositorio, CI y Supabase local`, pero sustituye la condición operativa de stack local/Docker por el baseline Supabase Cloud Development de `CORR-002`.
 
-No se detecta una contradicción material entre estas tres fuentes que impida corregir `TASK-007` y mantenerla en estado `READY FOR REVIEW`.
+No se detecta una contradicción material entre estas tres fuentes; esta reconciliación forma parte de la especificación canónica de `TASK-007` aprobada para ejecución.
 
 # 7. Fuentes canónicas
 
-Cuando `TASK-007` sea revisada y posteriormente ejecutada, deben leerse íntegramente desde el repositorio real, como mínimo, las siguientes fuentes.
+En cada ejecución concreta de `TASK-007` autorizada humanamente de forma separada, deben leerse íntegramente desde el repositorio real, como mínimo, las siguientes fuentes.
 
 ## 7.1 Producto / Gates
 
@@ -989,11 +997,11 @@ Por tanto:
 
 ## 15.1 Decisión
 
-La estrategia recomendada para una futura ejecución aprobada es:
+La estrategia recomendada para una ejecución concreta de `TASK-007` que haya recibido autorización humana separada es:
 
 `Codex en modo inspección/verificación local + pasos humanos de evidencia remota + revisión humana final`
 
-No se autoriza esa ejecución mediante este documento `READY FOR REVIEW`.
+El estado `APPROVED FOR EXECUTION` de esta especificación no inicia ni autoriza por sí solo una ejecución concreta. Cada ejecución requiere una autorización humana separada y explícita. Cuando esa autorización externa exista, la ejecución es compatible con esta especificación y debe respetar íntegramente sus límites.
 
 ## 15.2 Responsabilidad futura de Codex
 
@@ -1786,13 +1794,21 @@ Ese paso, cuando llegue a ser autorizado, deberá:
 
 ---
 
-**Estado de esta especificación:** `READY FOR REVIEW`
+**Estado de esta especificación:** `APPROVED FOR EXECUTION`
 
-**Ejecución autorizada por esta entrega:** no.
+**Documento canónico:** sí.
 
-**Codex ejecutado durante esta entrega:** no.
+**Ruta canónica:** `docs/tasks/TASK-007-phase-1-smoke-docs-review.md`
 
-**Repositorio modificado durante esta entrega:** no.
+**Canonical commit de referencia:** `5bde25d96fa73537ebc912115f53c55be8366db9`
+
+**Esta especificación inicia o autoriza por sí sola una ejecución concreta:** no.
+
+**Cada ejecución concreta requiere autorización humana separada:** sí.
+
+**Codex ejecutado por la mera aprobación/canonicalización de esta especificación:** no.
+
+**Repositorio modificado por la mera aprobación/canonicalización de esta especificación:** no.
 
 **Fase 1 declarada completada:** no.
 
