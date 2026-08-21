@@ -2460,20 +2460,17 @@ Regla preservada:
 
 **Estado:** **PARCIALMENTE ABIERTO**.
 
-Cerrado a nivel de producto:
+Reformulación de producto/seguridad aprobada:
 
-- revocar/deshabilitar debe cerrar sesiones;
-- acceso online debe quedar bloqueado;
-- DO-075 gobierna offline.
+- una revocación, deshabilitación o reducción de alcance retira inmediatamente toda autorización online afectada según estado autoritativo vigente;
+- una sesión Auth o access JWT residual no conserva autorización revocada;
+- RLS/autorización vigente permanece como frontera primaria de datos;
+- la terminación provider-side de sesiones y credenciales renovables es una defensa adicional mediante mecanismos públicos, soportados y contractualmente adecuados cuando exista una primitiva apropiada;
+- ausencia, limitación o fallo de esa segunda defensa no restaura autorización;
+- no se autorizan internals ni workarounds no aprobados;
+- DO-075 gobierna offline sin cambios.
 
-Propuesta heredada de `03`:
-
-- corte autoritativo de datos;
-- cierre efectivo de sesión/credenciales renovables.
-
-**Estado de la propuesta:** **PENDIENTE DE APROBACIÓN**.
-
-Este documento no la resuelve.
+La reformulación está aprobada, pero `DO-T03` no se declara resuelto mediante esta corrección. Su cierre formal requiere la revisión humana separada posterior a la sincronización documental.
 
 **Bloquea Fase 1:** no como documento, pero debe resolverse antes de implementar Fase 2; sus implicaciones offline deben estar coordinadas antes de Fase 5.
 
@@ -2611,11 +2608,14 @@ Se preserva el máximo de 7 días sin modificación.
 
 **DO-T03: PARCIALMENTE ABIERTO.**
 
-La propuesta técnica de corte autoritativo de datos + cierre efectivo de sesión continúa:
+La reformulación aprobada distingue:
 
-**PENDIENTE DE APROBACIÓN.**
+- revocación inmediata y autoritativa de la autorización online como garantía fuerte;
+- terminación provider-side de sesiones/credenciales renovables como defensa adicional condicionada a mecanismos públicos soportados y contractualmente adecuados.
 
-No se resuelve en este documento.
+La reformulación queda sincronizada documentalmente mediante CORR-005, pero el cierre formal de `DO-T03` continúa pendiente de revisión humana separada posterior a esta corrección.
+
+No se resuelve automáticamente por la ejecución de CORR-005.
 
 ## 54.5 Estado de DO-T04
 

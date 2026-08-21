@@ -650,8 +650,10 @@ Debe contemplar:
 - `SupportAccessGrant`;
 - scopes client-scoped y tenant-wide;
 - auditoría;
-- revocación;
-- invalidación efectiva de sesiones;
+- revocación efectiva de autorización mediante estado autoritativo vigente;
+- separación entre autenticación residual y autorización vigente;
+- tratamiento provider-side de sesiones y credenciales renovables conforme a la semántica aprobada de DO-T03, exclusivamente mediante mecanismos públicos, soportados y contractualmente adecuados cuando corresponda;
+- comportamiento fail-closed ante ausencia o fallo de la terminación provider-side;
 - relación entre autorización online y el posterior contexto offline.
 
 No debe inferir capacidades de escritura de soporte.

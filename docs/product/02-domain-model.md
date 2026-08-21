@@ -1504,11 +1504,12 @@ No existe un bypass universal.
 
 ## 6.5 Deshabilitación
 
-Al deshabilitar una membership:
+Al deshabilitar o revocar una membership, o reducir su alcance:
 
 - identidad e historial permanecen;
-- sesiones activas deben cerrarse;
-- acceso online debe quedar bloqueado;
+- toda autorización online afectada debe quedar revocada inmediatamente según el estado autoritativo vigente;
+- una sesión Auth o access JWT residual no conserva membership, rol, client scope ni otra autorización revocada;
+- la terminación provider-side de sesiones y credenciales renovables se trata como defensa adicional mediante mecanismos públicos soportados cuando exista una primitiva contractualmente adecuada; su ausencia o fallo no restaura autorización;
 - datos offline siguen aislados;
 - una autorización offline previamente validada sólo puede mantenerse dentro del máximo aprobado de 7 días;
 - una revocación conocida debe aplicarse cuando el dispositivo recupera conectividad.
@@ -3423,7 +3424,7 @@ DO-075 permanece **RESUELTA Y APROBADA**.
 | `DO-078` | Renovación, cancelación y prorrateo no están definidos. | No | Fase 8 |
 | `DO-T01` | Falta aprobar protocolo exacto de ledger IA. | No | Fase 7 |
 | `DO-T02` | Falta aprobar state machine/reconciliación de Mercado Pago. | No | Fase 8 |
-| `DO-T03` | Falta especificar invalidación técnica efectiva online; la política offline ya está cerrada. | No | Antes de Fase 2 para seguridad online; coordinación offline antes de Fase 5 |
+| `DO-T03` | La reformulación de producto/seguridad ya fue aprobada: la revocación efectiva de autorización es inmediata y la terminación provider-side es una defensa adicional condicionada a mecanismos públicos soportados. Permanece pendiente el cierre formal de DO-T03 tras la sincronización documental y su revisión humana. | No | Antes de Fase 2 para seguridad online; coordinación offline antes de Fase 5 |
 | `DO-T04` | Falta definir/probar protección concreta de persistencia local. | No | Fase 5 |
 | `DO-T05` | No existen volúmenes aprobados para objetivos de performance. | No | Fase 11/piloto |
 | `DO-T06` | RPO/RTO necesitan objetivos operativos e infraestructura. | No | Piloto/producción |

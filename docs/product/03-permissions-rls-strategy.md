@@ -1661,24 +1661,38 @@ Los accesos anteriormente efectuados permanecen auditados.
 
 ---
 
-## 19.5 Sesiones activas
+## 19.5 Revocación efectiva de autorización y sesiones provider-side
 
-La baseline exige que deshabilitar o revocar un usuario cierre sus sesiones activas.
+La baseline reformulada distingue dos defensas complementarias con garantías diferentes.
 
-La política de producto está cerrada.
+### Defensa primaria — revocación efectiva de autorización
 
-El mecanismo técnico exacto continúa parcialmente abierto mediante `DO-T03`.
+Una revocación, deshabilitación o reducción de alcance debe retirar inmediatamente toda autorización online afectada mediante estado autoritativo vigente.
 
-### Propuesta técnica para `DO-T03` — **PENDIENTE DE APROBACIÓN**
+Toda operación online sensible debe evaluar según estado vigente, cuando corresponda:
 
-Se propone tratar el problema mediante dos defensas complementarias:
+- membership;
+- rol;
+- `UserClientAccess`;
+- `SupportAccessGrant`;
+- tenant y ownership;
+- demás condiciones autoritativas aplicables.
 
-1. **corte autoritativo de datos:** toda operación online sensible debe comprobar membership/rol/client access vigentes en la frontera de datos, de forma que una sesión antigua no conserve autorización sólo por contener estado previo;
-2. **cierre de sesión:** utilizar el mecanismo técnico de Supabase Auth que finalmente se apruebe para invalidar/cerrar sesiones y credenciales renovables, de modo que la UX y el estado de autenticación también reflejen la revocación.
+Una sesión Auth o access JWT residual no conserva autorización revocada. La seguridad no puede depender de esperar logout, refresh o `exp`.
 
-La segunda defensa no debe ser la única barrera.
+### Defensa adicional — terminación provider-side
 
-El mecanismo concreto, sus tiempos y pruebas permanecen pendientes y no se declaran resueltos en este documento.
+Las sesiones y credenciales renovables afectadas deben terminarse mediante mecanismos públicos, soportados y contractualmente adecuados cuando exista una primitiva apropiada para el caso.
+
+Esta segunda defensa:
+
+- no es la frontera primaria de datos;
+- no puede reemplazar RLS/autorización vigente;
+- no puede provocar rollback de una revocación si falla o no está disponible;
+- no autoriza utilizar `updateUserById(...password...)`, mutación directa de `auth.sessions`, almacenamiento de JWT ajenos, APIs no documentadas ni internals por inferencia;
+- no permite tratar `ban_duration` como equivalente contractual de global sign-out sin una decisión posterior basada en un contrato soportado.
+
+La reformulación de producto/seguridad fue aprobada humanamente. `DO-T03` permanece `PARCIALMENTE ABIERTO` únicamente hasta completar esta sincronización documental y realizar la revisión humana posterior requerida para evaluar su cierre formal.
 
 ---
 
@@ -2241,7 +2255,7 @@ Verificar que una membership deshabilitada:
 - no actualiza;
 - no mantiene acceso por poseer una sesión todavía presentada al backend.
 
-La comprobación concreta de cierre de sesión se probará además según `DO-T03`.
+La revocación efectiva de autorización debe probarse aunque una sesión Auth o access JWT residual continúe técnicamente presente. Cuando exista y se adopte posteriormente un mecanismo provider-side público y soportado para terminar sesiones/credenciales renovables, su comportamiento debe probarse por separado como defensa adicional; su fallo o indisponibilidad no puede convertir una operación revocada en autorizada.
 
 ---
 
@@ -2609,12 +2623,15 @@ Tratamiento:
 - auditoría;
 - ausencia de regla universal para `SUPER_ADMIN`.
 
-### `RSK-004` — Revocación no corta sesiones
+### `RSK-004` — Revocación no corta autorización efectivamente
 
 Tratamiento:
 
-- membership autoritativa online;
-- revocación de sesión;
+- membership, rol, client access y grants vigentes como estado autoritativo online;
+- RLS/autorización vigente como frontera primaria de datos;
+- una sesión Auth o access JWT residual no conserva autorización revocada;
+- terminación provider-side únicamente mediante mecanismos públicos soportados cuando sean aplicables;
+- fallo o inexistencia de esa segunda defensa no produce rollback de autorización;
 - `DO-T03`;
 - DO-075 para offline.
 
@@ -2740,22 +2757,26 @@ Este documento no reabre decisiones aprobadas.
 
 **Estado:** PARCIALMENTE ABIERTO.
 
-**Cerrado a nivel de producto:**
+**Reformulación de producto/seguridad aprobada:**
 
-- deshabilitar/revocar debe cerrar sesiones;
-- acceso online debe quedar bloqueado;
-- DO-075 define el comportamiento offline.
+- una revocación, deshabilitación o reducción de alcance debe retirar inmediatamente toda autorización online afectada mediante estado autoritativo vigente;
+- una sesión Auth o access JWT residual no conserva membership, rol, client scope, `SupportAccessGrant` ni ninguna otra autorización revocada;
+- RLS/autorización vigente permanece como frontera primaria de datos;
+- la seguridad no puede depender de esperar logout, refresh o `exp`;
+- la terminación provider-side de sesiones y credenciales renovables permanece como defensa adicional y debe utilizar mecanismos públicos, soportados y contractualmente adecuados cuando exista una primitiva apropiada;
+- ausencia, limitación o fallo de esa segunda defensa no restaura autorización;
+- no se adoptan por inferencia `updateUserById(...password...)`, mutación directa de `auth.sessions`, almacenamiento de JWT ajenos, APIs no documentadas ni internals;
+- `ban_duration` no se trata como equivalente contractual de global sign-out;
+- DO-075 continúa definiendo el comportamiento offline.
 
-**Pendiente:**
+**Pendiente para el cierre formal de DO-T03:**
 
-- mecanismo concreto de invalidación en Supabase Auth;
-- coordinación de tokens/sesiones;
-- tratamiento técnico del cliente tras la revocación;
-- pruebas específicas de invalidación.
+- completar la sincronización documental controlada de CORR-005;
+- verificar el diff y la coherencia de todas las fuentes afectadas;
+- realizar una revisión humana separada del resultado;
+- decidir explícitamente después de esa revisión si `DO-T03 = RESUELTO/APROBADO`.
 
-**Propuesta de este documento:** defensa doble de corte autoritativo de datos + cierre de sesión.
-
-**Estado de la propuesta:** **PENDIENTE DE APROBACIÓN**.
+El TTL exacto, la validación física de `session_id`, el diseño de RLS/SQL, la estructura física del backend y la selección futura de primitivas provider-side permanecen fuera de esta corrección y no se resuelven por inferencia.
 
 **Bloquea el siguiente documento `04`:** no.
 

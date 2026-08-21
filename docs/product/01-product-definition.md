@@ -212,7 +212,7 @@ No es usuario del SaaS en el MVP.
 
 **RF-018.** El `COMPANY_ADMIN` DEBE poder deshabilitar un usuario sin eliminarlo.
 
-**RF-019.** Al deshabilitar o revocar un usuario, sus sesiones activas DEBEN cerrarse automáticamente.
+**RF-019.** Al deshabilitar, revocar o reducir el alcance de un usuario, toda autorización online afectada DEBE retirarse inmediatamente utilizando estado autoritativo vigente. Una sesión Auth o access JWT residual NO DEBE conservar ninguna autorización revocada. Cuando exista una primitiva pública, soportada y contractualmente adecuada para el caso, las sesiones y credenciales renovables afectadas DEBEN terminarse mediante ese mecanismo como defensa adicional; su ausencia, limitación o fallo NO DEBE restaurar autorización ni debilitar la protección de datos.
 
 **RF-020.** Un usuario deshabilitado DEBE conservar su identidad e historial.
 
@@ -805,7 +805,7 @@ No forman parte del dominio MVP:
 ### FL-03 — Deshabilitación y reintegración
 
 1. `COMPANY_ADMIN` deshabilita al usuario.
-2. Las sesiones activas se cierran automáticamente.
+2. Toda autorización online afectada se revoca inmediatamente según el estado autoritativo vigente; una sesión Auth o access JWT residual no conserva permisos revocados, y la terminación provider-side de sesiones/credenciales renovables se ejecuta mediante una primitiva pública soportada cuando exista una contractualmente adecuada para el caso, sin que su ausencia o fallo restaure autorización.
 3. La identidad e historial se conservan.
 4. Datos offline existentes permanecen protegidos y aislados por identidad.
 5. En una reintegración futura se restablece el estado del usuario conforme a los permisos vigentes.
@@ -1124,9 +1124,9 @@ Créditos:
 
 ### 21.2 Revocación
 
-La deshabilitación de usuario debe provocar cierre de sesiones activas. El usuario no se elimina y puede reintegrarse.
+La deshabilitación, revocación o reducción de alcance debe retirar inmediatamente toda autorización online afectada mediante estado autoritativo vigente. Una sesión Auth o access JWT residual no conserva autorización revocada. El usuario no se elimina y puede reintegrarse.
 
-La implementación concreta de invalidación de sesiones, tokens y cachés se definirá en el documento de seguridad/RLS de Fase 0 sin debilitar esta regla de producto.
+La terminación provider-side de sesiones y credenciales renovables constituye una defensa adicional y debe utilizar exclusivamente mecanismos públicos, soportados y contractualmente adecuados cuando exista una primitiva apropiada para el caso. La seguridad de datos no puede depender de esa terminación ni esperar logout, refresh o expiración del access JWT. Su ausencia, limitación o fallo no restaura autorización.
 
 ---
 
@@ -1188,7 +1188,7 @@ Restricciones:
 | RSK-001 | Fuga entre tenants | Crítica | RLS obligatorio + pruebas negativas |
 | RSK-002 | Permisos de cliente mal derivados | Alta | Modelo explícito usuario→cliente y herencia sólo descendente |
 | RSK-003 | Soporte SUPER_ADMIN se convierte en bypass | Crítica | Grants explícitos, alcance granular, revocación y auditoría |
-| RSK-004 | Revocación no corta sesiones efectivamente | Crítica | bloqueo por membresía/RLS online + revocación de sesión; autorización offline de identidad limitada a un máximo de 7 días desde la última validación online conforme a DO-075 aprobado |
+| RSK-004 | Revocación no corta autorización efectivamente | Crítica | estado autoritativo vigente + RLS/autorización online como frontera primaria; una sesión/JWT residual no conserva permisos revocados; terminación provider-side sólo mediante mecanismos públicos soportados cuando sean aplicables y sin rollback de autorización ante ausencia o fallo; autorización offline limitada conforme a DO-075 aprobado |
 | RSK-005 | Pérdida de datos offline | Crítica | local-first + outbox durable + idempotencia |
 | RSK-006 | Conflictos sobrescritos | Alta | Prohibir LWW silencioso |
 | RSK-007 | Fotos perdidas antes de upload | Crítica | conservar local hasta confirmación remota |
@@ -1273,7 +1273,7 @@ Las decisiones ya resueltas no deben reaparecer como abiertas.
 
 **DO-T02 — State machine de Mercado Pago. PROPUESTO.** Ingesta verificada, eventos idempotentes, resolución/reconciliación y protección ante eventos fuera de orden. Debe documentarse y aprobarse antes de Fase 8 en el documento derivado y ADR que correspondan.
 
-**DO-T03 — Invalidación efectiva de sesiones. PARCIALMENTE PROPUESTO.** Online: membresía/estado debe bloquear acceso en RLS aunque exista token, más revocación de sesión/credenciales renovables. Offline: DO-075 ya fija la política de producto aprobada de máximo 7 días y revalidación; la implementación técnica debe respetarla.
+**DO-T03 — Invalidación efectiva de sesiones. PARCIALMENTE ABIERTO.** Online: una revocación, deshabilitación o reducción de alcance debe retirar inmediatamente toda autorización afectada mediante estado autoritativo vigente; una sesión Auth o access JWT residual no conserva membership, rol, client scope, `SupportAccessGrant` ni ninguna otra autorización revocada. La terminación provider-side de sesiones y credenciales renovables constituye una defensa adicional y debe utilizar únicamente mecanismos públicos, soportados y contractualmente adecuados cuando exista una primitiva apropiada para el caso; su ausencia, limitación o fallo no restaura autorización y no autoriza internals, APIs no documentadas ni workarounds no aprobados. Offline: DO-075 mantiene la política aprobada de máximo 7 días y revalidación; una revocación conocida prevalece y el trabajo ya capturado no se elimina. El cierre formal de DO-T03 permanece pendiente de revisión humana posterior a esta sincronización documental.
 
 **DO-T04 — Protección local. PROPUESTO.** Persistencia particionada por identidad; una sesión sólo abre su propia réplica; logout no borra outbox pendiente. Cifrado adicional queda sujeto a análisis de amenazas/legal. Debe documentarse y aprobarse en la estrategia offline y ADR que correspondan antes de Fase 5.
 
