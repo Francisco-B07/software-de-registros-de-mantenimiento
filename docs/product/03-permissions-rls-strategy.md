@@ -1692,7 +1692,7 @@ Esta segunda defensa:
 - no autoriza utilizar `updateUserById(...password...)`, mutación directa de `auth.sessions`, almacenamiento de JWT ajenos, APIs no documentadas ni internals por inferencia;
 - no permite tratar `ban_duration` como equivalente contractual de global sign-out sin una decisión posterior basada en un contrato soportado.
 
-La reformulación de producto/seguridad fue aprobada humanamente. `DO-T03` permanece `PARCIALMENTE ABIERTO` únicamente hasta completar esta sincronización documental y realizar la revisión humana posterior requerida para evaluar su cierre formal.
+La reformulación de producto/seguridad fue aprobada humanamente y, después de completar CORR-005 y su revisión humana posterior, `DO-T03` fue cerrado mediante decisión humana separada: `DO-T03 = RESUELTO/APROBADO`. Las decisiones físicas de implementación permanecen para `ADR-0003` y/o tareas posteriores según corresponda.
 
 ---
 
@@ -1834,7 +1834,7 @@ Son operaciones de plataforma.
 
 El cierre forzado/revocación de sesiones probablemente requiere una operación server-side privilegiada.
 
-Su mecanismo exacto permanece en `DO-T03`.
+`DO-T03 = RESUELTO/APROBADO` fija la semántica conceptual de seguridad y revocación. El mecanismo físico concreto de terminación provider-side, cuando corresponda, queda para `ADR-0003` y/o tareas posteriores de implementación, sin seleccionar aquí una primitiva concreta.
 
 ---
 
@@ -2755,7 +2755,7 @@ Este documento no reabre decisiones aprobadas.
 
 ### `DO-T03` — Invalidación efectiva de sesiones
 
-**Estado:** PARCIALMENTE ABIERTO.
+**Estado:** RESUELTO/APROBADO.
 
 **Reformulación de producto/seguridad aprobada:**
 
@@ -2769,18 +2769,18 @@ Este documento no reabre decisiones aprobadas.
 - `ban_duration` no se trata como equivalente contractual de global sign-out;
 - DO-075 continúa definiendo el comportamiento offline.
 
-**Pendiente para el cierre formal de DO-T03:**
+**Cierre formal de DO-T03:**
 
-- completar la sincronización documental controlada de CORR-005;
-- verificar el diff y la coherencia de todas las fuentes afectadas;
-- realizar una revisión humana separada del resultado;
-- decidir explícitamente después de esa revisión si `DO-T03 = RESUELTO/APROBADO`.
+- CORR-005 completó la sincronización de la reformulación aprobada;
+- el diff y la coherencia de las fuentes afectadas fueron verificados;
+- la revisión humana posterior de CORR-005 fue aprobada;
+- una decisión humana separada declaró `DO-T03 = RESUELTO/APROBADO`.
 
-El TTL exacto, la validación física de `session_id`, el diseño de RLS/SQL, la estructura física del backend y la selección futura de primitivas provider-side permanecen fuera de esta corrección y no se resuelven por inferencia.
+El TTL exacto, la validación física de `session_id`, el diseño de RLS/SQL, la estructura física del backend y la selección futura de primitivas provider-side permanecen fuera del cierre conceptual de DO-T03 y quedan para `ADR-0003` y/o posteriores tareas de implementación según corresponda; no se resuelven por inferencia.
 
 **Bloquea el siguiente documento `04`:** no.
 
-**Debe resolverse antes de:** Fase 2 para implementación de identidad/autorización online, coordinando sus implicaciones offline antes de Fase 5.
+**Deadline:** DO-T03 quedó resuelto antes de Fase 2 para identidad/autorización online; coordinación offline antes de Fase 5.
 
 ---
 

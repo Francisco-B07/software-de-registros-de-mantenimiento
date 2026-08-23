@@ -2458,7 +2458,7 @@ Regla preservada:
 
 ## 53.2 DO-T03 — Invalidación efectiva de sesiones
 
-**Estado:** **PARCIALMENTE ABIERTO**.
+**Estado:** **RESUELTO/APROBADO**.
 
 Reformulación de producto/seguridad aprobada:
 
@@ -2470,9 +2470,9 @@ Reformulación de producto/seguridad aprobada:
 - no se autorizan internals ni workarounds no aprobados;
 - DO-075 gobierna offline sin cambios.
 
-La reformulación está aprobada, pero `DO-T03` no se declara resuelto mediante esta corrección. Su cierre formal requiere la revisión humana separada posterior a la sincronización documental.
+Después de la ejecución y revisión humana de CORR-005, el cierre formal de `DO-T03` fue aprobado mediante decisión humana separada.
 
-**Bloquea Fase 1:** no como documento, pero debe resolverse antes de implementar Fase 2; sus implicaciones offline deben estar coordinadas antes de Fase 5.
+**Bloquea Fase 1:** no. DO-T03 quedó resuelto antes de implementar Fase 2; sus implicaciones offline deben estar coordinadas antes de Fase 5.
 
 ## 53.3 DO-T04 — Protección local
 
@@ -2606,16 +2606,16 @@ Se preserva el máximo de 7 días sin modificación.
 
 ## 54.4 Estado de DO-T03
 
-**DO-T03: PARCIALMENTE ABIERTO.**
+**DO-T03: RESUELTO/APROBADO.**
 
 La reformulación aprobada distingue:
 
 - revocación inmediata y autoritativa de la autorización online como garantía fuerte;
 - terminación provider-side de sesiones/credenciales renovables como defensa adicional condicionada a mecanismos públicos soportados y contractualmente adecuados.
 
-La reformulación queda sincronizada documentalmente mediante CORR-005, pero el cierre formal de `DO-T03` continúa pendiente de revisión humana separada posterior a esta corrección.
+La reformulación fue sincronizada documentalmente mediante CORR-005 y, después de su revisión humana posterior, `DO-T03` fue cerrado mediante decisión humana separada.
 
-No se resuelve automáticamente por la ejecución de CORR-005.
+Este cierre no modifica DO-075 ni resuelve DO-T04, OFF-OPEN-001 u OFF-OPEN-002.
 
 ## 54.5 Estado de DO-T04
 

@@ -3424,7 +3424,7 @@ DO-075 permanece **RESUELTA Y APROBADA**.
 | `DO-078` | Renovación, cancelación y prorrateo no están definidos. | No | Fase 8 |
 | `DO-T01` | Falta aprobar protocolo exacto de ledger IA. | No | Fase 7 |
 | `DO-T02` | Falta aprobar state machine/reconciliación de Mercado Pago. | No | Fase 8 |
-| `DO-T03` | La reformulación de producto/seguridad ya fue aprobada: la revocación efectiva de autorización es inmediata y la terminación provider-side es una defensa adicional condicionada a mecanismos públicos soportados. Permanece pendiente el cierre formal de DO-T03 tras la sincronización documental y su revisión humana. | No | Antes de Fase 2 para seguridad online; coordinación offline antes de Fase 5 |
+| `DO-T03` | RESUELTO/APROBADO. La reformulación de producto/seguridad ya fue aprobada: la revocación efectiva de autorización es inmediata y la terminación provider-side es una defensa adicional condicionada a mecanismos públicos soportados. El cierre formal de DO-T03 fue aprobado mediante decisión humana separada tras la sincronización documental y su revisión humana. | No | Resuelta antes de Fase 2 para seguridad online; coordinación offline antes de Fase 5 |
 | `DO-T04` | Falta definir/probar protección concreta de persistencia local. | No | Fase 5 |
 | `DO-T05` | No existen volúmenes aprobados para objetivos de performance. | No | Fase 11/piloto |
 | `DO-T06` | RPO/RTO necesitan objetivos operativos e infraestructura. | No | Piloto/producción |

@@ -357,7 +357,7 @@ Debe esperar:
 
 Aunque `ADR-0002` está `ACCEPTED`, no autoriza por sí solo el diseño físico ni la implementación de autorización completa.
 
-`ADR-0003` permanece bloqueado por `DO-T03` y debe estar `ACCEPTED` antes de implementar identidad/autorización de Fase 2.
+`DO-T03 = RESUELTO/APROBADO` y ya no constituye un blocker de `ADR-0003`. `ADR-0003 = READY TO DRAFT`; este estado autoriza únicamente preparar el ADR como documento separado y no autoriza implementación. `ADR-0003` debe estar `ACCEPTED` antes de implementar identidad/autorización de Fase 2.
 
 ## 6.2 Fase 3 — Clientes, ubicaciones y equipos
 
@@ -601,13 +601,13 @@ Se preservan:
 - `DO-078 = PROPUESTA PENDIENTE DE APROBACIÓN` — antes de Fase 8;
 - `DO-T01 = PROPUESTA PENDIENTE DE APROBACIÓN` — antes de Fase 7;
 - `DO-T02 = PROPUESTA PENDIENTE DE APROBACIÓN` — antes de Fase 8;
-- `DO-T03 = PARCIALMENTE ABIERTO` — antes de Fase 2 para autorización/sesión y coordinación offline antes de Fase 5;
+- `DO-T03 = RESUELTO/APROBADO` — resuelta antes de Fase 2 para autorización/sesión y coordinación offline antes de Fase 5;
 - `DO-T04 = PROPUESTA PENDIENTE DE APROBACIÓN` — antes de Fase 5;
 - `DO-T05 = DIFERIDO` — antes de pruebas de performance/Fase 11/piloto;
 - `DO-T06 = DIFERIDO` — antes de piloto/producción;
 - `DO-T07 = DIFERIDO` — antes del piloto conforme a validación legal/contractual.
 
-La decisión abierta más cercana a la frontera de Fase 1 es `DO-T03`, pero su deadline es **antes de Fase 2**, no antes de Fase 1. Por tanto, no impide ejecutar el setup de Fase 1, aunque sí impide entrar en la implementación de identidad/autorización de Fase 2 mientras no se resuelva y permita aprobar `ADR-0003`.
+`DO-T03 = RESUELTO/APROBADO` y ya no constituye una decisión abierta ni un blocker de `ADR-0003`. `ADR-0003 = READY TO DRAFT`, pero este estado autoriza únicamente preparar el ADR como documento separado y no autoriza implementación. La implementación de identidad/autorización de Fase 2 continúa bloqueada hasta que `ADR-0003` sea redactado, revisado y quede `ACCEPTED`.
 
 ---
 
@@ -746,22 +746,24 @@ El registro maestro exige antes de Fase 2:
 
 `ADR-0002` ya está `ACCEPTED`.
 
-`ADR-0003` todavía no puede aprobarse porque:
+`DO-T03 = RESUELTO/APROBADO`.
 
-- `DO-T03` permanece `PARCIALMENTE ABIERTO`;
-- el registro lo clasifica `BLOCKED BY OPEN DECISIONS`;
-- debe aprobarse antes de implementar identidad/autorización de Fase 2.
+`ADR-0003 = READY TO DRAFT`.
+
+DO-T03 ya no constituye un blocker de ADR-0003. `READY TO DRAFT` autoriza únicamente preparar el ADR como documento separado; no equivale a `PROPOSED`, no equivale a `ACCEPTED` y no autoriza implementación.
 
 Por tanto:
 
-> **Completar Fase 1 no autoriza automáticamente comenzar Fase 2.**
+> **Completar Fase 1, resolver DO-T03 o alcanzar `ADR-0003 = READY TO DRAFT` no autoriza automáticamente comenzar Fase 2.**
 
-La transición requiere resolver lo necesario de `DO-T03` sin inferencias, redactar/revisar/aprobar `ADR-0003` y verificar el Gate correspondiente antes de implementar Fase 2.
+La transición requiere todavía redactar, revisar y aprobar `ADR-0003`, obtener `ADR-0003 = ACCEPTED` y verificar separadamente el Gate correspondiente antes de implementar Fase 2.
 
 Este documento:
 
-- no resuelve `DO-T03`;
+- reconoce `DO-T03 = RESUELTO/APROBADO`;
+- reconoce `ADR-0003 = READY TO DRAFT`;
 - no redacta `ADR-0003`;
+- no aprueba `ADR-0003`;
 - no inicia Fase 2.
 
 ## 10.3 Separación entre cierre de Fase 1 y entrada a Fase 2
@@ -1007,8 +1009,9 @@ El Gate de salida técnica de Fase 1 no sustituye el Gate de entrada de Fase 2.
 Antes de comenzar la implementación de Fase 2 debe verificarse además:
 
 - `ADR-0002 = ACCEPTED` — ya cumplido;
-- `ADR-0003 = ACCEPTED` — pendiente;
-- las dependencias necesarias de `ADR-0003`, especialmente `DO-T03`, resueltas/aprobadas en el alcance requerido.
+- `DO-T03 = RESUELTO/APROBADO` — ya cumplido;
+- `ADR-0003 = READY TO DRAFT` — estado actual aprobado, insuficiente por sí mismo para Fase 2;
+- `ADR-0003 = ACCEPTED` — pendiente y obligatorio antes de implementar Fase 2.
 
 Por tanto, la salida de Fase 1 y la entrada a Fase 2 son controles relacionados pero no idénticos.
 
@@ -1209,7 +1212,7 @@ La existencia de otros ADR aceptados no amplía Fase 1: las capacidades de Fase 
 
 Con esta aprobación, Fase 1 queda autorizada documentalmente. La implementación limitada de Fase 1 podrá comenzar una vez que este documento aprobado sea incorporado formalmente al repositorio y se complete el preflight operativo correspondiente; a partir de entonces Codex podrá recibir una única tarea `TASK-###` PR-sized a la vez. Esa autorización comprende bootstrap/configuración, skeleton modular, CI, tooling base y el baseline Supabase de Development conforme a `CORR-002`; no comprende integración de la aplicación, schema, migrations, RLS, autenticación funcional ni ninguna capacidad de Fase 2+.
 
-`ADR-0003` continúa bloqueado por `DO-T03` y debe quedar `ACCEPTED` antes de implementar Fase 2. Este documento no lo redacta ni resuelve su dependencia.
+`DO-T03 = RESUELTO/APROBADO` y ya no constituye un blocker de `ADR-0003`. `ADR-0003 = READY TO DRAFT`, lo que autoriza únicamente su preparación como documento separado; todavía debe redactarse, revisarse y quedar `ACCEPTED` antes de implementar Fase 2. Este documento no redacta ni aprueba `ADR-0003`.
 
 ---
 

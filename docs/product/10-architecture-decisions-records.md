@@ -325,7 +325,7 @@ La semántica de continuidad efectiva entre revisiones continúa abierta.
 | `DO-078` | Cancelación/renovación comercial | Comercial | `01`, `09` | `PROPUESTA PENDIENTE DE APROBACIÓN` | Antes de Fase 8 | No individual; alimenta `ADR-0014` | `PAY-OPEN-001`, `003`, `004` |
 | `DO-T01` | Protocolo del ledger IA | Arquitectura | `08` | `PROPUESTA PENDIENTE DE APROBACIÓN` | Antes de Fase 7 | Sí: `ADR-0006` | `DM-OPEN-007`, `AI-OPEN-001..004` |
 | `DO-T02` | State machine de Mercado Pago | Arquitectura | `09` | `PROPUESTA PENDIENTE DE APROBACIÓN` | Antes de Fase 8 | Sí: `ADR-0007` | `PAY-OPEN-006` cuando afecte estado comercial |
-| `DO-T03` | Invalidación efectiva de sesiones | Seguridad | `03`, `04` | `PARCIALMENTE ABIERTO` | Antes de Fase 2; coordinación offline antes de Fase 5 | Sí: `ADR-0003`, `ADR-0004` | `DO-075` ya resuelta |
+| `DO-T03` | Invalidación efectiva de sesiones | Seguridad | `03`, `04` | `RESUELTA/APROBADA` | Resuelta antes de Fase 2; coordinación offline antes de Fase 5 | Sí: `ADR-0003`, `ADR-0004` | `DO-075` ya resuelta |
 | `DO-T04` | Protección local | Offline/seguridad | `04` | `PROPUESTA PENDIENTE DE APROBACIÓN` | Antes de Fase 5 | Sí: `ADR-0004` | `DO-T03`, `OFF-OPEN-001/002`, `DO-T07` sólo si se decide cifrado adicional |
 | `DO-T05` | Escala y rendimiento objetivo | Arquitectura operativa | `01` | `DIFERIDO` | Antes de pruebas de performance/Fase 11/piloto | Sí: `ADR-0016` | Volúmenes y objetivos de negocio todavía no definidos |
 | `DO-T06` | Backup, RPO/RTO y restauración | Operaciones | `01` | `DIFERIDO` | Antes de piloto/producción | Sí: `ADR-0017` | Objetivos operativos e infraestructura |
@@ -586,8 +586,8 @@ Los estados de esta tabla reflejan el estado documental actual de cada ADR. No m
 |---|---|---|---|---|---|---|
 | `ADR-0001` | Arquitectura modular del SaaS en Next.js | Mantener un único sistema modular y evitar distribución prematura | `00`, `01` | Ninguna | `ACCEPTED` | Cierre Fase 0 / Fase 1 |
 | `ADR-0002` | Multi-tenancy, tenant ownership y aislamiento | Establecer frontera de tenant, RLS, ownership, integridad cross-tenant y `service-role` | `ADR-CAND-SEC-01/05/07`, Evidence Storage boundary | Ninguna | `ACCEPTED` | Fase 2 |
-| `ADR-0003` | Autorización, client scope y soporte excepcional | Resolver actor, membership, `UserClientAccess`, grants, revocación y sesión | `ADR-CAND-01/02`, `ADR-CAND-SEC-02/03/06` | `DO-T03` | `BLOCKED BY OPEN DECISIONS` | Fase 2 |
-| `ADR-0004` | Offline local-first y aislamiento de réplica | Delimitar PWA, Service Worker, IndexedDB, réplica por identidad, logout y autorización offline | candidatos Offline + `ADR-CAND-06/09` | `DO-T03`, `DO-T04`, `OFF-OPEN-001`, `OFF-OPEN-002`, `FORM-OPEN-004` | `BLOCKED BY OPEN DECISIONS` | Fase 5 |
+| `ADR-0003` | Autorización, client scope y soporte excepcional | Resolver actor, membership, `UserClientAccess`, grants, revocación y sesión | `ADR-CAND-01/02`, `ADR-CAND-SEC-02/03/06` | Ninguna | `READY TO DRAFT` | Fase 2 |
+| `ADR-0004` | Offline local-first y aislamiento de réplica | Delimitar PWA, Service Worker, IndexedDB, réplica por identidad, logout y autorización offline | candidatos Offline + `ADR-CAND-06/09` | `DO-T04`, `OFF-OPEN-001`, `OFF-OPEN-002`, `FORM-OPEN-004` | `BLOCKED BY OPEN DECISIONS` | Fase 5 |
 | `ADR-0005` | Protocolo de sincronización, idempotencia y conflictos | Fijar identidad de operaciones, retries, concurrencia optimista, conflicto explícito y convergencia | `ADR-CAND-07/08`, candidatos Offline sync, `EVID-ADR-CAND-001..003` | Ninguna decisión funcional abierta necesaria para el núcleo | `ACCEPTED` | Fase 5 |
 | `ADR-0006` | Ledger de créditos IA y settlement de `AIUsageOperation` | Preservar ledger inmutable, reserva/consumo/liberación/compensación, idempotencia y concurrencia | `ADR-CAND-12`, `AI-ADR-CAND-001..006/010..012` | `DO-T01`, `DM-OPEN-007`, `AI-OPEN-001..004`; `AI-OPEN-007` si se incluyen ajustes | `BLOCKED BY OPEN DECISIONS` | Fase 7 |
 | `ADR-0007` | `PaymentEvent`, adapter de Mercado Pago e idempotencia comercial | Aislar proveedor, verificar eventos, deduplicar, tolerar orden arbitrario y reconciliar | `ADR-CAND-13` + candidatos Payments 3..7 | `DO-T02`; `PAY-OPEN-006` para effects de disputes | `BLOCKED BY OPEN DECISIONS` | Fase 8 |
@@ -658,15 +658,17 @@ Debe contemplar:
 
 No debe inferir capacidades de escritura de soporte.
 
-## Bloqueo
+## Estado
 
-`DO-T03` permanece `PARCIALMENTE ABIERTO`.
+`DO-T03 = RESUELTO/APROBADO`.
 
-Por tanto:
+DO-T03 ya no constituye un blocker de `ADR-0003`.
 
-**Estado del futuro ADR: `BLOCKED BY OPEN DECISIONS`.**
+**Estado del futuro ADR: `READY TO DRAFT`.**
 
-Debe aprobarse antes de implementar identidad/autorización de Fase 2.
+`READY TO DRAFT` autoriza únicamente preparar `ADR-0003` como documento separado. No equivale a `PROPOSED`, no equivale a `ACCEPTED` y no autoriza implementación.
+
+`ADR-0003` todavía debe redactarse, revisarse y quedar `ACCEPTED` antes de implementar identidad/autorización de Fase 2.
 
 ---
 
@@ -698,7 +700,6 @@ No debe diseñar schema IndexedDB.
 ## Dependencias
 
 - `DO-075`: resuelta y consumida como restricción;
-- `DO-T03`: abierta parcialmente;
 - `DO-T04`: propuesta pendiente;
 - `OFF-OPEN-001`;
 - `OFF-OPEN-002`;
@@ -1347,21 +1348,12 @@ La aceptación de estos ADR no resuelve decisiones `DO-*` o `*-OPEN-*` ni autori
 
 # 29. ADRs bloqueados
 
-## `ADR-0003`
-
-**Estado:** `BLOCKED BY OPEN DECISIONS`
-
-Bloqueador:
-
-- `DO-T03`.
-
 ## `ADR-0004`
 
 **Estado:** `BLOCKED BY OPEN DECISIONS`
 
 Bloqueadores:
 
-- `DO-T03`;
 - `DO-T04`;
 - `OFF-OPEN-001`;
 - `OFF-OPEN-002`;
@@ -1845,7 +1837,8 @@ Todos quedan trazados al catálogo consolidado.
 Distribución actual:
 
 - `ACCEPTED`: **6**;
-- `BLOCKED BY OPEN DECISIONS`: **9**;
+- `READY TO DRAFT`: **1**;
+- `BLOCKED BY OPEN DECISIONS`: **8**;
 - `DEFERRED`: **3**.
 
 ## 37.5 Decisiones que bloquean Fase 1
@@ -1870,7 +1863,6 @@ Pueden permanecer abiertas respetando sus deadlines:
 - `DO-078`;
 - `DO-T01`;
 - `DO-T02`;
-- `DO-T03`;
 - `DO-T04`.
 
 Pueden permanecer diferidas:
