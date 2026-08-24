@@ -586,7 +586,7 @@ Los estados de esta tabla reflejan el estado documental actual de cada ADR. No m
 |---|---|---|---|---|---|---|
 | `ADR-0001` | Arquitectura modular del SaaS en Next.js | Mantener un único sistema modular y evitar distribución prematura | `00`, `01` | Ninguna | `ACCEPTED` | Cierre Fase 0 / Fase 1 |
 | `ADR-0002` | Multi-tenancy, tenant ownership y aislamiento | Establecer frontera de tenant, RLS, ownership, integridad cross-tenant y `service-role` | `ADR-CAND-SEC-01/05/07`, Evidence Storage boundary | Ninguna | `ACCEPTED` | Fase 2 |
-| `ADR-0003` | Autorización, client scope y soporte excepcional | Resolver actor, membership, `UserClientAccess`, grants, revocación y sesión | `ADR-CAND-01/02`, `ADR-CAND-SEC-02/03/06` | Ninguna | `READY TO DRAFT` | Fase 2 |
+| `ADR-0003` | Autorización, client scope y soporte excepcional | Resolver actor, membership, `UserClientAccess`, grants, revocación y sesión | `ADR-CAND-01/02`, `ADR-CAND-SEC-02/03/06` | Ninguna | `ACCEPTED` | Fase 2 |
 | `ADR-0004` | Offline local-first y aislamiento de réplica | Delimitar PWA, Service Worker, IndexedDB, réplica por identidad, logout y autorización offline | candidatos Offline + `ADR-CAND-06/09` | `DO-T04`, `OFF-OPEN-001`, `OFF-OPEN-002`, `FORM-OPEN-004` | `BLOCKED BY OPEN DECISIONS` | Fase 5 |
 | `ADR-0005` | Protocolo de sincronización, idempotencia y conflictos | Fijar identidad de operaciones, retries, concurrencia optimista, conflicto explícito y convergencia | `ADR-CAND-07/08`, candidatos Offline sync, `EVID-ADR-CAND-001..003` | Ninguna decisión funcional abierta necesaria para el núcleo | `ACCEPTED` | Fase 5 |
 | `ADR-0006` | Ledger de créditos IA y settlement de `AIUsageOperation` | Preservar ledger inmutable, reserva/consumo/liberación/compensación, idempotencia y concurrencia | `ADR-CAND-12`, `AI-ADR-CAND-001..006/010..012` | `DO-T01`, `DM-OPEN-007`, `AI-OPEN-001..004`; `AI-OPEN-007` si se incluyen ajustes | `BLOCKED BY OPEN DECISIONS` | Fase 7 |
@@ -664,11 +664,9 @@ No debe inferir capacidades de escritura de soporte.
 
 DO-T03 ya no constituye un blocker de `ADR-0003`.
 
-**Estado del futuro ADR: `READY TO DRAFT`.**
+**Estado del ADR: `ACCEPTED`.**
 
-`READY TO DRAFT` autoriza únicamente preparar `ADR-0003` como documento separado. No equivale a `PROPOSED`, no equivale a `ACCEPTED` y no autoriza implementación.
-
-`ADR-0003` todavía debe redactarse, revisarse y quedar `ACCEPTED` antes de implementar identidad/autorización de Fase 2.
+`ADR-0003` fue redactado, revisado y aprobado formalmente mediante decisión humana separada. Su aceptación arquitectónica no autoriza implementación y no equivale a que el Gate de entrada a Fase 2 haya sido evaluado o satisfecho.
 
 ---
 
@@ -1836,8 +1834,8 @@ Todos quedan trazados al catálogo consolidado.
 
 Distribución actual:
 
-- `ACCEPTED`: **6**;
-- `READY TO DRAFT`: **1**;
+- `ACCEPTED`: **7**;
+- `READY TO DRAFT`: **0**;
 - `BLOCKED BY OPEN DECISIONS`: **8**;
 - `DEFERRED`: **3**.
 
