@@ -607,7 +607,7 @@ Se preservan:
 - `DO-T06 = DIFERIDO` — antes de piloto/producción;
 - `DO-T07 = DIFERIDO` — antes del piloto conforme a validación legal/contractual.
 
-`DO-T03 = RESUELTO/APROBADO` y ya no constituye una decisión abierta ni un blocker de `ADR-0003`. `ADR-0003 = ACCEPTED`, por lo que el requisito arquitectónico de aceptación de ADR-0003 está cumplido. La implementación de identidad/autorización de Fase 2 no queda autorizada por esta aceptación: el Gate de entrada a Fase 2 permanece pendiente de evaluación separada.
+`DO-T03 = RESUELTO/APROBADO` y ya no constituye una decisión abierta ni un blocker de `ADR-0003`. `ADR-0003 = ACCEPTED`, por lo que el requisito arquitectónico de aceptación de ADR-0003 está cumplido. El Gate de entrada a Fase 2 fue evaluado formalmente y satisfecho mediante decisión humana separada: `Gate de entrada a Fase 2 evaluado = SÍ` y `Gate de entrada a Fase 2 satisfecho = SÍ`. Este resultado no inicia Fase 2 ni autoriza por sí mismo una implementación concreta; `Fase 2 = NO INICIADA`.
 
 ---
 
@@ -677,7 +677,7 @@ La clasificación siguiente corresponde al **Gate de Fase 1 formalmente aprobado
 | Configurar variables de entorno y placeholders seguros | **PERMITIDO EN FASE 1** | Necesario para setup; secretos no deben exponerse ni versionarse. |
 | Configurar el baseline Supabase de Development conforme a `CORR-002` | **PERMITIDO EN FASE 1** | El nombre normativo conserva `Supabase local`, pero `CORR-002` reemplaza el método operativo por CLI/configuración reproducible y un proyecto Cloud exclusivo de Development. |
 | Integrar o verificar conectividad de la app con Supabase durante este Gate | **NO PERMITIDO TODAVÍA** | El baseline aprobado no incluye cliente Supabase, variables de conexión ni integración de la aplicación. |
-| Inicializar/configurar Supabase Auth funcional para usuarios del producto | **NO PERMITIDO TODAVÍA** | Autenticación, roles y RLS pertenecen a Fase 2. `ADR-0003 = ACCEPTED`, pero el Gate de entrada a Fase 2 todavía no ha sido evaluado ni declarado satisfecho. |
+| Inicializar/configurar Supabase Auth funcional para usuarios del producto | **NO PERMITIDO TODAVÍA** | Autenticación, roles y RLS pertenecen a Fase 2. El Gate de entrada a Fase 2 ya fue evaluado y satisfecho, pero `Fase 2 = NO INICIADA`; falta el acto humano separado que autorice formalmente su inicio y, posteriormente, la tarea de implementación correspondiente. |
 | Crear migrations de producto | **NO PERMITIDO TODAVÍA** | Fase 1 no contiene diseño físico de dominio; Fase 2+ implementan los bounded contexts que requieren schema y RLS. |
 | Crear una migration vacía sólo para “probar” el mecanismo | **NO PERMITIDO TODAVÍA** | No aporta una capacidad necesaria al setup y abriría prematuramente el flujo de schema/migrations de producto. La existencia de una carpeta generada por tooling no equivale a crear una migration de producto. |
 | Diseñar schema PostgreSQL del SaaS | **NO PERMITIDO TODAVÍA** | `02`/`03` son conceptuales; `ADR-0002` no define tablas; Fase 2 inicia la primera capacidad que necesita diseño físico tenant/auth/RLS. |
@@ -750,21 +750,27 @@ El registro maestro exige antes de Fase 2:
 
 `ADR-0003 = ACCEPTED`.
 
-El requisito arquitectónico de aceptación de `ADR-0003` está cumplido. Esta aceptación no autoriza automáticamente comenzar Fase 2 ni sustituye la evaluación formal y separada de su Gate de entrada.
+El requisito arquitectónico de aceptación de `ADR-0003` está cumplido.
+
+La evaluación formal del Gate de entrada a Fase 2 fue realizada y revisada humanamente con resultado:
+
+- `Gate de entrada a Fase 2 evaluado = SÍ`;
+- `Gate de entrada a Fase 2 satisfecho = SÍ`.
 
 Por tanto:
 
-> **Completar Fase 1, resolver DO-T03 o contar con `ADR-0003 = ACCEPTED` no autoriza automáticamente comenzar Fase 2.**
+> **Contar con un Gate de entrada a Fase 2 satisfecho no equivale a iniciar Fase 2 ni autoriza por sí solo una implementación concreta.**
 
-La transición requiere todavía evaluar separadamente el Gate de entrada a Fase 2 y, sólo si ese Gate resulta satisfecho mediante decisión explícita, autorizar la implementación de Fase 2.
+La transición a `Fase 2 = INICIADA` requiere todavía un acto humano separado que autorice formalmente su inicio. Sólo después de ese acto podrá definirse la primera `TASK-###` de implementación de Fase 2.
 
 Este documento:
 
 - reconoce `DO-T03 = RESUELTO/APROBADO`;
 - reconoce `ADR-0003 = ACCEPTED`;
-- no evalúa el Gate de entrada a Fase 2;
-- no declara satisfecho el Gate de entrada a Fase 2;
-- no inicia Fase 2.
+- registra `Gate de entrada a Fase 2 evaluado = SÍ`;
+- registra `Gate de entrada a Fase 2 satisfecho = SÍ`;
+- mantiene `Fase 2 = NO INICIADA`;
+- no autoriza ninguna implementación de Fase 2.
 
 ## 10.3 Separación entre cierre de Fase 1 y entrada a Fase 2
 
@@ -1011,10 +1017,12 @@ Antes de comenzar la implementación de Fase 2 debe verificarse además:
 - `ADR-0002 = ACCEPTED` — ya cumplido;
 - `DO-T03 = RESUELTO/APROBADO` — ya cumplido;
 - `ADR-0003 = ACCEPTED` — ya cumplido.
+- `Gate de entrada a Fase 2 evaluado = SÍ` — ya cumplido;
+- `Gate de entrada a Fase 2 satisfecho = SÍ` — ya cumplido.
 
-Por tanto, la salida de Fase 1 y la entrada a Fase 2 son controles relacionados pero no idénticos.
+Por tanto, la salida de Fase 1, la satisfacción del Gate de entrada a Fase 2 y el inicio formal de Fase 2 son controles relacionados pero no idénticos.
 
-**El requisito arquitectónico `ADR-0003 = ACCEPTED` está cumplido, pero el Gate de entrada a Fase 2 permanece pendiente de evaluación separada. Este documento no declara ese Gate satisfecho ni autoriza el inicio de Fase 2.**
+**El Gate de entrada a Fase 2 está evaluado y satisfecho, pero `Fase 2 = NO INICIADA`. El inicio de Fase 2 y cualquier autorización concreta de implementación requieren un acto humano separado.**
 
 ---
 
@@ -1211,7 +1219,7 @@ La existencia de otros ADR aceptados no amplía Fase 1: las capacidades de Fase 
 
 Con esta aprobación, Fase 1 queda autorizada documentalmente. La implementación limitada de Fase 1 podrá comenzar una vez que este documento aprobado sea incorporado formalmente al repositorio y se complete el preflight operativo correspondiente; a partir de entonces Codex podrá recibir una única tarea `TASK-###` PR-sized a la vez. Esa autorización comprende bootstrap/configuración, skeleton modular, CI, tooling base y el baseline Supabase de Development conforme a `CORR-002`; no comprende integración de la aplicación, schema, migrations, RLS, autenticación funcional ni ninguna capacidad de Fase 2+.
 
-`DO-T03 = RESUELTO/APROBADO` y ya no constituye un blocker de `ADR-0003`. `ADR-0003 = ACCEPTED`, por lo que el requisito arquitectónico de aceptación previa a Fase 2 está cumplido. Esta aceptación no autoriza por sí sola la implementación: el Gate de entrada a Fase 2 permanece pendiente de evaluación separada. Este documento no evalúa ni declara satisfecho ese Gate y no inicia Fase 2.
+`DO-T03 = RESUELTO/APROBADO` y ya no constituye un blocker de `ADR-0003`. `ADR-0003 = ACCEPTED`, por lo que el requisito arquitectónico de aceptación previa a Fase 2 está cumplido. El Gate de entrada a Fase 2 fue evaluado formalmente y satisfecho mediante decisión humana separada: `Gate de entrada a Fase 2 evaluado = SÍ` y `Gate de entrada a Fase 2 satisfecho = SÍ`. Este resultado no inicia Fase 2 ni autoriza por sí solo una implementación concreta. `Fase 2 = NO INICIADA` y su inicio requiere un acto humano separado.
 
 ---
 
