@@ -607,7 +607,11 @@ Se preservan:
 - `DO-T06 = DIFERIDO` — antes de piloto/producción;
 - `DO-T07 = DIFERIDO` — antes del piloto conforme a validación legal/contractual.
 
-`DO-T03 = RESUELTO/APROBADO` y ya no constituye una decisión abierta ni un blocker de `ADR-0003`. `ADR-0003 = ACCEPTED`, por lo que el requisito arquitectónico de aceptación de ADR-0003 está cumplido. El Gate de entrada a Fase 2 fue evaluado formalmente y satisfecho mediante decisión humana separada: `Gate de entrada a Fase 2 evaluado = SÍ` y `Gate de entrada a Fase 2 satisfecho = SÍ`. El inicio formal de Fase 2 fue aprobado y revisado mediante decisión humana separada: `PHASE 2 FORMAL START = APPROVED` y `PHASE 2 FORMAL START HUMAN REVIEW = APPROVED`; por tanto, `Fase 2 = INICIADA`. `TASK-008` fue canonicalizada, implementada, incorporada a Git y aprobada en revisión humana final; por tanto, `TASK-008 = COMPLETADA`. Su resultado técnico se limita a `Supabase application boundary = IMPLEMENTADA`, `Browser factory = IMPLEMENTADA` y `Server factory no privilegiada = IMPLEMENTADA`; `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Schema = NO`, `Migrations = NO`, `SQL = NO`, `RLS ejecutable = NO`, `Storage = NO`, `Realtime = NO`, `UI = NO` y `Offline = NO`. El cierre de TASK-008 no autoriza automáticamente una siguiente TASK.
+`DO-T03 = RESUELTO/APROBADO` y ya no constituye una decisión abierta ni un blocker de `ADR-0003`. `ADR-0003 = ACCEPTED`, por lo que el requisito arquitectónico de aceptación de ADR-0003 está cumplido. El Gate de entrada a Fase 2 fue evaluado formalmente y satisfecho mediante decisión humana separada: `Gate de entrada a Fase 2 evaluado = SÍ` y `Gate de entrada a Fase 2 satisfecho = SÍ`. El inicio formal de Fase 2 fue aprobado y revisado mediante decisión humana separada: `PHASE 2 FORMAL START = APPROVED` y `PHASE 2 FORMAL START HUMAN REVIEW = APPROVED`; por tanto, `Fase 2 = INICIADA`. `TASK-008` fue canonicalizada, implementada, incorporada a Git y aprobada en revisión humana final; por tanto, `TASK-008 = COMPLETADA`. Su resultado técnico se limita a `Supabase application boundary = IMPLEMENTADA`, `Browser factory = IMPLEMENTADA` y `Server factory no privilegiada = IMPLEMENTADA`.
+
+`TASK-009` fue canonicalizada, implementada, aplicada y probada en Supabase Cloud Development, incorporada a Git y aprobada mediante cierre humano final; por tanto, `TASK-009 = COMPLETADA`. Materializó exclusivamente la foundation física mínima de identity/tenant: `MaintenanceCompany físico = SÍ`, `PlatformUser físico = SÍ`, `Auth subject → PlatformUser físico = SÍ` y `CompanyMembership físico = SÍ`. El estado técnico activo se limita a `Schema mínimo TASK-009 = IMPLEMENTADO`, `Migration TASK-009 = IMPLEMENTADA`, `SQL funcional del slice TASK-009 = SÍ` y `RLS TASK-009 = IMPLEMENTADA Y PROBADA EN DEVELOPMENT`.
+
+Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `VerificationChallenge = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `AuditEvent = NO`, `Client = NO`, `Storage = NO`, `Realtime = NO`, `UI = NO` y `Offline = NO`. `TASK-009 completada` no equivale a `TASK-010 autorizada automáticamente`; `TASK-010 generada = NO` y `TASK-010 determinada = NO`.
 
 ---
 
@@ -677,7 +681,7 @@ La clasificación siguiente corresponde al **Gate de Fase 1 formalmente aprobado
 | Configurar variables de entorno y placeholders seguros | **PERMITIDO EN FASE 1** | Necesario para setup; secretos no deben exponerse ni versionarse. |
 | Configurar el baseline Supabase de Development conforme a `CORR-002` | **PERMITIDO EN FASE 1** | El nombre normativo conserva `Supabase local`, pero `CORR-002` reemplaza el método operativo por CLI/configuración reproducible y un proyecto Cloud exclusivo de Development. |
 | Integrar o verificar conectividad de la app con Supabase durante este Gate | **NO PERMITIDO TODAVÍA** | El baseline aprobado no incluye cliente Supabase, variables de conexión ni integración de la aplicación. |
-| Inicializar/configurar Supabase Auth funcional para usuarios del producto | **NO PERMITIDO TODAVÍA** | Autenticación, roles y RLS pertenecen a Fase 2. `TASK-008 = COMPLETADA`, pero implementó exclusivamente la frontera Supabase de aplicación; `Auth funcional = NO`, `Auth SSR lifecycle completo = NO` y `Authorization ready = NO`. Cualquier implementación de Auth requiere otra tarea formalmente especificada, revisada, aprobada, canonicalizada cuando corresponda y autorizada de forma separada para ejecución. |
+| Inicializar/configurar Supabase Auth funcional para usuarios del producto | **NO PERMITIDO TODAVÍA** | Autenticación funcional, roles y autorización pertenecen a Fase 2. `TASK-009 = COMPLETADA`, pero implementó exclusivamente la foundation física mínima de identity/tenant y RLS del slice; `Auth funcional = NO`, `Auth SSR lifecycle completo = NO` y `Authorization ready = NO`. Cualquier implementación de Auth requiere otra tarea formalmente especificada, revisada, aprobada, canonicalizada cuando corresponda y autorizada de forma separada para ejecución. |
 | Crear migrations de producto | **NO PERMITIDO TODAVÍA** | Fase 1 no contiene diseño físico de dominio; Fase 2+ implementan los bounded contexts que requieren schema y RLS. |
 | Crear una migration vacía sólo para “probar” el mecanismo | **NO PERMITIDO TODAVÍA** | No aporta una capacidad necesaria al setup y abriría prematuramente el flujo de schema/migrations de producto. La existencia de una carpeta generada por tooling no equivale a crear una migration de producto. |
 | Diseñar schema PostgreSQL del SaaS | **NO PERMITIDO TODAVÍA** | `02`/`03` son conceptuales; `ADR-0002` no define tablas; Fase 2 inicia la primera capacidad que necesita diseño físico tenant/auth/RLS. |
@@ -765,9 +769,11 @@ El acto humano separado de inicio de Fase 2 fue realizado y revisado con resulta
 
 Por tanto:
 
-> **`TASK-008 = COMPLETADA` no equivale a autorizar automáticamente una siguiente TASK.**
+> **`TASK-009 = COMPLETADA` no equivale a `TASK-010 autorizada automáticamente` ni a `TASK-010 determinada`.**
 
-TASK-008 fue canonicalizada, implementada, incorporada a Git y aprobada en revisión humana final. Su resultado fue exclusivamente la frontera Supabase de aplicación con factories browser/server no privilegiadas; no implementó Auth funcional, lifecycle Auth SSR completo, autorización, schema, migrations, SQL, RLS, Storage, Realtime, UI ni Offline. La determinación y especificación de la siguiente `TASK-###` de Fase 2 corresponde a un paso posterior separado. Toda implementación concreta continúa requiriendo especificación, revisión humana, aprobación, canonicalización cuando corresponda, autorización concreta, ejecución controlada y revisión posterior.
+TASK-008 fue canonicalizada, implementada, incorporada a Git y aprobada en revisión humana final. Su resultado fue exclusivamente la frontera Supabase de aplicación con factories browser/server no privilegiadas.
+
+TASK-009 fue especificada, aprobada, canonicalizada, implementada y aplicada en Supabase Cloud Development; superó el Gate remoto, las pruebas RLS/integridad y Auth delete preservation, fue incorporada a Git y obtuvo cierre humano final. Su resultado fue exclusivamente la foundation física mínima de identity/tenant —`MaintenanceCompany`, `PlatformUser`, `Auth subject → PlatformUser` y `CompanyMembership`—, una migration funcional y RLS mínima del slice probada en Development. No implementó Auth funcional, lifecycle Auth SSR completo, autorización funcional completa, `VerificationChallenge`, `UserClientAccess`, `SupportAccessGrant`, `AuditEvent`, `Client`, Storage, Realtime, UI ni Offline. La determinación y especificación del siguiente incremento PR-sized de Fase 2 corresponde a un paso posterior separado. Toda implementación concreta continúa requiriendo especificación, revisión humana, aprobación, canonicalización cuando corresponda, autorización concreta, ejecución controlada y revisión posterior.
 
 Este documento:
 
@@ -781,7 +787,20 @@ Este documento:
 - registra `TASK-008 incorporada a Git = SÍ`;
 - registra `TASK-008 revisión humana final = APROBADA`;
 - registra `TASK-008 = COMPLETADA`;
-- mantiene `siguiente TASK autorizada automáticamente = NO`.
+- registra `TASK-009 especificada = SÍ`;
+- registra `TASK-009 aprobada = SÍ`;
+- registra `TASK-009 canonicalizada = SÍ`;
+- registra `TASK-009 implementada = SÍ`;
+- registra `TASK-009 aplicada en Development = SÍ`;
+- registra `TASK-009 Gate remoto = PASS`;
+- registra `TASK-009 pruebas RLS/integridad = PASS`;
+- registra `TASK-009 Auth delete preservation = PASS`;
+- registra `TASK-009 incorporada a Git = SÍ`;
+- registra `TASK-009 cierre humano final = APROBADO`;
+- registra `TASK-009 = COMPLETADA`;
+- mantiene `TASK-010 autorizada automáticamente = NO`;
+- mantiene `TASK-010 generada = NO`;
+- mantiene `TASK-010 determinada = NO`.
 
 ## 10.3 Separación entre cierre de Fase 1 y entrada a Fase 2
 
@@ -1033,7 +1052,7 @@ Antes de comenzar la implementación de Fase 2 debe verificarse además:
 
 Por tanto, la salida de Fase 1, la satisfacción del Gate de entrada a Fase 2 y el inicio formal de Fase 2 son controles relacionados pero no idénticos.
 
-**El Gate de entrada a Fase 2 está evaluado y satisfecho y el inicio formal de la fase fue aprobado y revisado mediante decisión humana separada: `Fase 2 = INICIADA`. `TASK-008 = COMPLETADA` e implementó exclusivamente la frontera Supabase de aplicación; no implementó Auth funcional, autorización, schema, migrations, SQL, RLS, Storage, Realtime, UI ni Offline. Su cierre no autoriza automáticamente una siguiente TASK.**
+**El Gate de entrada a Fase 2 está evaluado y satisfecho y el inicio formal de la fase fue aprobado y revisado mediante decisión humana separada: `Fase 2 = INICIADA`. `TASK-008 = COMPLETADA` e implementó exclusivamente `Supabase application boundary = IMPLEMENTADA`. `TASK-009 = COMPLETADA` y materializó exclusivamente `MaintenanceCompany físico = SÍ`, `PlatformUser físico = SÍ`, `Auth subject → PlatformUser físico = SÍ`, `CompanyMembership físico = SÍ`, `Schema mínimo TASK-009 = IMPLEMENTADO`, `Migration TASK-009 = IMPLEMENTADA`, `SQL funcional del slice TASK-009 = SÍ` y `RLS TASK-009 = IMPLEMENTADA Y PROBADA EN DEVELOPMENT`. Continúan `Auth funcional = NO`, `Authorization ready = NO`, `VerificationChallenge = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `AuditEvent = NO`, `Client = NO`, `Storage = NO`, `Realtime = NO` y `Offline = NO`. `TASK-009 completada` no equivale a `TASK-010 autorizada automáticamente`; `TASK-010 generada = NO` y `TASK-010 determinada = NO`.**
 
 ---
 
@@ -1230,7 +1249,11 @@ La existencia de otros ADR aceptados no amplía Fase 1: las capacidades de Fase 
 
 Con esta aprobación, Fase 1 queda autorizada documentalmente. La implementación limitada de Fase 1 podrá comenzar una vez que este documento aprobado sea incorporado formalmente al repositorio y se complete el preflight operativo correspondiente; a partir de entonces Codex podrá recibir una única tarea `TASK-###` PR-sized a la vez. Esa autorización comprende bootstrap/configuración, skeleton modular, CI, tooling base y el baseline Supabase de Development conforme a `CORR-002`; no comprende integración de la aplicación, schema, migrations, RLS, autenticación funcional ni ninguna capacidad de Fase 2+.
 
-`DO-T03 = RESUELTO/APROBADO` y ya no constituye un blocker de `ADR-0003`. `ADR-0003 = ACCEPTED`, por lo que el requisito arquitectónico de aceptación previa a Fase 2 está cumplido. El Gate de entrada a Fase 2 fue evaluado formalmente y satisfecho mediante decisión humana separada: `Gate de entrada a Fase 2 evaluado = SÍ` y `Gate de entrada a Fase 2 satisfecho = SÍ`. El inicio formal de Fase 2 fue aprobado y revisado mediante decisión humana separada: `PHASE 2 FORMAL START = APPROVED`, `PHASE 2 FORMAL START HUMAN REVIEW = APPROVED` y `Fase 2 = INICIADA`. `TASK-008` fue canonicalizada, implementada, incorporada a Git y aprobada en revisión humana final; por tanto, `TASK-008 = COMPLETADA`. Su resultado técnico fue exclusivamente la frontera Supabase de aplicación con factories browser/server no privilegiadas. `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Schema = NO`, `Migrations = NO`, `SQL = NO`, `RLS ejecutable = NO`, `Storage = NO`, `Realtime = NO`, `UI = NO` y `Offline = NO`. El cierre de TASK-008 no autoriza automáticamente una siguiente TASK.
+`DO-T03 = RESUELTO/APROBADO` y ya no constituye un blocker de `ADR-0003`. `ADR-0003 = ACCEPTED`, por lo que el requisito arquitectónico de aceptación previa a Fase 2 está cumplido. El Gate de entrada a Fase 2 fue evaluado formalmente y satisfecho mediante decisión humana separada: `Gate de entrada a Fase 2 evaluado = SÍ` y `Gate de entrada a Fase 2 satisfecho = SÍ`. El inicio formal de Fase 2 fue aprobado y revisado mediante decisión humana separada: `PHASE 2 FORMAL START = APPROVED`, `PHASE 2 FORMAL START HUMAN REVIEW = APPROVED` y `Fase 2 = INICIADA`. `TASK-008` fue canonicalizada, implementada, incorporada a Git y aprobada en revisión humana final; por tanto, `TASK-008 = COMPLETADA`. Su resultado técnico fue exclusivamente `Supabase application boundary = IMPLEMENTADA` con factories browser/server no privilegiadas.
+
+`TASK-009` fue canonicalizada, implementada, aplicada y probada en Supabase Cloud Development, incorporada a Git y aprobada mediante cierre humano final; por tanto, `TASK-009 = COMPLETADA`. Su resultado técnico fue exclusivamente `MaintenanceCompany físico = SÍ`, `PlatformUser físico = SÍ`, `Auth subject → PlatformUser físico = SÍ`, `CompanyMembership físico = SÍ`, `Schema mínimo TASK-009 = IMPLEMENTADO`, `Migration TASK-009 = IMPLEMENTADA`, `SQL funcional del slice TASK-009 = SÍ` y `RLS TASK-009 = IMPLEMENTADA Y PROBADA EN DEVELOPMENT`.
+
+Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `VerificationChallenge = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `AuditEvent = NO`, `Client = NO`, `Storage = NO`, `Realtime = NO`, `UI = NO` y `Offline = NO`. `TASK-009 completada` no equivale a `TASK-010 autorizada automáticamente`; `TASK-010 generada = NO` y `TASK-010 determinada = NO`.
 
 ---
 
@@ -1242,4 +1265,7 @@ Con esta aprobación, Fase 1 queda autorizada documentalmente. La implementació
 **Fase 1 completada: sí**
 **Fase 2 iniciada: sí**
 **TASK-008 completada: sí**
+**TASK-009 completada: sí**
+**TASK-010 generada: no**
+**TASK-010 determinada: no**
 **Siguiente TASK autorizada automáticamente: no**
