@@ -45,10 +45,13 @@ describe("Supabase client factories", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("constructs the non-privileged server client with read-only cookie plumbing", async () => {
+  it("constructs the non-privileged server client with request-scoped cookie plumbing", async () => {
     const client = { boundary: "server" };
     const cookieValues = [{ name: "test-cookie", value: "test-value" }];
-    const cookieStore = { getAll: vi.fn(() => cookieValues) };
+    const cookieStore = {
+      getAll: vi.fn(() => cookieValues),
+      set: vi.fn(),
+    };
     const fetchMock = vi.spyOn(globalThis, "fetch");
     cookiesMock.mockResolvedValue(cookieStore);
     createServerClientMock.mockReturnValue(client);
@@ -64,7 +67,52 @@ describe("Supabase client factories", () => {
 
     const options = createServerClientMock.mock.calls[0]?.[2];
     expect(options.cookies.getAll()).toEqual(cookieValues);
-    expect(options.cookies).not.toHaveProperty("setAll");
+    options.cookies.setAll([
+      {
+        name: "refreshed-cookie",
+        options: { httpOnly: true, sameSite: "lax" },
+        value: "refreshed-value",
+      },
+    ]);
+    expect(cookieStore.set).toHaveBeenCalledWith(
+      "refreshed-cookie",
+      "refreshed-value",
+      { httpOnly: true, sameSite: "lax" },
+    );
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("tolerates only the known Server Component cookie write limitation", async () => {
+    const expectedError = new Error(
+      "Cookies can only be modified in a Server Action or Route Handler.",
+    );
+    const cookieStore = {
+      getAll: vi.fn(() => []),
+      set: vi.fn(() => {
+        throw expectedError;
+      }),
+    };
+    cookiesMock.mockResolvedValue(cookieStore);
+    createServerClientMock.mockReturnValue({ boundary: "server" });
+
+    await createSupabaseServerClient();
+    const options = createServerClientMock.mock.calls[0]?.[2];
+
+    expect(() =>
+      options.cookies.setAll([
+        { name: "cookie", options: {}, value: "value" },
+      ]),
+    ).not.toThrow();
+
+    const unexpectedError = new Error("Unexpected cookie storage failure");
+    cookieStore.set.mockImplementation(() => {
+      throw unexpectedError;
+    });
+
+    expect(() =>
+      options.cookies.setAll([
+        { name: "cookie", options: {}, value: "value" },
+      ]),
+    ).toThrow(unexpectedError);
   });
 });
