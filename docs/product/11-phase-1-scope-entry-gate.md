@@ -615,7 +615,9 @@ Se preservan:
 
 `TASK-011` fue canonicalizada, implementada, incorporada a Git y aprobada mediante cierre humano final; por tanto, `TASK-011 = COMPLETADA`. Su resultado técnico fue exclusivamente `Auth SSR lifecycle foundation = IMPLEMENTADA`, `SSR cookie propagation boundary = IMPLEMENTADA` y `Auth Proxy technical boundary = IMPLEMENTADA`.
 
-Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `VerificationChallenge = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `Application authorization completa = NO`, `Client = NO`, `Storage = NO`, `Realtime = NO`, `UI = NO`, `Offline = NO` y `auditoría funcional completa = NO`. `AuditEvent foundation física = SÍ` no equivale a auditoría funcional completa ni a flows productores implementados; `Productores funcionales de AuditEvent = NO`. `TASK-011 completada` no equivale a `TASK-012 autorizada automáticamente` ni a `TASK-012 determinada`; `TASK-012 generada = NO`, `TASK-012 determinada = NO` y `Siguiente TASK autorizada automáticamente = NO`.
+`TASK-012` fue canonicalizada, implementada, incorporada a Git y aprobada mediante cierre humano final; por tanto, `TASK-012 = COMPLETADA`. Su resultado técnico fue exclusivamente `Authoritative online authorization foundation = IMPLEMENTADA`, `Current tenant membership resolver = IMPLEMENTADO` y `Current tenant role resolver = IMPLEMENTADO`.
+
+Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Application authorization completa = NO`, `route authorization = NO`, `resource authorization = NO`, `VerificationChallenge = NO`, `Client = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `Client authorization = NO`, `Support authorization = NO`, `Storage funcional = NO`, `Realtime funcional = NO`, `Offline authorization = NO`, `Offline funcional = NO`, `UI funcional de Auth = NO` y `auditoría funcional completa = NO`. `AuditEvent foundation física = SÍ` no equivale a auditoría funcional completa ni a flows productores implementados; `AuditEvent producer TASK-012 = NO` y `Productores funcionales de AuditEvent = NO`. `TASK-012 completada` no equivale a `TASK-013 autorizada automáticamente` ni a `TASK-013 determinada`; `TASK-013 determinada = NO`, `TASK-013 generada = NO`, `TASK-013 especificada = NO`, `TASK-013 aprobada = NO`, `TASK-013 autorizada = NO` y `Siguiente TASK autorizada automáticamente = NO`.
 
 ---
 
@@ -773,7 +775,7 @@ El acto humano separado de inicio de Fase 2 fue realizado y revisado con resulta
 
 Por tanto:
 
-> **`TASK-011 = COMPLETADA` != `TASK-012 determinada` != `TASK-012 generada` != `TASK-012 autorizada`; `TASK-011 = COMPLETADA` != `Siguiente TASK autorizada automáticamente`.**
+> **`TASK-012 = COMPLETADA` != `TASK-013 determinada` != `TASK-013 generada` != `TASK-013 autorizada`; `TASK-012 = COMPLETADA` != `Siguiente TASK autorizada automáticamente`.**
 
 TASK-008 fue canonicalizada, implementada, incorporada a Git y aprobada en revisión humana final. Su resultado fue exclusivamente la frontera Supabase de aplicación con factories browser/server no privilegiadas.
 
@@ -818,9 +820,14 @@ Este documento:
 - registra `TASK-011 incorporada a Git = SÍ`;
 - registra `TASK-011 cierre humano final = APROBADO`;
 - registra `TASK-011 = COMPLETADA`;
-- mantiene `TASK-012 determinada = NO`;
-- mantiene `TASK-012 generada = NO`;
-- mantiene `TASK-012 autorizada = NO`;
+- registra `TASK-012 incorporada a Git = SÍ`;
+- registra `TASK-012 cierre humano final = APROBADO`;
+- registra `TASK-012 = COMPLETADA`;
+- mantiene `TASK-013 determinada = NO`;
+- mantiene `TASK-013 generada = NO`;
+- mantiene `TASK-013 especificada = NO`;
+- mantiene `TASK-013 aprobada = NO`;
+- mantiene `TASK-013 autorizada = NO`;
 - mantiene `Siguiente TASK autorizada automáticamente = NO`.
 
 ## 10.3 Separación entre cierre de Fase 1 y entrada a Fase 2
@@ -1073,7 +1080,7 @@ Antes de comenzar la implementación de Fase 2 debe verificarse además:
 
 Por tanto, la salida de Fase 1, la satisfacción del Gate de entrada a Fase 2 y el inicio formal de Fase 2 son controles relacionados pero no idénticos.
 
-**El Gate de entrada a Fase 2 está evaluado y satisfecho y el inicio formal de la fase fue aprobado y revisado mediante decisión humana separada: `Fase 2 = INICIADA`. `TASK-008 = COMPLETADA` e implementó exclusivamente `Supabase application boundary = IMPLEMENTADA`. `TASK-009 = COMPLETADA` y materializó exclusivamente `MaintenanceCompany físico = SÍ`, `PlatformUser físico = SÍ`, `Auth subject → PlatformUser físico = SÍ`, `CompanyMembership físico = SÍ`, `Schema mínimo TASK-009 = IMPLEMENTADO`, `Migration TASK-009 = IMPLEMENTADA`, `SQL funcional del slice TASK-009 = SÍ` y `RLS TASK-009 = IMPLEMENTADA Y PROBADA EN DEVELOPMENT`. `TASK-010 = COMPLETADA` y materializó exclusivamente `AuditEvent foundation física = SÍ`, `Migration TASK-010 = IMPLEMENTADA` y `RLS/privilegios TASK-010 = PROBADOS EN DEVELOPMENT`, sin productores funcionales. `TASK-011 = COMPLETADA` e implementó exclusivamente `Auth SSR lifecycle foundation = IMPLEMENTADA`, `SSR cookie propagation boundary = IMPLEMENTADA` y `Auth Proxy technical boundary = IMPLEMENTADA`. Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `route authorization = NO`, `tenant resolver = NO`, `role resolver = NO`, `VerificationChallenge = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `Application authorization completa = NO`, `Client = NO`, `Storage = NO`, `Realtime = NO`, `Offline = NO`, `Productores funcionales de AuditEvent = NO` y `auditoría funcional completa = NO`. `TASK-011 completada` no equivale a `TASK-012 autorizada automáticamente`; `TASK-012 determinada = NO`, `TASK-012 generada = NO` y `Siguiente TASK autorizada automáticamente = NO`.**
+**El Gate de entrada a Fase 2 está evaluado y satisfecho y el inicio formal de la fase fue aprobado y revisado mediante decisión humana separada: `Fase 2 = INICIADA`. `TASK-008 = COMPLETADA` e implementó exclusivamente `Supabase application boundary = IMPLEMENTADA`. `TASK-009 = COMPLETADA` y materializó exclusivamente `MaintenanceCompany físico = SÍ`, `PlatformUser físico = SÍ`, `Auth subject → PlatformUser físico = SÍ`, `CompanyMembership físico = SÍ`, `Schema mínimo TASK-009 = IMPLEMENTADO`, `Migration TASK-009 = IMPLEMENTADA`, `SQL funcional del slice TASK-009 = SÍ` y `RLS TASK-009 = IMPLEMENTADA Y PROBADA EN DEVELOPMENT`. `TASK-010 = COMPLETADA` y materializó exclusivamente `AuditEvent foundation física = SÍ`, `Migration TASK-010 = IMPLEMENTADA` y `RLS/privilegios TASK-010 = PROBADOS EN DEVELOPMENT`, sin productores funcionales. `TASK-011 = COMPLETADA` e implementó exclusivamente `Auth SSR lifecycle foundation = IMPLEMENTADA`, `SSR cookie propagation boundary = IMPLEMENTADA` y `Auth Proxy technical boundary = IMPLEMENTADA`. `TASK-012 = COMPLETADA` e implementó exclusivamente `Authoritative online authorization foundation = IMPLEMENTADA`, `Current tenant membership resolver = IMPLEMENTADO` y `Current tenant role resolver = IMPLEMENTADO`. Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Application authorization completa = NO`, `route authorization = NO`, `resource authorization = NO`, `VerificationChallenge = NO`, `Client = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `Client authorization = NO`, `Support authorization = NO`, `Storage funcional = NO`, `Realtime funcional = NO`, `Offline authorization = NO`, `Offline funcional = NO`, `UI funcional de Auth = NO`, `AuditEvent producer TASK-012 = NO`, `Productores funcionales de AuditEvent = NO` y `auditoría funcional completa = NO`. `TASK-012 completada` no equivale a `TASK-013 autorizada automáticamente`; `TASK-013 determinada = NO`, `TASK-013 generada = NO`, `TASK-013 especificada = NO`, `TASK-013 aprobada = NO`, `TASK-013 autorizada = NO` y `Siguiente TASK autorizada automáticamente = NO`.**
 
 ---
 
@@ -1278,7 +1285,9 @@ Con esta aprobación, Fase 1 queda autorizada documentalmente. La implementació
 
 `TASK-011` fue canonicalizada, implementada, incorporada a Git y aprobada mediante cierre humano final; por tanto, `TASK-011 = COMPLETADA`. Su resultado técnico fue exclusivamente `Auth SSR lifecycle foundation = IMPLEMENTADA`, `SSR cookie propagation boundary = IMPLEMENTADA` y `Auth Proxy technical boundary = IMPLEMENTADA`.
 
-Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `VerificationChallenge = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `Application authorization completa = NO`, `Client = NO`, `Storage = NO`, `Realtime = NO`, `UI = NO`, `Offline = NO`, `Productores funcionales de AuditEvent = NO` y `auditoría funcional completa = NO`. `TASK-011 completada` no equivale a `TASK-012 autorizada automáticamente`; `TASK-012 determinada = NO`, `TASK-012 generada = NO` y `Siguiente TASK autorizada automáticamente = NO`.
+`TASK-012` fue canonicalizada, implementada, incorporada a Git y aprobada mediante cierre humano final; por tanto, `TASK-012 = COMPLETADA`. Su resultado técnico fue exclusivamente `Authoritative online authorization foundation = IMPLEMENTADA`, `Current tenant membership resolver = IMPLEMENTADO` y `Current tenant role resolver = IMPLEMENTADO`.
+
+Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Application authorization completa = NO`, `route authorization = NO`, `resource authorization = NO`, `VerificationChallenge = NO`, `Client = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `Client authorization = NO`, `Support authorization = NO`, `Storage funcional = NO`, `Realtime funcional = NO`, `Offline authorization = NO`, `Offline funcional = NO`, `UI funcional de Auth = NO`, `AuditEvent producer TASK-012 = NO`, `Productores funcionales de AuditEvent = NO` y `auditoría funcional completa = NO`. `TASK-012 completada` no equivale a `TASK-013 autorizada automáticamente`; `TASK-013 determinada = NO`, `TASK-013 generada = NO`, `TASK-013 especificada = NO`, `TASK-013 aprobada = NO`, `TASK-013 autorizada = NO` y `Siguiente TASK autorizada automáticamente = NO`.
 
 ---
 
@@ -1293,6 +1302,7 @@ Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh f
 **TASK-009 completada: sí**
 **TASK-010 completada: sí**
 **TASK-011 completada: sí**
-**TASK-012 determinada: no**
-**TASK-012 generada: no**
+**TASK-012 completada: sí**
+**TASK-013 determinada: no**
+**TASK-013 generada: no**
 **Siguiente TASK autorizada automáticamente: no**
