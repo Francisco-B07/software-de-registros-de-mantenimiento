@@ -611,7 +611,9 @@ Se preservan:
 
 `TASK-009` fue canonicalizada, implementada, aplicada y probada en Supabase Cloud Development, incorporada a Git y aprobada mediante cierre humano final; por tanto, `TASK-009 = COMPLETADA`. Materializó exclusivamente la foundation física mínima de identity/tenant: `MaintenanceCompany físico = SÍ`, `PlatformUser físico = SÍ`, `Auth subject → PlatformUser físico = SÍ` y `CompanyMembership físico = SÍ`. El estado técnico activo se limita a `Schema mínimo TASK-009 = IMPLEMENTADO`, `Migration TASK-009 = IMPLEMENTADA`, `SQL funcional del slice TASK-009 = SÍ` y `RLS TASK-009 = IMPLEMENTADA Y PROBADA EN DEVELOPMENT`.
 
-Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `VerificationChallenge = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `AuditEvent = NO`, `Client = NO`, `Storage = NO`, `Realtime = NO`, `UI = NO` y `Offline = NO`. `TASK-009 completada` no equivale a `TASK-010 autorizada automáticamente`; `TASK-010 generada = NO` y `TASK-010 determinada = NO`.
+`TASK-010` fue canonicalizada, implementada, aplicada y probada en Supabase Cloud Development, incorporada a Git y aprobada mediante cierre humano final; por tanto, `TASK-010 = COMPLETADA`. Materializó exclusivamente `AuditEvent foundation física = SÍ`, `Migration TASK-010 = IMPLEMENTADA`, `SQL test TASK-010 = PRESENTE Y PROBADO EN DEVELOPMENT` y `Static test TASK-010 = PRESENTE`. El estado técnico cerrado mantiene `RLS sobre audit_events = HABILITADA`, `application policies sobre audit_events = 0`, privilegios de tabla de `anon` y `authenticated` en `NONE`, `authenticated TRUNCATE audit_events = DENIED`, `Development Gate TASK-010 = PASS` y `fixtures TASK-010 restantes = 0`.
+
+Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `VerificationChallenge = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `Application authorization completa = NO`, `Client = NO`, `Storage = NO`, `Realtime = NO`, `UI = NO`, `Offline = NO` y `auditoría funcional completa = NO`. `AuditEvent foundation física = SÍ` no equivale a auditoría funcional completa ni a flows productores implementados. `TASK-010 completada` no equivale a `TASK-011 autorizada automáticamente` ni a `TASK-011 determinada`; `TASK-011 generada = NO` y `TASK-011 determinada = NO`.
 
 ---
 
@@ -769,11 +771,13 @@ El acto humano separado de inicio de Fase 2 fue realizado y revisado con resulta
 
 Por tanto:
 
-> **`TASK-009 = COMPLETADA` no equivale a `TASK-010 autorizada automáticamente` ni a `TASK-010 determinada`.**
+> **`TASK-010 = COMPLETADA` no equivale a `TASK-011 autorizada automáticamente` ni a `TASK-011 determinada`.**
 
 TASK-008 fue canonicalizada, implementada, incorporada a Git y aprobada en revisión humana final. Su resultado fue exclusivamente la frontera Supabase de aplicación con factories browser/server no privilegiadas.
 
-TASK-009 fue especificada, aprobada, canonicalizada, implementada y aplicada en Supabase Cloud Development; superó el Gate remoto, las pruebas RLS/integridad y Auth delete preservation, fue incorporada a Git y obtuvo cierre humano final. Su resultado fue exclusivamente la foundation física mínima de identity/tenant —`MaintenanceCompany`, `PlatformUser`, `Auth subject → PlatformUser` y `CompanyMembership`—, una migration funcional y RLS mínima del slice probada en Development. No implementó Auth funcional, lifecycle Auth SSR completo, autorización funcional completa, `VerificationChallenge`, `UserClientAccess`, `SupportAccessGrant`, `AuditEvent`, `Client`, Storage, Realtime, UI ni Offline. La determinación y especificación del siguiente incremento PR-sized de Fase 2 corresponde a un paso posterior separado. Toda implementación concreta continúa requiriendo especificación, revisión humana, aprobación, canonicalización cuando corresponda, autorización concreta, ejecución controlada y revisión posterior.
+TASK-009 fue especificada, aprobada, canonicalizada, implementada y aplicada en Supabase Cloud Development; superó el Gate remoto, las pruebas RLS/integridad y Auth delete preservation, fue incorporada a Git y obtuvo cierre humano final. Su resultado fue exclusivamente la foundation física mínima de identity/tenant —`MaintenanceCompany`, `PlatformUser`, `Auth subject → PlatformUser` y `CompanyMembership`—, una migration funcional y RLS mínima del slice probada en Development. No implementó Auth funcional, lifecycle Auth SSR completo, autorización funcional completa, `VerificationChallenge`, `UserClientAccess`, `SupportAccessGrant`, `AuditEvent`, `Client`, Storage, Realtime, UI ni Offline.
+
+TASK-010 fue especificada, aprobada, canonicalizada, implementada y aplicada en Supabase Cloud Development; superó su Development Gate, las pruebas de integridad, RLS y privilegios, fue incorporada a Git y obtuvo cierre humano final. Su resultado fue exclusivamente la foundation física mínima de AuditEvent, con migration y pruebas, sin productores funcionales ni auditoría funcional completa. La determinación y especificación del siguiente incremento PR-sized de Fase 2 corresponde a un paso posterior separado. Toda implementación concreta continúa requiriendo especificación, revisión humana, aprobación, canonicalización cuando corresponda, autorización concreta, ejecución controlada y revisión posterior.
 
 Este documento:
 
@@ -798,9 +802,18 @@ Este documento:
 - registra `TASK-009 incorporada a Git = SÍ`;
 - registra `TASK-009 cierre humano final = APROBADO`;
 - registra `TASK-009 = COMPLETADA`;
-- mantiene `TASK-010 autorizada automáticamente = NO`;
-- mantiene `TASK-010 generada = NO`;
-- mantiene `TASK-010 determinada = NO`.
+- registra `TASK-010 especificada = SÍ`;
+- registra `TASK-010 aprobada = SÍ`;
+- registra `TASK-010 canonicalizada = SÍ`;
+- registra `TASK-010 implementada = SÍ`;
+- registra `TASK-010 aplicada en Development = SÍ`;
+- registra `TASK-010 Development Gate = PASS`;
+- registra `TASK-010 incorporada a Git = SÍ`;
+- registra `TASK-010 cierre humano final = APROBADO`;
+- registra `TASK-010 = COMPLETADA`;
+- mantiene `TASK-011 autorizada automáticamente = NO`;
+- mantiene `TASK-011 generada = NO`;
+- mantiene `TASK-011 determinada = NO`.
 
 ## 10.3 Separación entre cierre de Fase 1 y entrada a Fase 2
 
@@ -1052,7 +1065,7 @@ Antes de comenzar la implementación de Fase 2 debe verificarse además:
 
 Por tanto, la salida de Fase 1, la satisfacción del Gate de entrada a Fase 2 y el inicio formal de Fase 2 son controles relacionados pero no idénticos.
 
-**El Gate de entrada a Fase 2 está evaluado y satisfecho y el inicio formal de la fase fue aprobado y revisado mediante decisión humana separada: `Fase 2 = INICIADA`. `TASK-008 = COMPLETADA` e implementó exclusivamente `Supabase application boundary = IMPLEMENTADA`. `TASK-009 = COMPLETADA` y materializó exclusivamente `MaintenanceCompany físico = SÍ`, `PlatformUser físico = SÍ`, `Auth subject → PlatformUser físico = SÍ`, `CompanyMembership físico = SÍ`, `Schema mínimo TASK-009 = IMPLEMENTADO`, `Migration TASK-009 = IMPLEMENTADA`, `SQL funcional del slice TASK-009 = SÍ` y `RLS TASK-009 = IMPLEMENTADA Y PROBADA EN DEVELOPMENT`. Continúan `Auth funcional = NO`, `Authorization ready = NO`, `VerificationChallenge = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `AuditEvent = NO`, `Client = NO`, `Storage = NO`, `Realtime = NO` y `Offline = NO`. `TASK-009 completada` no equivale a `TASK-010 autorizada automáticamente`; `TASK-010 generada = NO` y `TASK-010 determinada = NO`.**
+**El Gate de entrada a Fase 2 está evaluado y satisfecho y el inicio formal de la fase fue aprobado y revisado mediante decisión humana separada: `Fase 2 = INICIADA`. `TASK-008 = COMPLETADA` e implementó exclusivamente `Supabase application boundary = IMPLEMENTADA`. `TASK-009 = COMPLETADA` y materializó exclusivamente `MaintenanceCompany físico = SÍ`, `PlatformUser físico = SÍ`, `Auth subject → PlatformUser físico = SÍ`, `CompanyMembership físico = SÍ`, `Schema mínimo TASK-009 = IMPLEMENTADO`, `Migration TASK-009 = IMPLEMENTADA`, `SQL funcional del slice TASK-009 = SÍ` y `RLS TASK-009 = IMPLEMENTADA Y PROBADA EN DEVELOPMENT`. `TASK-010 = COMPLETADA` y materializó exclusivamente `AuditEvent foundation física = SÍ`, `Migration TASK-010 = IMPLEMENTADA` y `RLS/privilegios TASK-010 = PROBADOS EN DEVELOPMENT`, sin productores funcionales. Continúan `Auth funcional = NO`, `Authorization ready = NO`, `VerificationChallenge = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `Application authorization completa = NO`, `Client = NO`, `Storage = NO`, `Realtime = NO`, `Offline = NO` y `auditoría funcional completa = NO`. `TASK-010 completada` no equivale a `TASK-011 autorizada automáticamente`; `TASK-011 generada = NO` y `TASK-011 determinada = NO`.**
 
 ---
 
@@ -1253,7 +1266,9 @@ Con esta aprobación, Fase 1 queda autorizada documentalmente. La implementació
 
 `TASK-009` fue canonicalizada, implementada, aplicada y probada en Supabase Cloud Development, incorporada a Git y aprobada mediante cierre humano final; por tanto, `TASK-009 = COMPLETADA`. Su resultado técnico fue exclusivamente `MaintenanceCompany físico = SÍ`, `PlatformUser físico = SÍ`, `Auth subject → PlatformUser físico = SÍ`, `CompanyMembership físico = SÍ`, `Schema mínimo TASK-009 = IMPLEMENTADO`, `Migration TASK-009 = IMPLEMENTADA`, `SQL funcional del slice TASK-009 = SÍ` y `RLS TASK-009 = IMPLEMENTADA Y PROBADA EN DEVELOPMENT`.
 
-Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `VerificationChallenge = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `AuditEvent = NO`, `Client = NO`, `Storage = NO`, `Realtime = NO`, `UI = NO` y `Offline = NO`. `TASK-009 completada` no equivale a `TASK-010 autorizada automáticamente`; `TASK-010 generada = NO` y `TASK-010 determinada = NO`.
+`TASK-010` fue canonicalizada, implementada, aplicada y probada en Supabase Cloud Development, incorporada a Git y aprobada mediante cierre humano final; por tanto, `TASK-010 = COMPLETADA`. Su resultado técnico fue exclusivamente `AuditEvent foundation física = SÍ`, `Migration TASK-010 = IMPLEMENTADA`, `SQL test TASK-010 = PRESENTE Y PROBADO EN DEVELOPMENT`, `Static test TASK-010 = PRESENTE` y `RLS/privilegios TASK-010 = PROBADOS EN DEVELOPMENT`. No implementó productores de AuditEvent ni auditoría funcional completa.
+
+Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `VerificationChallenge = NO`, `UserClientAccess = NO`, `SupportAccessGrant = NO`, `Application authorization completa = NO`, `Client = NO`, `Storage = NO`, `Realtime = NO`, `UI = NO`, `Offline = NO` y `auditoría funcional completa = NO`. `TASK-010 completada` no equivale a `TASK-011 autorizada automáticamente`; `TASK-011 generada = NO` y `TASK-011 determinada = NO`.
 
 ---
 
@@ -1266,6 +1281,7 @@ Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh f
 **Fase 2 iniciada: sí**
 **TASK-008 completada: sí**
 **TASK-009 completada: sí**
-**TASK-010 generada: no**
-**TASK-010 determinada: no**
+**TASK-010 completada: sí**
+**TASK-011 generada: no**
+**TASK-011 determinada: no**
 **Siguiente TASK autorizada automáticamente: no**
