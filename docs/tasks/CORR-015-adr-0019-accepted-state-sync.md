@@ -167,13 +167,28 @@ docs/product/02-domain-model.md
 
 docs/architecture/adr/ADR-0002-multitenancy-tenant-isolation.md
 docs/architecture/adr/ADR-0003-authorization-client-scope-support.md
-
-docs/tasks/TASK-013-verification-challenge-foundation.md
 ```
 
-La conversación histórica no sustituye el canon.
+El estado de gobernanza de `TASK-013` que consume CORR-015 es el ya fijado en §3 de esta propia especificación. `TASK-013` no constituye una fuente canónica independiente requerida para ejecutar CORR-015.
 
-Una futura ejecución debe detenerse si una fuente obligatoria falta, no es canónica, presenta identidad incompatible o contradice materialmente el estado formal consumido por esta especificación.
+```text
+TASK-013 canonical specification required for CORR-015 execution = NO
+TASK-013 canonicalization required for CORR-015 = NO
+
+absence of:
+docs/tasks/TASK-013-verification-challenge-foundation.md
+
+= EXPECTED
+= NOT A BLOCKER
+```
+
+La conversación histórica no sustituye el canon:
+
+```text
+historical conversation != canonical source
+```
+
+Una futura ejecución debe detenerse si una fuente realmente obligatoria y canónica falta, presenta identidad incompatible o contradice materialmente el estado formal consumido por esta especificación. Esta regla continúa aplicando a las fuentes obligatorias de §4.1 y no convierte la ruta no canonicalizada de `TASK-013` en fuente requerida.
 
 ---
 
@@ -245,8 +260,9 @@ docs/architecture/adr/ADR-0002-multitenancy-tenant-isolation.md
 docs/architecture/adr/ADR-0003-authorization-client-scope-support.md
 
 docs/architecture/adr/ADR-0019-verification-challenge-supabase-auth-session-boundary.md
-docs/tasks/TASK-013-verification-challenge-foundation.md
 ```
+
+El estado de gobernanza de `TASK-013` se consume desde §3 de esta propia especificación, sin exigir ni reconstruir una especificación canónica independiente de TASK-013.
 
 No se detecta dentro de esta revisión una modificación material obligatoria adicional de producto.
 
@@ -612,9 +628,24 @@ CORR-015 EXECUTION = BLOCKER — SCOPE EXPANSION REQUIRED
 
 `TASK-013` está fuera del scope de ejecución de CORR-015.
 
-Debe permanecer sin modificar:
+Su ruta canónica futura propuesta continúa legítimamente ausente:
 
 `docs/tasks/TASK-013-verification-challenge-foundation.md`
+
+```text
+absence of:
+docs/tasks/TASK-013-verification-challenge-foundation.md
+
+= EXPECTED
+= NOT A BLOCKER
+
+CORR-015
+MUST NOT create TASK-013 canonical specification
+MUST NOT canonicalize TASK-013
+MUST NOT modify TASK-013
+```
+
+CORR-015 no debe reconstruir ni inferir TASK-013 desde conversación histórica, artefactos temporales u otras fuentes no canónicas.
 
 Estado preservado:
 
