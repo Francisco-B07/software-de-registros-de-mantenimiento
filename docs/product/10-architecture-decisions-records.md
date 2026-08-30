@@ -578,7 +578,7 @@ No se detecta pérdida de un candidato relevante después de la consolidación.
 
 # 7. Catálogo definitivo propuesto de ADR
 
-Se proponen **18 ADR definitivos**.
+El catálogo original propuso **18 ADR definitivos**. Después de la incorporación canónica de ADR-0019, el catálogo vigente contiene **19 ADR**.
 
 Los estados de esta tabla reflejan el estado documental actual de cada ADR. No modifican el estado de ningún `DO` ni `OPEN`.
 
@@ -602,6 +602,15 @@ Los estados de esta tabla reflejan el estado documental actual de cada ADR. No m
 | `ADR-0016` | Observabilidad, capacidad y performance | Definir objetivos medibles y estrategia transversal sin inventar volúmenes | `DO-T05`, riesgos de escala | `DO-T05` | `DEFERRED` | Antes de performance/piloto |
 | `ADR-0017` | Backup, restore, RPO y RTO | Definir estrategia operativa de recuperación según objetivos de negocio | `DO-T06` | `DO-T06` | `DEFERRED` | Piloto/producción |
 | `ADR-0018` | Controles técnicos derivados de privacidad/legal | Traducir requisitos legales aprobados a retención, acceso y minimización técnica | `DO-T07`, `AI-ADR-CAND-009`, riesgos de Evidence | `DO-T07`, `AI-OPEN-005` cuando corresponda | `DEFERRED` | Antes del piloto |
+| `ADR-0019` | VerificationChallenge, Supabase Auth y frontera de establecimiento de sesión | Application-owned `VerificationChallenge` + one-time `SessionGrant` + server-only technical password bridge + Custom Access Token Hook gate | ADR-0019 | Ninguna | `ACCEPTED` | Revisión/corrección de TASK-013 |
+
+Debe permanecer:
+
+```text
+ADR-0019 ACCEPTED
+!=
+TASK-013 implementation authorized
+```
 
 ---
 
@@ -1830,11 +1839,13 @@ Todos quedan trazados al catálogo consolidado.
 
 ## 37.4 Cantidad propuesta
 
-**ADRs definitivos propuestos: 18.**
+**Catálogo original: 18 ADR.**
 
-Distribución actual:
+**TOTAL ADR VIGENTE: 19.**
 
-- `ACCEPTED`: **7**;
+Distribución global vigente:
+
+- `ACCEPTED`: **8**;
 - `READY TO DRAFT`: **0**;
 - `BLOCKED BY OPEN DECISIONS`: **8**;
 - `DEFERRED`: **3**.

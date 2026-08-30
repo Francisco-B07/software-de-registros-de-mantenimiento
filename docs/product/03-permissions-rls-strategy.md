@@ -1546,6 +1546,25 @@ por sí solo.
 
 Para `COMPANY_ADMIN`, un backend privilegiado tampoco puede ampliar silenciosamente el alcance hacia ejecución inicial de mantenimiento.
 
+## 17.5 Frontera Auth purpose-specific de ADR-0019
+
+ADR-0019, con estado `ACCEPTED`, aprueba una excepción Auth estrecha para el lifecycle Identity/Auth:
+
+```text
+VerificationChallenge = platform-owned
+SessionGrant = platform-owned
+
+Postgres Custom Access Token Hook
++ minimum explicit permissions to supabase_auth_admin
++ purpose-specific Auth Admin
+```
+
+`supabase_auth_admin` sólo puede recibir acceso mínimo, explícito y purpose-specific al estado platform-owned estrictamente necesario para el hook. Esos permisos no son privilegios tenant, no convierten a `supabase_auth_admin` en actor tenant y no habilitan reads/writes tenant ordinarios ni bypass de RLS tenant.
+
+Auth Admin permanece server-side, purpose-specific y limitado a las operaciones aprobadas por ADR-0019. No existe un Supabase Admin client genérico reutilizable por módulos arbitrarios, ninguna credencial privilegiada llega al browser/PWA y una secret key o backend credential nunca se convierte en client ordinario de requests.
+
+Esta frontera Auth no puede utilizarse para inferir `CompanyMembership`, tenant role o Client scope; convertir `SUPER_ADMIN` en tenant member; sustituir ADR-0003 por claims o sesión Auth; ni obtener lectura o escritura genérica sobre datos tenant-owned. RLS continúa siendo la frontera primaria de aislamiento remoto para datos tenant-owned y una sesión Auth válida no equivale a autorización tenant.
+
 ---
 
 # 18. Estado comercial de la suscripción
