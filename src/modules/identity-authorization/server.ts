@@ -8,6 +8,8 @@ import { createSupabaseCurrentAuthorizationSource } from "./infrastructure/supab
 import { createVerificationChallengeService } from "./application/verification-challenge-service";
 import { createSupabaseAuthAdminBoundary } from "./infrastructure/supabase/auth-admin-boundary";
 import { createSupabaseTechnicalSignInBoundary } from "./infrastructure/supabase/technical-sign-in";
+import { resolveCurrentGlobalAuthorizationWithSource } from "./application/resolve-current-global-authorization";
+import { createSupabaseCurrentGlobalAuthorizationSource } from "./infrastructure/supabase/current-global-authorization-source";
 
 export type {
   CurrentAuthorizationContext,
@@ -29,6 +31,7 @@ export type {
   UpdateTechnicalPasswordInput,
 } from "./application/auth-session-bridge";
 export type { EstablishTechnicalIdentityInput } from "./application/auth-session-bridge-service";
+export type { CurrentGlobalAuthorizationResult } from "./application/resolve-current-global-authorization";
 
 export function resolveCurrentAuthorizationContext(
   identity: ValidatedAuthIdentity | null | undefined,
@@ -36,6 +39,15 @@ export function resolveCurrentAuthorizationContext(
   return resolveCurrentAuthorizationContextWithSource(
     identity,
     createSupabaseCurrentAuthorizationSource,
+  );
+}
+
+export function resolveCurrentGlobalAuthorization(
+  identity: ValidatedAuthIdentity | null | undefined,
+): Promise<import("./application/resolve-current-global-authorization").CurrentGlobalAuthorizationResult> {
+  return resolveCurrentGlobalAuthorizationWithSource(
+    identity,
+    createSupabaseCurrentGlobalAuthorizationSource,
   );
 }
 
