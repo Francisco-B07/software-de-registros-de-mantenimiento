@@ -436,6 +436,12 @@ No se define aquí su representación criptográfica ni física.
 - sólo roles `COMPANY_ADMIN` o `TECHNICIAN`;
 - ningún usuario tenant pertenece a más de un tenant;
 - deshabilitación no elimina identidad ni historial.
+- conocer la membership target no concede autoridad: su lifecycle posterior exige actor `COMPANY_ADMIN` habilitado y mismo tenant;
+- el actor `COMPANY_ADMIN` no puede deshabilitar/revocar su propia membership ni cambiar su propio rol, incluso al mismo rol;
+- una empresa que ya posee administración activa no puede perder su último `COMPANY_ADMIN` habilitado por disable o demotion;
+- el rol puede cambiar mientras la membership está deshabilitada, sin modificar `is_enabled` ni restablecer autoridad; reintegrar usa el rol vigente, no uno histórico;
+- una intención ya satisfecha sobre un target permitido sólo es no-op después de todas las validaciones, mientras que toda denegación produce cero mutaciones y cero `AuditEvent`;
+- actor, target, tenant, rol, `is_enabled` y continuidad administrativa se evalúan contra el estado autoritativo vigente antes de confirmar; una mutación real y su evento requerido son atómicos y el caller no aporta un token de estado o versión esperados.
 
 ---
 
@@ -1514,6 +1520,8 @@ Al deshabilitar o revocar una membership, o reducir su alcance:
 - una autorización offline previamente validada sólo puede mantenerse dentro del máximo aprobado de 7 días;
 - una revocación conocida debe aplicarse cuando el dispositivo recupera conectividad.
 
+El lifecycle posterior sólo puede ejecutarlo un `COMPANY_ADMIN` habilitado sobre una membership de su mismo tenant. Self-disable/self-revoke se deniega, y si la empresa ya posee administración activa también se deniega el disable que dejaría cero `COMPANY_ADMIN` habilitados; toda denegación deja cero mutaciones y cero `AuditEvent`. Antes de confirmar se reevalúan el actor, target, tenant, rol, `is_enabled` y continuidad administrativa contra el estado autoritativo vigente. Tras esas validaciones, disable sobre disabled y reinstate sobre enabled son éxitos idempotentes con `changed = false`, sin mutación ni evento. Una reintegración real usa el rol vigente en la membership y no restaura automáticamente un rol histórico; la mutación real y su evento requerido son atómicos.
+
 ---
 
 # 7. Clientes y ubicaciones
@@ -2517,6 +2525,8 @@ Como mínimo:
 - revocación;
 - accesos excepcionales efectivamente realizados.
 
+Para `CompanyMembership`, esos eventos se generan sólo ante mutaciones reales autorizadas: `USER_DISABLED_OR_REVOKED`, `USER_REINSTATED` o `USER_ROLE_CHANGED`, según corresponda. Un no-op autorizado con `changed = false` y toda denegación generan cero `AuditEvent`; no se añade ninguna acción al catálogo.
+
 ## 19.5 No duplicación indiscriminada
 
 No todo cambio de dominio necesita además un `AuditEvent`.
@@ -2547,6 +2557,12 @@ No se pretende convertir el diseño en DDD ceremonial.
 - rol permitido;
 - clientes del mismo tenant;
 - deshabilitación sin eliminación.
+- self-disable/self-revoke y self-role-change prohibidos para `COMPANY_ADMIN`, con precedencia sobre no-op;
+- continuidad de al menos un `COMPANY_ADMIN` habilitado cuando la empresa ya posee administración activa;
+- cambio de rol de una membership deshabilitada sin rehabilitarla y reintegración con su rol vigente;
+- no-op autorizado y denegación sin `AuditEvent`, aunque sólo el primero expresa éxito idempotente;
+- decisión contra actor, target, tenant, rol, `is_enabled` y continuidad administrativa vigentes, sin token de estado o versión esperado del caller;
+- mutación real y `AuditEvent` requerido dentro de una única frontera atómica.
 
 **Operaciones conceptualmente consistentes:**
 
@@ -2783,6 +2799,11 @@ Esta sección consolida invariantes ya aprobadas; no crea requisitos nuevos.
 - `MT-005`: todo dato tenant-owned debe estar conceptualmente asociado a `maintenance_company`.
 - `MT-007`: RLS será barrera primaria de aislamiento.
 - `MT-010`: acceso efectivo depende de tenant, rol y clientes autorizados.
+- `INV-027`: self-disable/self-revoke y self-role-change de `COMPANY_ADMIN` están prohibidos, incluso ante una intención ya satisfecha.
+- `INV-028`: una empresa que ya posee administración activa conserva al menos un `COMPANY_ADMIN` habilitado; una ruptura se deniega sin mutación ni evento, sin redefinir el alta inicial.
+- `INV-029`: cambiar el rol de una membership deshabilitada no cambia `is_enabled`; reintegrar usa el rol vigente.
+- `INV-030`: una intención autorizada ya satisfecha es no-op con `changed = false`, sin mutación ni evento; una denegación tampoco genera evento y no equivale a éxito.
+- `INV-031`: el lifecycle se decide contra el estado autoritativo vigente, reevaluando autoridad, tenant, target, rol, `is_enabled` y continuidad antes de confirmar, sin token esperado aportado por el caller.
 
 ---
 
@@ -2888,6 +2909,8 @@ Alta iniciada
 ```
 
 Identidad e historial permanecen.
+
+Las transiciones posteriores son online-only y exigen un actor `COMPANY_ADMIN` habilitado y del mismo tenant. Self-disable/self-revoke y self-role-change se deniegan —también el mismo rol sobre sí mismo—, y una empresa que ya posee administración activa no puede perder su último `COMPANY_ADMIN` habilitado por disable o demotion. El rol de una membership deshabilitada puede cambiar sin rehabilitarla, y su reintegración usa el rol vigente. Después de validar todas las invariantes, disable sobre disabled, reinstate sobre enabled y same-role sobre un target distinto del actor son no-op idempotentes con `changed = false`; una denegación nunca se transforma en ese éxito. Ante concurrencia prevalece el estado autoritativo vigente: se reevalúan actor, target, tenant, rol, `is_enabled` y continuidad antes de confirmar; si la transición sigue válida, la mutación real y su `AuditEvent` requerido se confirman atómicamente, sin token de estado o versión esperado del caller.
 
 ---
 

@@ -182,6 +182,8 @@ Para acceder excepcionalmente a datos tenant necesita un `SupportAccessGrant` v�
 - administra la suscripción;
 - puede conceder y revocar soporte excepcional.
 
+La administración posterior de memberships exige autoridad `COMPANY_ADMIN` vigente y mismo tenant. No puede deshabilitar/revocar su propia membership ni cambiar su propio rol —incluso al mismo rol—, y no puede deshabilitar ni degradar al último `COMPANY_ADMIN` habilitado de una empresa que ya posee administración activa. Estas restricciones se evalúan contra el estado autoritativo vigente antes de confirmar.
+
 La baseline **NO** concede expresamente a `COMPANY_ADMIN` capacidad para:
 
 - iniciar un mantenimiento nuevo;
@@ -237,6 +239,8 @@ Debe responder al menos conceptualmente:
 - si está habilitada.
 
 Una identidad tenant sin membership habilitada no posee acceso tenant online.
+
+Conocer el identificador del target no concede autoridad. El lifecycle posterior requiere un actor con membership habilitada, rol `COMPANY_ADMIN` y el mismo tenant del target. Un cambio de rol autorizado sobre una membership deshabilitada mantiene `is_enabled = false` y no restablece autoridad; una reintegración utiliza el rol vigente, nunca uno histórico. Sólo después de validar actor, target, tenant, permiso, self-target, continuidad administrativa y demás invariantes, una intención ya satisfecha sobre un target permitido es éxito idempotente con `changed = false`, sin mutación ni `AuditEvent`; una denegación tampoco genera evento y nunca se convierte en ese éxito.
 
 ---
 
@@ -606,7 +610,7 @@ Leyenda:
 |---|---|---|---|---|
 | Empresas de mantenimiento | Crear y administrar aspectos globales | Leer/administrar su propia empresa según capacidades tenant | Sólo contexto mínimo necesario | No amplía por grant la administración global |
 | Alta primer admin | Sí, durante onboarding | No aplica al primer alta | No | No cambia |
-| Usuarios/memberships posteriores | No dar de alta salvo primer admin | Crear, cambiar rol, cambiar clientes, deshabilitar, reintegrar | Leer su contexto propio cuando sea necesario | Scope `usuarios/permisos` permite soporte/acceso; no se infiere alta ordinaria de usuarios |
+| Usuarios/memberships posteriores | No dar de alta salvo primer admin | Crear; cambiar rol, cambiar clientes, deshabilitar y reintegrar dentro de su tenant, sujeto a las invariantes de lifecycle | Leer su contexto propio cuando sea necesario | Scope `usuarios/permisos` permite soporte/acceso; no se infiere alta ordinaria de usuarios ni lifecycle tenant |
 | `UserClientAccess` | No normal | Administrar dentro de su tenant | No modificar; sólo consumir su propio alcance | Scope `usuarios/permisos`; no permite ampliar arbitrariamente privilegios |
 | Clientes | No | Administrar todos los clientes de su tenant | Leer clientes autorizados | Leer únicamente clientes concedidos con scope de información |
 | Ubicaciones | No | Administrar dentro del tenant | Leer todas las de clientes autorizados | Acceso sólo a clientes concedidos con scope `ubicaciones` |
@@ -625,6 +629,8 @@ Leyenda:
 | Suscripción/pagos | No normal | Administrar | No | Sólo scope tenant-wide `suscripción/pagos` |
 | Auditoría | Genera eventos por acciones globales/soporte según corresponda | Sus acciones sensibles generan eventos | Sus acciones auditables generan eventos cuando corresponda | Cada uso efectivo de soporte genera evento |
 | Eliminación de auditoría | No | No | No | No |
+
+> **Nota normativa de lifecycle:** para `COMPANY_ADMIN`, self-disable/self-revoke y self-role-change están prohibidos; la continuidad del último administrador habilitado está protegida; cambiar el rol de una membership deshabilitada no la rehabilita; reintegrar usa su rol vigente; y sólo las solicitudes ya satisfechas sobre targets permitidos son no-op después de validar completamente. El estado autoritativo vigente prevalece y toda denegación produce cero mutaciones y cero `AuditEvent`.
 
 ## 7.1 Regla conservadora para soporte y permisos no expresos
 
@@ -1021,6 +1027,8 @@ Conceptualmente, para una operación tenant:
 8. estado comercial online cuando corresponda;
 9. reglas de mutabilidad y de operación autorizada para ese rol.
 
+En el lifecycle de `CompanyMembership`, el target y su tenant se resuelven desde relaciones autoritativas, no desde IDs del caller. Antes de confirmar se reevalúan actor, target, tenant, rol, `is_enabled` y continuidad administrativa contra el estado vigente; la pérdida de autoridad produce `DENY`, y sólo después de estas comprobaciones una intención ya satisfecha puede concluir como no-op autorizado. El caller no necesita aportar un token de estado o versión esperados.
+
 ---
 
 ## 12.3 `COMPANY_ADMIN`
@@ -1040,6 +1048,8 @@ Las escrituras de `COMPANY_ADMIN` sobre revisiones, respuestas o evidencias debe
 
 - una corrección autorizada de un mantenimiento finalizado; o
 - una resolución de conflicto autorizada.
+
+Para el lifecycle de memberships, además debe demostrarse que el target pertenece al mismo tenant y que continúan satisfechas las invariantes aplicables. Self-disable/self-revoke y self-role-change son `DENY`, incluso cuando el estado pedido ya coincide; disable o demotion del último `COMPANY_ADMIN` habilitado también es `DENY` cuando dejaría cero administradores habilitados. El rol de una membership deshabilitada puede cambiar por un actor autorizado sin modificar `is_enabled`; reintegrar usa ese rol vigente. Después de todas las comprobaciones, disable sobre disabled, reinstate sobre enabled y same-role sobre un target distinto del actor son no-op idempotentes con `changed = false`. Prevalece el estado autoritativo vigente: si el actor perdió autoridad se deniega, si la intención ya está satisfecha se aplica el no-op y, si la transición continúa válida, puede confirmarse con su `AuditEvent` requerido dentro de la misma frontera atómica.
 
 ---
 
@@ -1642,6 +1652,8 @@ Esto no concede acceso tenant operativo a esos procesos más allá de su funció
 
 Una membership deshabilitada debe perder acceso online.
 
+Un `COMPANY_ADMIN` no puede deshabilitar/revocar su propia membership ni deshabilitar al último `COMPANY_ADMIN` habilitado cuando una empresa que ya posee administración activa quedaría sin administradores habilitados. Tras validar autoridad vigente, target, mismo tenant y demás invariantes, deshabilitar una membership ya deshabilitada es éxito idempotente con `changed = false`, sin mutación ni `AuditEvent`; reintegrar una ya habilitada tiene el mismo resultado. Una reintegración real usa el rol vigente en la membership, sin recuperar automáticamente un rol histórico. Toda denegación produce cero mutaciones y cero eventos.
+
 No se elimina:
 
 - `PlatformUser`;
@@ -1669,6 +1681,8 @@ El tratamiento exacto de trabajo ya capturado y pendiente se definirá en la est
 Un cambio de rol debe aplicarse desde el estado autoritativo vigente.
 
 No debe bastar con que una sesión conserve un rol antiguo en memoria o UI.
+
+Un `COMPANY_ADMIN` no puede cambiar su propio rol; la prohibición incluye promoción, degradación y una solicitud del mismo rol sobre sí mismo. Sobre un target distinto del actor y del mismo tenant, solicitar el rol ya vigente es un no-op autorizado con `changed = false` sólo después de todas las comprobaciones. El rol de una membership deshabilitada puede cambiar sin modificar `is_enabled` ni restaurar autoridad tenant, y el cambio real genera `USER_ROLE_CHANGED`; si se reintegra después, se utiliza ese rol vigente. La degradación del último `COMPANY_ADMIN` habilitado se deniega cuando dejaría cero administradores habilitados. Ante concurrencia se reevalúan autoridad del actor, target, tenant, rol, `is_enabled` y continuidad administrativa; estado stale de sesión, UI o caller no prevalece.
 
 ---
 
@@ -2100,6 +2114,8 @@ Deben dejar traza:
 - revocación de soporte;
 - uso efectivo del acceso excepcional.
 
+En el lifecycle de `CompanyMembership`, sólo una mutación real autorizada deja la acción existente correspondiente: `USER_DISABLED_OR_REVOKED`, `USER_REINSTATED` o `USER_ROLE_CHANGED`. Un no-op autorizado con `changed = false` y toda denegación generan cero `AuditEvent`; el catálogo de acciones permanece sin cambios.
+
 ---
 
 ## 25.2 Contenido mínimo
@@ -2303,6 +2319,23 @@ Probar intentos como:
 - `Evidence` sobre response ajena;
 - `Report` sobre cliente ajeno;
 - payload ejecutado fuera de la UI.
+
+---
+
+## 26.11 Lifecycle de `CompanyMembership`
+
+Las pruebas futuras deben verificar conceptualmente que:
+
+- self-disable/self-revoke produce `DENY`, sin mutación ni `AuditEvent`;
+- self-role-change produce `DENY`, incluso si el rol pedido coincide con el vigente;
+- disable y demotion del último `COMPANY_ADMIN` habilitado se deniegan cuando dejarían sin administración activa a una empresa que ya la posee;
+- cambiar realmente el rol de una membership deshabilitada está permitido para un actor autorizado del mismo tenant, mantiene `is_enabled = false` y genera `USER_ROLE_CHANGED`;
+- una reintegración real usa el rol vigente y no restaura un rol histórico;
+- disable sobre disabled, reinstate sobre enabled y same-role sobre un target distinto del actor, después de todas las comprobaciones, son éxito idempotente con `changed = false`, sin mutación ni evento;
+- actor inválido o deshabilitado, rol insuficiente, cross-tenant, self-target prohibido u otra condición fail-closed nunca se convierten en no-op exitoso;
+- una autoridad stale no prevalece: actor, target, tenant, rol, `is_enabled` y continuidad se resuelven otra vez desde el estado autoritativo vigente antes de confirmar;
+- solicitudes concurrentes observan el estado autoritativo vigente y conservan la atomicidad entre una mutación real y su evento requerido, sin exigir un token esperado del caller;
+- el intento de bypass directo sigue denegado por las fronteras de autorización y datos aplicables.
 
 ---
 

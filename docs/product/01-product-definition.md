@@ -121,7 +121,7 @@ Actor global de plataforma.
 
 Usuario perteneciente exactamente a una empresa de mantenimiento.
 
-- Administra usuarios de su empresa.
+- Administra el lifecycle de usuarios de su empresa únicamente dentro del mismo tenant, con autoridad vigente y sujeto a las prohibiciones de operar sobre sí mismo y a la continuidad administrativa.
 - Administra clientes, ubicaciones, equipos y tipos de equipos.
 - Administra formularios.
 - Administra y finaliza informes.
@@ -208,15 +208,15 @@ No es usuario del SaaS en el MVP.
 
 **RF-016.** Un `COMPANY_ADMIN` NO DEBE poder conceder acceso a clientes de otro tenant.
 
-**RF-017.** El `COMPANY_ADMIN` DEBE poder modificar posteriormente el rol y los clientes autorizados de un usuario.
+**RF-017.** El `COMPANY_ADMIN` DEBE poder modificar posteriormente el rol y los clientes autorizados de un usuario de su mismo tenant. NO DEBE poder cambiar su propio rol, ni siquiera solicitar sobre sí mismo el mismo rol vigente. El rol de una membership deshabilitada PUEDE cambiarse por un actor autorizado sin modificar `is_enabled` ni restablecer autoridad tenant; una reintegración posterior utiliza el rol vigente, no uno histórico. Una solicitud autorizada del mismo rol sobre otro usuario DEBE finalizar como éxito idempotente con `changed = false`, sin mutación ni `AuditEvent`. El estado autoritativo vigente prevalece antes de confirmar. La semántica aprobada de clientes autorizados permanece sin cambios.
 
-**RF-018.** El `COMPANY_ADMIN` DEBE poder deshabilitar un usuario sin eliminarlo.
+**RF-018.** El `COMPANY_ADMIN` DEBE poder deshabilitar un usuario de su mismo tenant sin eliminarlo, siempre que conserve autoridad vigente. NO DEBE poder deshabilitar ni revocar su propia membership. Si la empresa ya posee administración activa, NO DEBE deshabilitar al último `COMPANY_ADMIN` habilitado cuando la operación dejaría cero administradores habilitados. Sólo después de validar actor, target, tenant, permiso, self-target, continuidad administrativa y demás invariantes, deshabilitar una membership ya deshabilitada DEBE finalizar como éxito idempotente con `changed = false`, sin mutación ni `AuditEvent`. El estado autoritativo vigente prevalece antes de confirmar.
 
 **RF-019.** Al deshabilitar, revocar o reducir el alcance de un usuario, toda autorización online afectada DEBE retirarse inmediatamente utilizando estado autoritativo vigente. Una sesión Auth o access JWT residual NO DEBE conservar ninguna autorización revocada. Cuando exista una primitiva pública, soportada y contractualmente adecuada para el caso, las sesiones y credenciales renovables afectadas DEBEN terminarse mediante ese mecanismo como defensa adicional; su ausencia, limitación o fallo NO DEBE restaurar autorización ni debilitar la protección de datos.
 
 **RF-020.** Un usuario deshabilitado DEBE conservar su identidad e historial.
 
-**RF-021.** Un usuario deshabilitado DEBE poder ser reintegrado posteriormente.
+**RF-021.** Un usuario deshabilitado DEBE poder ser reintegrado posteriormente por un `COMPANY_ADMIN` autorizado de su mismo tenant, utilizando el rol vigente en la membership y sin restaurar automáticamente un rol histórico. Sólo después de validar actor, target, tenant, permiso y demás invariantes, reintegrar una membership ya habilitada DEBE finalizar como éxito idempotente con `changed = false`, sin mutación ni `AuditEvent`. El estado autoritativo vigente prevalece antes de confirmar.
 
 ### 7.2 Permisos operativos
 
@@ -653,7 +653,7 @@ No es usuario del SaaS en el MVP.
 | Acceder normalmente a datos tenant | No | Sí, su tenant | Sólo alcance autorizado |
 | Soporte excepcional tenant | Sólo con permiso explícito | Concede/revoca | No |
 | Dar de alta usuarios tenant | No salvo primer admin | Sí | No |
-| Deshabilitar/reintegrar usuarios | No salvo funciones globales futuras | Sí | No |
+| Deshabilitar/reintegrar usuarios | No salvo funciones globales futuras | Sí, dentro de su tenant y sujeto a `INV-027`–`INV-031` | No |
 | Asignar clientes a usuarios | No | Sí, sólo de su empresa | No |
 | Administrar clientes/ubicaciones/equipos | No por defecto | Sí | No |
 | Crear/editar formularios | No por defecto | Sí | No |
@@ -664,6 +664,8 @@ No es usuario del SaaS en el MVP.
 | Administrar suscripción/créditos | Sólo soporte autorizado | Sí | No |
 
 > **Nota de armonización de permisos:** la ejecución inicial de un mantenimiento corresponde a `TECHNICIAN` dentro de sus clientes autorizados. `COMPANY_ADMIN` puede leer mantenimientos cuando corresponda a sus funciones, corregir mantenimientos finalizados y resolver conflictos dentro de su alcance; esas capacidades pueden generar una nueva `MaintenanceRevision`, pero no conceden ejecución inicial. Un `SupportAccessGrant` concede únicamente el acceso excepcional expresamente autorizado por sus scopes y no genera capacidades operativas nuevas para `SUPER_ADMIN`. Esta corrección armoniza una fila histórica de la matriz con las reglas ya aprobadas y no constituye una ampliación ni una reducción nueva del alcance del producto.
+
+> **Nota de lifecycle de memberships:** conocer el target no concede autoridad. La administración posterior de memberships exige actor `COMPANY_ADMIN` habilitado, mismo tenant, prohibiciones self-target, continuidad administrativa y evaluación contra el estado autoritativo vigente; sólo una intención ya satisfecha sobre un target permitido puede concluir como no-op autorizado.
 
 ### 9.1 Herencia de acceso del técnico
 
@@ -778,6 +780,16 @@ No forman parte del dominio MVP:
 
 **INV-026.** El acceso se reactiva cuando se reconoce un pago válido de reactivación.
 
+**INV-027.** Un `COMPANY_ADMIN` NO PUEDE deshabilitar/revocar su propia membership ni cambiar su propio rol; la prohibición self-target prevalece incluso si el estado solicitado ya está satisfecho.
+
+**INV-028.** Una `MaintenanceCompany` que ya posee administración activa NO PUEDE quedar con cero memberships que simultáneamente tengan `is_enabled = true` y rol `COMPANY_ADMIN`; deshabilitar o degradar al último administrador habilitado se deniega sin mutación ni `AuditEvent`. Esta continuidad no redefine onboarding, bootstrap ni la creación inicial del primer `COMPANY_ADMIN`.
+
+**INV-029.** Un cambio de rol autorizado sobre una membership deshabilitada mantiene `is_enabled = false` y no restaura autoridad tenant; una reintegración posterior utiliza el rol vigente y nunca recupera automáticamente un rol histórico.
+
+**INV-030.** Después de validar actor, target, mismo tenant, permiso, self-target, continuidad administrativa y demás invariantes, deshabilitar una membership ya deshabilitada, reintegrar una ya habilitada o solicitar el mismo rol para un target distinto del actor concluye con éxito idempotente, `changed = false`, sin mutación ni `AuditEvent`. Toda denegación produce cero mutaciones y cero `AuditEvent` y nunca se convierte en éxito por estar satisfecha la intención.
+
+**INV-031.** El lifecycle de `CompanyMembership` se decide contra el estado autoritativo vigente de PostgreSQL: antes de confirmar se reevalúan autoridad del actor, tenant, target, rol, `is_enabled` y continuidad administrativa. Si el actor perdió autoridad se deniega; si la intención ya está satisfecha se aplica `INV-030`; si la transición sigue siendo válida puede confirmarse. Una mutación real y su `AuditEvent` requerido comparten una frontera atómica, sin exigir al caller un token de estado o versión esperados.
+
 ---
 
 ## 12. Flujos principales
@@ -804,11 +816,14 @@ No forman parte del dominio MVP:
 
 ### FL-03 — Deshabilitación y reintegración
 
-1. `COMPANY_ADMIN` deshabilita al usuario.
-2. Toda autorización online afectada se revoca inmediatamente según el estado autoritativo vigente; una sesión Auth o access JWT residual no conserva permisos revocados, y la terminación provider-side de sesiones/credenciales renovables se ejecuta mediante una primitiva pública soportada cuando exista una contractualmente adecuada para el caso, sin que su ausencia o fallo restaure autorización.
-3. La identidad e historial se conservan.
-4. Datos offline existentes permanecen protegidos y aislados por identidad.
-5. En una reintegración futura se restablece el estado del usuario conforme a los permisos vigentes.
+1. Antes de confirmar, el estado autoritativo vigente vuelve a demostrar actor `COMPANY_ADMIN` habilitado, target y mismo tenant, operación permitida, restricciones self-target y continuidad administrativa.
+2. Self-disable/self-revoke, pérdida de autoridad, cross-tenant, rol insuficiente, ruptura de continuidad u otra invariante aplicable producen `DENY`, sin mutación ni `AuditEvent`.
+3. Una solicitud autorizada cuyo estado ya está satisfecho concluye como éxito idempotente con `changed = false`, sin mutación ni `AuditEvent`; esta salida nunca omite las validaciones anteriores.
+4. Si la transición continúa válida, `COMPANY_ADMIN` deshabilita o reintegra al usuario mediante una mutación real y el `AuditEvent` existente requerido dentro de la misma frontera atómica.
+5. Toda autorización online afectada se revoca inmediatamente según el estado autoritativo vigente; una sesión Auth o access JWT residual no conserva permisos revocados, y la terminación provider-side de sesiones/credenciales renovables se ejecuta mediante una primitiva pública soportada cuando exista una contractualmente adecuada para el caso, sin que su ausencia o fallo restaure autorización.
+6. La identidad e historial se conservan.
+7. Datos offline existentes permanecen protegidos y aislados por identidad.
+8. En una reintegración futura se restablece el estado del usuario conforme a los permisos vigentes y al rol vigente en la membership, nunca mediante restauración automática de un rol histórico.
 
 ### FL-04 — Soporte excepcional de `SUPER_ADMIN`
 
@@ -1145,6 +1160,8 @@ Como mínimo DEBEN registrarse como eventos no eliminables por operación normal
 - accesos excepcionales efectivamente realizados por `SUPER_ADMIN`.
 
 Cada evento debe permitir identificar al menos actor, empresa afectada, acción, momento y alcance.
+
+En el lifecycle de `CompanyMembership`, únicamente una mutación real autorizada genera la acción existente correspondiente: deshabilitar/revocar genera `USER_DISABLED_OR_REVOKED`, reintegrar genera `USER_REINSTATED` y cambiar realmente el rol genera `USER_ROLE_CHANGED`. Un no-op autorizado con `changed = false` y toda operación denegada generan cero `AuditEvent`.
 
 Además deben existir las trazas históricas implícitas de versiones de formularios, revisiones de mantenimiento, snapshots/versiones de informes, movimientos de créditos y eventos de pago.
 
