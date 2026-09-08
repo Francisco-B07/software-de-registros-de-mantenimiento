@@ -2,7 +2,7 @@
 
 begin;
 
-select plan(33);
+select plan(69);
 
 select has_column(
   'public',
@@ -119,12 +119,12 @@ select is(
   'T014-DB-008 RPC has zero business identity arguments'
 );
 select ok(
-  (
+  not (
     select prosecdef
     from pg_proc
     where oid = 'public.resolve_current_global_authority()'::regprocedure
   ),
-  'T014-DB-009 RPC is SECURITY DEFINER'
+  'T014-DB-009 RPC is SECURITY INVOKER after CORR-021'
 );
 select is(
   (
@@ -207,6 +207,178 @@ select ok(
 select ok(
   not has_table_privilege('authenticated', 'public.platform_users', 'UPDATE'),
   'T014-DB-018 authenticated receives no authority write privilege'
+);
+
+select is(
+  (
+    select count(*)
+    from pg_proc
+    where pronamespace = 'public'::regnamespace
+      and proname = 'resolve_current_global_authority'
+      and pronargs = 0
+  ),
+  1::bigint,
+  'T021-DB-001 exactly one zero-arg public resolver exists'
+);
+select is(
+  pg_get_function_result('public.resolve_current_global_authority()'::regprocedure),
+  'TABLE(identity_resolved boolean, is_super_admin boolean, has_company_membership boolean)',
+  'T021-DB-002 public resolver keeps the exact three-boolean output'
+);
+select ok(
+  not (
+    select prosecdef
+    from pg_proc
+    where oid = 'public.resolve_current_global_authority()'::regprocedure
+  ),
+  'T021-DB-003 public resolver is SECURITY INVOKER'
+);
+select has_function(
+  'private',
+  'resolve_current_global_authority',
+  array[]::text[],
+  'T021-DB-004 internal resolver exists in private'
+);
+select ok(
+  (
+    select prosecdef
+    from pg_proc
+    where oid = 'private.resolve_current_global_authority()'::regprocedure
+  ),
+  'T021-DB-005 internal resolver is SECURITY DEFINER'
+);
+select is(
+  (
+    select array_to_string(proconfig, ',')
+    from pg_proc
+    where oid = 'private.resolve_current_global_authority()'::regprocedure
+  ),
+  'search_path=""',
+  'T021-DB-006 internal resolver has an empty fixed search_path'
+);
+select is(
+  (
+    select pg_get_userbyid(proowner)
+    from pg_proc
+    where oid = 'private.resolve_current_global_authority()'::regprocedure
+  ),
+  'postgres',
+  'T021-DB-007 internal resolver owner is postgres'
+);
+select ok(
+  pg_get_functiondef('private.resolve_current_global_authority()'::regprocedure)
+    ilike '%from public.platform_user_auth_subjects%'
+  and pg_get_functiondef('private.resolve_current_global_authority()'::regprocedure)
+    ilike '%join public.platform_users%'
+  and pg_get_functiondef('private.resolve_current_global_authority()'::regprocedure)
+    ilike '%from public.company_memberships%'
+  and pg_get_functiondef('private.resolve_current_global_authority()'::regprocedure)
+    ilike '%auth.uid()%'
+  and pg_get_functiondef('private.resolve_current_global_authority()'::regprocedure)
+    not ilike '%from platform_user_auth_subjects%'
+  and pg_get_functiondef('private.resolve_current_global_authority()'::regprocedure)
+    not ilike '%join platform_users%'
+  and pg_get_functiondef('private.resolve_current_global_authority()'::regprocedure)
+    not ilike '%from company_memberships%',
+  'T021-DB-008 internal resolver body is schema-qualified'
+);
+select is(
+  (
+    select count(*)
+    from pg_proc
+    where pronamespace = 'private'::regnamespace
+      and proname = 'resolve_current_global_authority'
+  ),
+  1::bigint,
+  'T021-DB-009 no unexpected privileged overload exists'
+);
+select ok(
+  not exists (
+    select 1
+    from pg_proc as function_definition
+    cross join lateral aclexplode(
+      coalesce(
+        function_definition.proacl,
+        acldefault('f', function_definition.proowner)
+      )
+    ) as privilege
+    where function_definition.oid =
+      'public.resolve_current_global_authority()'::regprocedure
+      and privilege.grantee = 0
+      and privilege.privilege_type = 'EXECUTE'
+  ),
+  'T021-DB-010 PUBLIC cannot execute the public wrapper'
+);
+select ok(
+  not has_function_privilege(
+    'anon',
+    'public.resolve_current_global_authority()',
+    'EXECUTE'
+  ),
+  'T021-DB-011 anon cannot execute the public wrapper'
+);
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.resolve_current_global_authority()',
+    'EXECUTE'
+  ),
+  'T021-DB-012 authenticated can execute the public wrapper'
+);
+select ok(
+  not exists (
+    select 1
+    from pg_proc as function_definition
+    cross join lateral aclexplode(
+      coalesce(
+        function_definition.proacl,
+        acldefault('f', function_definition.proowner)
+      )
+    ) as privilege
+    where function_definition.oid =
+      'private.resolve_current_global_authority()'::regprocedure
+      and privilege.grantee = 0
+      and privilege.privilege_type = 'EXECUTE'
+  ),
+  'T021-DB-013 PUBLIC cannot execute the internal resolver'
+);
+select ok(
+  not has_function_privilege(
+    'anon',
+    'private.resolve_current_global_authority()',
+    'EXECUTE'
+  ),
+  'T021-DB-014 anon cannot execute the internal resolver'
+);
+select ok(
+  has_schema_privilege('authenticated', 'private', 'USAGE')
+  and not has_schema_privilege('authenticated', 'private', 'CREATE')
+  and has_function_privilege(
+    'authenticated',
+    'private.resolve_current_global_authority()',
+    'EXECUTE'
+  ),
+  'T021-DB-015 authenticated has only required schema USAGE and internal EXECUTE'
+);
+select ok(
+  not has_schema_privilege('service_role', 'private', 'USAGE')
+  and not has_function_privilege(
+    'service_role',
+    'private.resolve_current_global_authority()',
+    'EXECUTE'
+  )
+  and not has_function_privilege(
+    'service_role',
+    'public.resolve_current_global_authority()',
+    'EXECUTE'
+  ),
+  'T021-DB-016 no ordinary service_role execution path exists'
+);
+select ok(
+  not has_schema_privilege('anon', 'private', 'USAGE')
+  and not has_schema_privilege('service_role', 'private', 'USAGE')
+  and not has_schema_privilege('supabase_auth_admin', 'private', 'USAGE'),
+  'T021-DB-017 internal schema has no broad Data API role exposure'
 );
 
 set local role anon;
@@ -295,11 +467,98 @@ select ok(
    from public.resolve_current_global_authority()),
   'T014-DB-030 caller A cannot select caller B as a target'
 );
+
+select ok(
+  (select identity_resolved and is_super_admin and not has_company_membership
+   from public.resolve_current_global_authority()),
+  'T021-API-001 authenticated public RPC works through the wrapper'
+);
+
+select set_config('request.jwt.claim.sub', '', true);
+select ok(
+  not (select identity_resolved from public.resolve_current_global_authority()),
+  'T021-AUTH-001 missing auth.uid fails closed'
+);
+select set_config(
+  'request.jwt.claim.sub',
+  '94000000-0000-4000-8000-000000000007',
+  true
+);
+select ok(
+  not (select identity_resolved from public.resolve_current_global_authority()),
+  'T021-AUTH-002 missing PlatformUser mapping fails closed'
+);
+select set_config('request.jwt.claim.sub', '94000000-0000-4000-8000-000000000001', true);
+select ok(
+  (select identity_resolved and is_super_admin and not has_company_membership
+   from public.resolve_current_global_authority()),
+  'T021-AUTH-003 true plus no membership remains global'
+);
+select set_config('request.jwt.claim.sub', '94000000-0000-4000-8000-000000000004', true);
+select ok(
+  (select identity_resolved and not is_super_admin and not has_company_membership
+   from public.resolve_current_global_authority()),
+  'T021-AUTH-004 false plus no membership remains not global'
+);
+select set_config('request.jwt.claim.sub', '94000000-0000-4000-8000-000000000002', true);
+select ok(
+  (select identity_resolved and is_super_admin and has_company_membership
+   from public.resolve_current_global_authority()),
+  'T021-AUTH-005 true plus enabled membership remains inconsistent'
+);
+select set_config('request.jwt.claim.sub', '94000000-0000-4000-8000-000000000003', true);
+select ok(
+  (select identity_resolved and is_super_admin and has_company_membership
+   from public.resolve_current_global_authority()),
+  'T021-AUTH-006 true plus disabled membership remains inconsistent'
+);
+select set_config('request.jwt.claim.sub', '94000000-0000-4000-8000-000000000005', true);
+select ok(
+  (select identity_resolved and not is_super_admin and has_company_membership
+   from public.resolve_current_global_authority()),
+  'T021-AUTH-007 false plus enabled membership remains not global'
+);
+select set_config('request.jwt.claim.sub', '94000000-0000-4000-8000-000000000006', true);
+select ok(
+  (select identity_resolved and not is_super_admin and has_company_membership
+   from public.resolve_current_global_authority()),
+  'T021-AUTH-008 false plus disabled membership remains not global'
+);
+select set_config('request.jwt.claim.sub', '94000000-0000-4000-8000-000000000001', true);
+select ok(
+  (select is_super_admin and not has_company_membership
+   from public.resolve_current_global_authority()),
+  'T021-AUTH-009 caller A cannot classify caller B'
+);
+select ok(
+  (
+    select pronargs = 0 and pg_get_function_arguments(oid) = ''
+    from pg_proc
+    where oid = 'public.resolve_current_global_authority()'::regprocedure
+  )
+  and (
+    select pronargs = 0 and pg_get_function_arguments(oid) = ''
+    from pg_proc
+    where oid = 'private.resolve_current_global_authority()'::regprocedure
+  ),
+  'T021-AUTH-010 no caller-controlled authority input exists'
+);
+select is(
+  pg_get_function_result('public.resolve_current_global_authority()'::regprocedure),
+  'TABLE(identity_resolved boolean, is_super_admin boolean, has_company_membership boolean)',
+  'T021-AUTH-011 public output leaks no role tenant membership or client detail'
+);
 select throws_ok(
   $$update public.platform_users set is_super_admin = false where id = '00000000-0000-4000-8000-000000014101'$$,
   '42501',
   null,
   'T014-DB-031 authenticated cannot mutate is_super_admin'
+);
+select throws_ok(
+  $$update public.platform_users set is_super_admin = false where id = '00000000-0000-4000-8000-000000014101'$$,
+  '42501',
+  null,
+  'T021-SEC-003 authenticated cannot update is_super_admin'
 );
 
 reset role;
@@ -319,6 +578,70 @@ select ok(
       and tablename = 'company_memberships'
   ),
   'T014-DB-033 ordinary company_memberships RLS remains unchanged'
+);
+select ok(
+  pg_get_functiondef('public.resolve_current_global_authority()'::regprocedure)
+    !~* '\mexecute\M'
+  and pg_get_functiondef('private.resolve_current_global_authority()'::regprocedure)
+    !~* '\mexecute\M',
+  'T021-SEC-001 resolver topology uses no dynamic SQL'
+);
+select ok(
+  pg_get_functiondef('public.resolve_current_global_authority()'::regprocedure)
+    !~* '\m(insert|update|delete)\M'
+  and pg_get_functiondef('private.resolve_current_global_authority()'::regprocedure)
+    !~* '\m(insert|update|delete)\M'
+  and (select count(*) from public.platform_users where is_super_admin) = 3
+  and (select count(*) from public.company_memberships) = 4,
+  'T021-SEC-002 public and internal resolvers perform zero writes'
+);
+select ok(
+  (
+    select count(*) = 1
+      and bool_and(cmd = 'SELECT')
+      and bool_and(qual ilike '%is_enabled%')
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'company_memberships'
+  ),
+  'T021-SEC-004 ordinary CompanyMembership RLS remains unchanged'
+);
+select ok(
+  not has_table_privilege('authenticated', 'public.company_memberships', 'INSERT')
+  and not has_table_privilege('authenticated', 'public.company_memberships', 'UPDATE')
+  and not has_table_privilege('authenticated', 'public.company_memberships', 'DELETE')
+  and not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'company_memberships'
+      and cmd in ('INSERT', 'UPDATE', 'DELETE', 'ALL')
+      and 'authenticated' = any(roles)
+  ),
+  'T021-SEC-005 no direct membership write grant or policy exists'
+);
+select ok(
+  not has_table_privilege('authenticated', 'public.audit_events', 'INSERT')
+  and not has_table_privilege('authenticated', 'public.audit_events', 'UPDATE')
+  and not has_table_privilege('authenticated', 'public.audit_events', 'DELETE')
+  and not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'audit_events'
+  ),
+  'T021-SEC-006 AuditEvent privileges and RLS remain unchanged'
+);
+select ok(
+  (select count(*) from public.platform_users where is_super_admin) = 3
+  and (select count(*) from public.company_memberships) = 4
+  and (
+    select count(*) = 1
+    from pg_proc
+    where pronamespace = 'public'::regnamespace
+      and proname = 'resolve_current_global_authority'
+  ),
+  'T021-REG-001 historical TASK-014 matrix remains intact'
 );
 
 select * from finish();
