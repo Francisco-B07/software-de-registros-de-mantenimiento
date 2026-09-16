@@ -621,15 +621,17 @@ Se preservan:
 
 `TASK-014 = DONE / CLOSED` y `TASK-014 FINAL HUMAN CLOSURE REVIEW = APPROVED`. Su resultado técnico se limita a `global SUPER_ADMIN identity/authorization foundation = IMPLEMENTADA`, con `public.platform_users.is_super_admin = boolean NOT NULL DEFAULT false` y `public.resolve_current_global_authority() = IMPLEMENTADA` como resolver purpose-specific y DB-authoritative. No implementó Auth funcional, grant/revoke/bootstrap/management funcional de `SUPER_ADMIN`, bypass ordinario de tenant RLS, service-role como resolver ordinario ni un cliente privilegiado genérico.
 
-Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Application authorization completa = NO`, `route authorization funcional completa = NO`, `resource authorization funcional completa = NO`, `Client = NO`, `UserClientAccess completo = NO`, `SupportAccessGrant completo = NO`, `Client authorization = NO`, `Support authorization = NO`, `Storage funcional = NO`, `Realtime funcional = NO`, `Offline authorization = NO`, `Offline funcional = NO`, `UI/Auth flow funcional completo = NO`, `onboarding funcional completo = NO`, `alta funcional completa = NO`, `lifecycle funcional completo de usuarios/memberships = NO`, `disable/reinstate/role-change funcional = NO` y `auditoría funcional completa = NO`. `AuditEvent foundation física = SÍ` no equivale a auditoría funcional completa ni a flows productores implementados; `AuditEvent producer TASK-012 = NO` y `Productores funcionales de AuditEvent = NO`.
+Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Application authorization completa = NO`, `route authorization funcional completa = NO`, `resource authorization funcional completa = NO`, `Client = NO`, `UserClientAccess completo = NO`, `SupportAccessGrant completo = NO`, `Client authorization = NO`, `Support authorization = NO`, `Storage funcional = NO`, `Realtime funcional = NO`, `Offline authorization = NO`, `Offline funcional = NO`, `UI/Auth flow funcional completo = NO`, `onboarding funcional completo = NO`, `alta funcional completa = NO`, `lifecycle funcional completo de usuarios/memberships = NO` y `auditoría funcional completa = NO`. `AuditEvent foundation física = SÍ` no equivale a auditoría funcional completa; `AuditEvent producer TASK-012 = NO` permanece. `TASK-015 membership lifecycle AuditEvent producers = IMPLEMENTED AND VERIFIED` describe exclusivamente los productores correspondientes a disable/reinstate/role-change y no todos los productores funcionales.
 
 `ADR-0019 = ACCEPTED` permanece como antecedente arquitectónico. La secuencia histórica separó la especificación bloqueada, su corrección, aprobación, canonicalización, autorización, implementación y cierre; esos estados previos no describen el estado activo actual. `Fase 2 = INICIADA / NOT DONE`.
 
 `CORR-020 = DONE / CLOSED` y `CORR-020 documentation prerequisite for TASK-015 = SATISFIED`.
 
-`TASK-015 determinada = SÍ`, `TASK-015 generada / especificada = SÍ`, `TASK-015 SPEC REVIEW = APPROVED`, `TASK-015 HUMAN SPEC APPROVAL = APPROVED` y `TASK-015 canonicalizada = SÍ`. Se preserva `TASK-015 implementation authorized = NO`, `TASK-015 implementation started = NO` y `Siguiente TASK autorizada automáticamente = NO`.
-
 `CORR-021 = DONE / CLOSED`, `CORR-021 FINAL HUMAN CLOSURE = APPROVED` y `CORR-021 blocker of TASK-015 = RESOLVED`. El cierre de CORR-021 no inicia ni autoriza automáticamente la implementación de TASK-015.
+
+`TASK-015 = DONE / CLOSED` y `TASK-015 FINAL HUMAN CLOSURE REVIEW = APPROVED`. Su implementation commit es `e8a8cf53c76f39762d6946b5808819f5db227365`. Su resultado acotado es `CompanyMembership disable/reinstate/role-change capability = IMPLEMENTED AND VERIFIED`, `TASK-015 membership lifecycle AuditEvent producers = IMPLEMENTED AND VERIFIED`, `real mutation + required AuditEvent atomicity = IMPLEMENTED AND VERIFIED` y `same-tenant / RLS / concurrency invariants = PRESERVED AND VERIFIED`. No implementó el lifecycle funcional completo de usuarios/memberships ni la auditoría funcional completa.
+
+`TASK-016 = NOT DETERMINED / NOT GENERATED / NOT STARTED` y `Siguiente TASK autorizada automáticamente = NO`.
 
 ---
 
@@ -787,7 +789,7 @@ El acto humano separado de inicio de Fase 2 fue realizado y revisado con resulta
 
 Por tanto:
 
-> **`TASK-014 = DONE / CLOSED` y `TASK-014 FINAL HUMAN CLOSURE REVIEW = APPROVED`; `TASK-014 = DONE / CLOSED != TASK-015 determinada automáticamente`.**
+> **`TASK-014 = DONE / CLOSED` y `TASK-014 FINAL HUMAN CLOSURE REVIEW = APPROVED`; `TASK-015 = DONE / CLOSED` y `TASK-015 FINAL HUMAN CLOSURE REVIEW = APPROVED`; `TASK-015 = DONE / CLOSED != TASK-016 determinada automáticamente`.**
 
 TASK-008 fue canonicalizada, implementada, incorporada a Git y aprobada en revisión humana final. Su resultado fue exclusivamente la frontera Supabase de aplicación con factories browser/server no privilegiadas.
 
@@ -803,7 +805,9 @@ La secuencia histórica desde `ADR-0019 = ACCEPTED` atravesó Gates separados de
 
 TASK-014 fue especificada, aprobada, canonicalizada, implementada, verificada en Hosted Development, incorporada a Git y aprobada mediante cierre humano final; por tanto, `TASK-014 = DONE / CLOSED`. Su resultado fue exclusivamente la foundation mínima de identidad/autorización global de `SUPER_ADMIN`, sin convertir Auth en funcional ni implementar grant/revoke/bootstrap/management funcional, bypass tenant ordinario o autorización funcional completa.
 
-`CORR-020 = DONE / CLOSED` y su prerequisite documental para TASK-015 está `SATISFIED`. `CORR-021 = DONE / CLOSED`, su security blocker está `RESOLVED` y ese cierre no equivale a `TASK-015 IMPLEMENTATION START` ni a `TASK-015 IMPLEMENTATION AUTHORIZED`. `TASK-015 = DETERMINED / SPECIFIED / HUMAN-APPROVED / CANONICALIZED`, pero `TASK-015 implementation authorized = NO` y `TASK-015 implementation started = NO`. No existe autorización automática del siguiente incremento.
+`CORR-020 = DONE / CLOSED` y su prerequisite documental para TASK-015 está `SATISFIED`. `CORR-021 = DONE / CLOSED` y su security blocker está `RESOLVED`. TASK-015 completó specification y aprobación, implementación, verificación, incorporación Git y cierre humano final; por tanto, `TASK-015 = DONE / CLOSED` y `TASK-015 FINAL HUMAN CLOSURE REVIEW = APPROVED`. Su implementation commit es `e8a8cf53c76f39762d6946b5808819f5db227365`.
+
+El resultado funcional acotado de TASK-015 comprende disable, reinstate y role-change de `CompanyMembership`, los `AuditEvent` correspondientes, la atomicidad entre mutación real y evento requerido y la preservación/verificación de same-tenant, RLS y concurrencia. No completa Auth, el lifecycle funcional completo de usuarios/memberships, la autorización funcional ni la auditoría funcional completa. `TASK-015 = DONE / CLOSED != TASK-016 determinada automáticamente`; `TASK-016 = NOT DETERMINED / NOT GENERATED / NOT STARTED` y no existe autorización automática del siguiente incremento.
 
 Este documento:
 
@@ -862,16 +866,24 @@ Este documento:
 - registra `CORR-021 = DONE / CLOSED`;
 - registra `CORR-021 FINAL HUMAN CLOSURE = APPROVED`;
 - registra `CORR-021 security blocker = RESOLVED`;
+- registra `TASK-015 specification y aprobación = COMPLETADAS`;
+- registra `TASK-015 implementation y verificación = COMPLETADAS`;
+- registra `TASK-015 incorporación Git = COMPLETADA`;
+- registra `TASK-015 FINAL HUMAN CLOSURE REVIEW = APPROVED`;
+- registra `TASK-015 = DONE / CLOSED`;
+- registra `TASK-015 implementation commit = e8a8cf53c76f39762d6946b5808819f5db227365`;
+- registra `CompanyMembership disable/reinstate/role-change capability = IMPLEMENTED AND VERIFIED`;
+- registra `TASK-015 membership lifecycle AuditEvent producers = IMPLEMENTED AND VERIFIED`;
+- registra `real mutation + required AuditEvent atomicity = IMPLEMENTED AND VERIFIED`;
+- registra `same-tenant / RLS / concurrency invariants = PRESERVED AND VERIFIED`;
 - mantiene `Auth funcional = NO`;
+- mantiene `lifecycle funcional completo de usuarios/memberships = NO`;
+- mantiene `auditoría funcional completa = NO`;
 - mantiene `Fase 2 = INICIADA`;
 - mantiene `Fase 2 = NOT DONE`;
 - mantiene `Phase 2 Exit Gate = NOT DEFINED / NOT SATISFIED`;
 - mantiene `Fase 3 = NOT STARTED`;
-- registra `TASK-015 = DETERMINED / SPECIFIED / HUMAN-APPROVED / CANONICALIZED`;
-- registra `TASK-015 SPEC REVIEW = APPROVED`;
-- registra `TASK-015 HUMAN SPEC APPROVAL = APPROVED`;
-- mantiene `TASK-015 implementation authorized = NO`;
-- mantiene `TASK-015 implementation started = NO`;
+- mantiene `TASK-016 = NOT DETERMINED / NOT GENERATED / NOT STARTED`;
 - mantiene `Siguiente TASK autorizada automáticamente = NO`.
 
 ## 10.3 Separación entre cierre de Fase 1 y entrada a Fase 2
@@ -1141,9 +1153,11 @@ caller-scoped Supabase client
 
 La materialización `private = NON-EXPOSED SCHEMA` es purpose-specific de CORR-021 y no constituye una convención global obligatoria. Se preservan `public resolver arguments = ZERO` e `identity anchor = auth.uid() only`. `ordinary CompanyMembership RLS = PRESERVED`, `SUPER_ADMIN ordinary tenant bypass = NO`, `ordinary service-role resolver = NO` y `generic privileged client = NO`.
 
-Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Application authorization completa = NO`, `route authorization funcional completa = NO`, `resource authorization funcional completa = NO`, `Client = NO`, `UserClientAccess completo = NO`, `SupportAccessGrant completo = NO`, `Client authorization = NO`, `Support authorization = NO`, `Storage funcional = NO`, `Realtime funcional = NO`, `Offline authorization = NO`, `Offline funcional = NO`, `UI/Auth flow funcional completo = NO`, `onboarding funcional completo = NO`, `alta funcional completa = NO`, `lifecycle funcional completo de usuarios/memberships = NO`, `disable/reinstate/role-change funcional = NO`, `SUPER_ADMIN grant funcional = NO`, `SUPER_ADMIN revoke funcional = NO`, `SUPER_ADMIN bootstrap funcional = NO`, `SUPER_ADMIN management funcional = NO`, `AuditEvent producer TASK-012 = NO`, `Productores funcionales de AuditEvent = NO` y `auditoría funcional completa = NO`. `authenticated != authorized` permanece vigente. `ADR-0019 = ACCEPTED` permanece como antecedente arquitectónico; la especificación inicialmente bloqueada y los Gates posteriores de TASK-013 permanecen como historia normativa.
+`TASK-015 = DONE / CLOSED` y `TASK-015 FINAL HUMAN CLOSURE REVIEW = APPROVED`. Su implementation commit es `e8a8cf53c76f39762d6946b5808819f5db227365`. `TASK-015 membership lifecycle operations = IMPLEMENTED AND VERIFIED` comprende disable, reinstate y role-change de `CompanyMembership`, sin equivaler al lifecycle funcional completo de usuarios/memberships. `TASK-015 membership lifecycle AuditEvent producers = IMPLEMENTED AND VERIFIED`, sin equivaler a auditoría funcional completa. `real mutation + required AuditEvent atomicity = IMPLEMENTED AND VERIFIED` y `same-tenant / RLS / concurrency invariants = PRESERVED AND VERIFIED`.
 
-`TASK-015 = DETERMINED / SPECIFIED / HUMAN-APPROVED / CANONICALIZED`, pero `TASK-015 implementation authorized = NO` y `TASK-015 implementation started = NO`. Se preservan `Fase 2 = INICIADA / NOT DONE`, `Phase 2 Exit Gate = NOT DEFINED / NOT SATISFIED`, `Fase 3 = NOT STARTED` y `Siguiente TASK autorizada automáticamente = NO`.
+Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Application authorization completa = NO`, `route authorization funcional completa = NO`, `resource authorization funcional completa = NO`, `Client = NO`, `UserClientAccess completo = NO`, `SupportAccessGrant completo = NO`, `Client authorization = NO`, `Support authorization = NO`, `Storage funcional = NO`, `Realtime funcional = NO`, `Offline authorization = NO`, `Offline funcional = NO`, `UI/Auth flow funcional completo = NO`, `onboarding funcional completo = NO`, `alta funcional completa = NO`, `lifecycle funcional completo de usuarios/memberships = NO`, `SUPER_ADMIN grant funcional = NO`, `SUPER_ADMIN revoke funcional = NO`, `SUPER_ADMIN bootstrap funcional = NO`, `SUPER_ADMIN management funcional = NO`, `AuditEvent producer TASK-012 = NO` y `auditoría funcional completa = NO`. `authenticated != authorized` permanece vigente. `ADR-0019 = ACCEPTED` permanece como antecedente arquitectónico; la especificación inicialmente bloqueada y los Gates posteriores de TASK-013 permanecen como historia normativa.
+
+Se preservan `Fase 2 = INICIADA / NOT DONE`, `Phase 2 Exit Gate = NOT DEFINED / NOT SATISFIED`, `Fase 3 = NOT STARTED`, `TASK-016 = NOT DETERMINED / NOT GENERATED / NOT STARTED` y `Siguiente TASK autorizada automáticamente = NO`.
 
 ---
 
@@ -1358,9 +1372,9 @@ Con esta aprobación, Fase 1 queda autorizada documentalmente. La implementació
 
 `CORR-021 = DONE / CLOSED`, `CORR-021 implementation commit = b8e96bd89b246b663647711e5ad11d9dba9c2bde`, `CORR-021 FINAL HUMAN CLOSURE = APPROVED`, `CORR-021 Hosted Development = PASS`, `CORR-021 migration = APPLIED EXACTLY ONCE` y `CORR-021 blocker of TASK-015 = RESOLVED`.
 
-`TASK-015 determinada = SÍ`, `TASK-015 especificada = SÍ`, `TASK-015 aprobada humanamente = SÍ` y `TASK-015 canonicalizada = SÍ`. Se preservan `TASK-015 implementation authorized = NO` y `TASK-015 implementation started = NO`.
+`TASK-015 = DONE / CLOSED` y `TASK-015 FINAL HUMAN CLOSURE REVIEW = APPROVED`. Su implementation commit es `e8a8cf53c76f39762d6946b5808819f5db227365`. `CompanyMembership disable/reinstate/role-change capability = IMPLEMENTED AND VERIFIED`, `TASK-015 membership lifecycle AuditEvent producers = IMPLEMENTED AND VERIFIED`, `real mutation + required AuditEvent atomicity = IMPLEMENTED AND VERIFIED` y `same-tenant / RLS / concurrency invariants = PRESERVED AND VERIFIED`.
 
-Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Application authorization completa = NO`, `route authorization funcional completa = NO`, `resource authorization funcional completa = NO`, `Client = NO`, `UserClientAccess completo = NO`, `SupportAccessGrant completo = NO`, `Client authorization = NO`, `Support authorization = NO`, `Storage funcional = NO`, `Realtime funcional = NO`, `Offline authorization = NO`, `Offline funcional = NO`, `UI/Auth flow funcional completo = NO`, `onboarding funcional completo = NO`, `alta funcional completa = NO`, `lifecycle funcional completo de usuarios/memberships = NO`, `disable/reinstate/role-change funcional = NO`, `SUPER_ADMIN grant funcional = NO`, `SUPER_ADMIN revoke funcional = NO`, `SUPER_ADMIN bootstrap funcional = NO`, `SUPER_ADMIN management funcional = NO`, `AuditEvent producer TASK-012 = NO`, `Productores funcionales de AuditEvent = NO` y `auditoría funcional completa = NO`. `ADR-0019 = ACCEPTED` permanece como antecedente arquitectónico; la especificación inicialmente bloqueada y los Gates separados que condujeron a la implementación y cierre de TASK-013 permanecen como historia normativa. `authenticated != authorized` continúa vigente.
+Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Application authorization completa = NO`, `route authorization funcional completa = NO`, `resource authorization funcional completa = NO`, `Client = NO`, `UserClientAccess completo = NO`, `SupportAccessGrant completo = NO`, `Client authorization = NO`, `Support authorization = NO`, `Storage funcional = NO`, `Realtime funcional = NO`, `Offline authorization = NO`, `Offline funcional = NO`, `UI/Auth flow funcional completo = NO`, `onboarding funcional completo = NO`, `alta funcional completa = NO`, `lifecycle funcional completo de usuarios/memberships = NO`, `SUPER_ADMIN grant funcional = NO`, `SUPER_ADMIN revoke funcional = NO`, `SUPER_ADMIN bootstrap funcional = NO`, `SUPER_ADMIN management funcional = NO`, `AuditEvent producer TASK-012 = NO` y `auditoría funcional completa = NO`. `ADR-0019 = ACCEPTED` permanece como antecedente arquitectónico; la especificación inicialmente bloqueada y los Gates separados que condujeron a la implementación y cierre de TASK-013 permanecen como historia normativa. `authenticated != authorized` continúa vigente.
 
 ---
 
@@ -1400,15 +1414,30 @@ Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh f
 **CORR-021 FINAL HUMAN CLOSURE: APPROVED**
 **CORR-021 Hosted Development: PASS**
 **CORR-021 blocker of TASK-015: RESOLVED**
+**TASK-015: DONE / CLOSED**
+**TASK-015 FINAL HUMAN CLOSURE REVIEW: APPROVED**
+**TASK-015 implementation commit: e8a8cf53c76f39762d6946b5808819f5db227365**
+**CompanyMembership disable: IMPLEMENTED AND VERIFIED**
+**CompanyMembership reinstate: IMPLEMENTED AND VERIFIED**
+**CompanyMembership role-change: IMPLEMENTED AND VERIFIED**
+**TASK-015 membership lifecycle AuditEvent producers: IMPLEMENTED AND VERIFIED**
+**real mutation + required AuditEvent atomicity: IMPLEMENTED AND VERIFIED**
+**same-tenant invariants: PRESERVED AND VERIFIED**
+**RLS invariants: PRESERVED AND VERIFIED**
+**concurrency invariants: PRESERVED AND VERIFIED**
 **Auth funcional: no**
+**lifecycle funcional completo de usuarios/memberships: no**
+**Application authorization completa: no**
+**route authorization funcional completa: no**
+**resource authorization funcional completa: no**
+**Client: no**
+**UserClientAccess completo: no**
+**SupportAccessGrant completo: no**
+**auditoría funcional completa: no**
 **Fase 2 completada: no**
 **Phase 2 Exit Gate: NOT DEFINED / NOT SATISFIED**
 **Fase 3 iniciada: no**
-**TASK-015 determinada: sí**
-**TASK-015 especificada: sí**
-**TASK-015 aprobada humanamente: sí**
-**TASK-015 canonicalizada: sí**
-**TASK-015 implementation authorized: no**
-**TASK-015 implementation started: no**
-**TASK-016: NOT DETERMINED / NOT GENERATED / NOT STARTED**
+**TASK-016 determinada: no**
+**TASK-016 generada: no**
+**TASK-016 iniciada: no**
 **Siguiente TASK autorizada automáticamente: no**
