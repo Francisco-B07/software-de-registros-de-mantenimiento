@@ -10,6 +10,11 @@ import { createSupabaseAuthAdminBoundary } from "./infrastructure/supabase/auth-
 import { createSupabaseTechnicalSignInBoundary } from "./infrastructure/supabase/technical-sign-in";
 import { resolveCurrentGlobalAuthorizationWithSource } from "./application/resolve-current-global-authorization";
 import { createSupabaseCurrentGlobalAuthorizationSource } from "./infrastructure/supabase/current-global-authorization-source";
+import {
+  applyCompanyMembershipLifecycleWithSource,
+  type CompanyMembershipLifecycleInput,
+} from "./application/apply-company-membership-lifecycle";
+import { createSupabaseCompanyMembershipLifecycleSource } from "./infrastructure/supabase/company-membership-lifecycle-source";
 
 export type {
   CurrentAuthorizationContext,
@@ -32,6 +37,10 @@ export type {
 } from "./application/auth-session-bridge";
 export type { EstablishTechnicalIdentityInput } from "./application/auth-session-bridge-service";
 export type { CurrentGlobalAuthorizationResult } from "./application/resolve-current-global-authorization";
+export type {
+  CompanyMembershipLifecycleInput,
+  CompanyMembershipLifecycleResult,
+} from "./application/apply-company-membership-lifecycle";
 
 export function resolveCurrentAuthorizationContext(
   identity: ValidatedAuthIdentity | null | undefined,
@@ -65,4 +74,13 @@ export function getTechnicalSignInBoundary() {
 
 export function getAuthSessionBridgeService() {
   return createAuthSessionBridgeService();
+}
+
+export function applyCompanyMembershipLifecycle(
+  input: CompanyMembershipLifecycleInput,
+) {
+  return applyCompanyMembershipLifecycleWithSource(
+    input,
+    createSupabaseCompanyMembershipLifecycleSource,
+  );
 }

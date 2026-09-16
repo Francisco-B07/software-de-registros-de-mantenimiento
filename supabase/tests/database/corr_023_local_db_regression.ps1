@@ -342,8 +342,8 @@ try {
   }
 
   $task015Text = Get-Content -Raw -LiteralPath (Join-Path $script:RepoRoot $task015Path)
-  Assert-Corr023 -Condition (($task015Text | Select-String -Pattern 'select\s+plan\(81\);' -AllMatches).Matches.Count -eq 1) `
-    -Message "TASK-015 plan(81) contract drift."
+  Assert-Corr023 -Condition (($task015Text | Select-String -Pattern 'select\s+plan\(93\);' -AllMatches).Matches.Count -eq 1) `
+    -Message "TASK-015 plan(93) contract drift."
 
   $task015ConcurrencyText = Get-Content -Raw -LiteralPath (Join-Path $script:RepoRoot $task015ConcurrencyPath)
   foreach ($number in 1..6) {
@@ -475,8 +475,8 @@ order by 1;
   Write-Output "TASK-014 DB = PASS (path=$task014Path; Tests=$($task014.Tests))"
 
   $task015 = Invoke-Corr023DbSuite -NpxPath $npxPath -RelativePath $task015Path `
-    -Phase 'TASK-015 DB suite' -ExpectedTests 81
-  Write-Output "TASK-015 DB = PASS (plan=81; executed=81; failed=0; Tests=81)"
+    -Phase 'TASK-015 DB suite' -ExpectedTests 93
+  Write-Output "TASK-015 DB = PASS (plan=93; executed=93; failed=0; Tests=93)"
 
   $psqlDirectory = Split-Path -Parent $script:PsqlPath
   $childPath = $psqlDirectory + [IO.Path]::PathSeparator + $env:PATH
