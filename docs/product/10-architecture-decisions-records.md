@@ -578,7 +578,7 @@ No se detecta pérdida de un candidato relevante después de la consolidación.
 
 # 7. Catálogo definitivo propuesto de ADR
 
-El catálogo original propuso **18 ADR definitivos**. Después de la incorporación canónica de ADR-0019, el catálogo vigente contiene **19 ADR**.
+El catálogo original propuso **18 ADR definitivos**. Después de las incorporaciones canónicas de ADR-0019 y ADR-0020, el catálogo vigente contiene **20 ADR**.
 
 Los estados de esta tabla reflejan el estado documental actual de cada ADR. No modifican el estado de ningún `DO` ni `OPEN`.
 
@@ -603,6 +603,7 @@ Los estados de esta tabla reflejan el estado documental actual de cada ADR. No m
 | `ADR-0017` | Backup, restore, RPO y RTO | Definir estrategia operativa de recuperación según objetivos de negocio | `DO-T06` | `DO-T06` | `DEFERRED` | Piloto/producción |
 | `ADR-0018` | Controles técnicos derivados de privacidad/legal | Traducir requisitos legales aprobados a retención, acceso y minimización técnica | `DO-T07`, `AI-ADR-CAND-009`, riesgos de Evidence | `DO-T07`, `AI-OPEN-005` cuando corresponda | `DEFERRED` | Antes del piloto |
 | `ADR-0019` | VerificationChallenge, Supabase Auth y frontera de establecimiento de sesión | Application-owned `VerificationChallenge` + one-time `SessionGrant` + server-only technical password bridge + Custom Access Token Hook gate | ADR-0019 | Ninguna | `ACCEPTED` | Revisión/corrección de TASK-013 |
+| `ADR-0020` | Authoritative first-admin onboarding intent binding | Vincular autoritativamente una `MaintenanceCompany`, target email, propósito fijo de first-admin onboarding y el `VerificationChallenge` current mediante un intent purpose-specific | `ADR-0020`, `TASK-016`/`CORR-026`, `ADR-0019` | Ninguna que bloquee la decisión arquitectónica aceptada; la implementación futura permanece bajo Gate separado | `ACCEPTED` | Fase 2 — antes de implementar first-admin onboarding |
 
 Debe permanecer:
 
@@ -1324,6 +1325,7 @@ aplican sobre múltiples ramas una vez que sus decisiones diferidas estén dispo
 |---|---|
 | **Antes de Fase 1** | `ADR-0001`; además debe haberse cerrado el Gate documental de Fase 0 |
 | **Antes de Fase 2** | `ADR-0002`, `ADR-0003` |
+| **Durante Fase 2, antes de implementar first-admin onboarding** | `ADR-0020` |
 | **Antes de Fase 4** | `ADR-0008` |
 | **Antes de Fase 5** | `ADR-0004`, `ADR-0005`, `ADR-0009`, `ADR-0010` |
 | **Antes de Fase 6** | `ADR-0011`, `ADR-0012`; `DO-077` aprobado para implementación DOCX |
@@ -1841,11 +1843,11 @@ Todos quedan trazados al catálogo consolidado.
 
 **Catálogo original: 18 ADR.**
 
-**TOTAL ADR VIGENTE: 19.**
+**TOTAL ADR VIGENTE: 20.**
 
 Distribución global vigente:
 
-- `ACCEPTED`: **8**;
+- `ACCEPTED`: **9**;
 - `READY TO DRAFT`: **0**;
 - `BLOCKED BY OPEN DECISIONS`: **8**;
 - `DEFERRED`: **3**.
