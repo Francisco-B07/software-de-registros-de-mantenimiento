@@ -15,6 +15,8 @@ import {
   type CompanyMembershipLifecycleInput,
 } from "./application/apply-company-membership-lifecycle";
 import { createSupabaseCompanyMembershipLifecycleSource } from "./infrastructure/supabase/company-membership-lifecycle-source";
+import { createFirstAdminOnboardingService } from "./application/first-admin-onboarding-service";
+import type { FirstAdminVerificationCodeDelivery } from "./application/first-admin-onboarding";
 
 export type {
   CurrentAuthorizationContext,
@@ -41,6 +43,16 @@ export type {
   CompanyMembershipLifecycleInput,
   CompanyMembershipLifecycleResult,
 } from "./application/apply-company-membership-lifecycle";
+export type {
+  DeliveryOutcome,
+  EstablishFirstAdminOnboardingIntentInput,
+  FirstAdminOnboardingIssueResult,
+  FirstAdminOnboardingVerificationResult,
+  FirstAdminVerificationCodeDelivery,
+  FirstAdminVerificationCodeDeliveryInput,
+  ResendFirstAdminOnboardingChallengeInput,
+  VerifyFirstAdminOnboardingChallengeInput,
+} from "./application/first-admin-onboarding";
 
 export function resolveCurrentAuthorizationContext(
   identity: ValidatedAuthIdentity | null | undefined,
@@ -83,4 +95,10 @@ export function applyCompanyMembershipLifecycle(
     input,
     createSupabaseCompanyMembershipLifecycleSource,
   );
+}
+
+export function getFirstAdminOnboardingService(
+  delivery: FirstAdminVerificationCodeDelivery,
+) {
+  return createFirstAdminOnboardingService(delivery);
 }
