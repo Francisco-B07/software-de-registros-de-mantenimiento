@@ -635,7 +635,9 @@ Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh f
 
 `ADR-0020 architecture decision = ACCEPTED BY HUMAN APPROVAL`, `ADR-0020 CANONICALIZATION REVIEW = APPROVED` y `ADR-0020 REPOSITORY INCORPORATION REVIEW = APPROVED`; por tanto, `first-admin onboarding intent-binding architectural prerequisite = RESOLVED`. Se preserva la frontera `ADR-0020 accepted/incorporated != first COMPANY_ADMIN implemented != functional onboarding implemented != TASK-017 determined`.
 
-`TASK-017 = NOT DETERMINED / NOT GENERATED / NOT STARTED` y `Siguiente TASK autorizada automáticamente = NO`.
+`TASK-017 = DONE / CLOSED`, `TASK-017 FINAL HUMAN IMPLEMENTATION REVIEW = APPROVED` y `TASK-017 FINAL CLOSURE = APPROVED`. Su canonical commit es `27c59c23a2945f44453b10ded79257b2fe182129`. Su resultado acotado es `authoritative first-admin onboarding intent / challenge / proof-consume / SessionGrant / handoff foundation = IMPLEMENTED AND VERIFIED`; `RF-004 = PARTIAL / NOT END-TO-END`, `RF-012 = INCOMPLETE` y `TASK-017 handoff foundation != first-admin onboarding completion` permanecen.
+
+`TASK-018 = NOT DETERMINED / NOT AUTHORIZED` y `Siguiente TASK autorizada automáticamente = NO`.
 
 ---
 
@@ -793,7 +795,7 @@ El acto humano separado de inicio de Fase 2 fue realizado y revisado con resulta
 
 Por tanto:
 
-> **`TASK-014 = DONE / CLOSED` y `TASK-014 FINAL HUMAN CLOSURE REVIEW = APPROVED`; `TASK-015 = DONE / CLOSED` y `TASK-015 FINAL HUMAN CLOSURE REVIEW = APPROVED`; `TASK-016 = DONE / CLOSED` y `TASK-016 FINAL HUMAN CLOSURE = APPROVED`; `TASK-016 = DONE / CLOSED != TASK-017 determinada automáticamente`.**
+> **`TASK-014 = DONE / CLOSED` y `TASK-014 FINAL HUMAN CLOSURE REVIEW = APPROVED`; `TASK-015 = DONE / CLOSED` y `TASK-015 FINAL HUMAN CLOSURE REVIEW = APPROVED`; `TASK-016 = DONE / CLOSED` y `TASK-016 FINAL HUMAN CLOSURE = APPROVED`; `TASK-017 = DONE / CLOSED`, `TASK-017 FINAL HUMAN IMPLEMENTATION REVIEW = APPROVED` y `TASK-017 FINAL CLOSURE = APPROVED`; `TASK-017 = DONE / CLOSED != TASK-018 determinada automáticamente`.**
 
 TASK-008 fue canonicalizada, implementada, incorporada a Git y aprobada en revisión humana final. Su resultado fue exclusivamente la frontera Supabase de aplicación con factories browser/server no privilegiadas.
 
@@ -813,9 +815,15 @@ TASK-014 fue especificada, aprobada, canonicalizada, implementada, verificada en
 
 El resultado funcional acotado de TASK-015 comprende disable, reinstate y role-change de `CompanyMembership`, los `AuditEvent` correspondientes, la atomicidad entre mutación real y evento requerido y la preservación/verificación de same-tenant, RLS y concurrencia. No completa Auth, el lifecycle funcional completo de usuarios/memberships, la autorización funcional ni la auditoría funcional completa.
 
-TASK-016 completó specification, aprobación, implementación, Hosted Development, incorporación Git y cierre humano final; por tanto, `TASK-016 = DONE / CLOSED` y `TASK-016 FINAL HUMAN CLOSURE = APPROVED`. Su implementation commit es `2968c408229659e245ed1c9805c327671e95fba5` y `TASK-016 Hosted Development = APPLIED AND VERIFIED`. Su resultado funcional máximo se limita a `RF-001 + RF-002`, `FL-01 steps 1–2` y `global authoritative MaintenanceCompany creation by current SUPER_ADMIN = IMPLEMENTED AND VERIFIED`, de modo que un current authoritative `SUPER_ADMIN` puede crear una `MaintenanceCompany` que existe inmediatamente como tenant activo. `first COMPANY_ADMIN = NOT IMPLEMENTED`, `full onboarding = NOT IMPLEMENTED`, `TASK-016 DONE != FL-01 DONE`, `Subscription = NO` y `promotional entitlement = NO`. `PAY-OPEN-001 = UNRESOLVED` y `PAY-OPEN-008 = UNRESOLVED`; TASK-016 no resuelve ninguna de ambas. `TASK-016 = DONE / CLOSED != TASK-017 determinada automáticamente`; `TASK-017 = NOT DETERMINED / NOT GENERATED / NOT STARTED` y no existe autorización automática del siguiente incremento.
+TASK-016 completó specification, aprobación, implementación, Hosted Development, incorporación Git y cierre humano final; por tanto, `TASK-016 = DONE / CLOSED` y `TASK-016 FINAL HUMAN CLOSURE = APPROVED`. Su implementation commit es `2968c408229659e245ed1c9805c327671e95fba5` y `TASK-016 Hosted Development = APPLIED AND VERIFIED`. Su resultado funcional máximo se limita a `RF-001 + RF-002`, `FL-01 steps 1–2` y `global authoritative MaintenanceCompany creation by current SUPER_ADMIN = IMPLEMENTED AND VERIFIED`, de modo que un current authoritative `SUPER_ADMIN` puede crear una `MaintenanceCompany` que existe inmediatamente como tenant activo. `first COMPANY_ADMIN = NOT IMPLEMENTED`, `full onboarding = NOT IMPLEMENTED`, `TASK-016 DONE != FL-01 DONE`, `Subscription = NO` y `promotional entitlement = NO`. `PAY-OPEN-001 = UNRESOLVED` y `PAY-OPEN-008 = UNRESOLVED`; TASK-016 no resuelve ninguna de ambas.
 
 `ADR-0020 architecture decision = ACCEPTED BY HUMAN APPROVAL`, `ADR-0020 CANONICALIZATION REVIEW = APPROVED` y `ADR-0020 REPOSITORY INCORPORATION REVIEW = APPROVED`; por tanto, `first-admin onboarding intent-binding architectural prerequisite = RESOLVED`. Este estado pertenece al trabajo posterior dentro de Fase 2 y no altera retroactivamente el Gate de entrada satisfecho ni determina TASK-017.
+
+TASK-017 completó specification, aprobación, implementación, incorporación Git y cierre humano final; por tanto, `TASK-017 = DONE / CLOSED`, `TASK-017 FINAL HUMAN IMPLEMENTATION REVIEW = APPROVED` y `TASK-017 FINAL CLOSURE = APPROVED`. Su canonical commit es `27c59c23a2945f44453b10ded79257b2fe182129`.
+
+El resultado funcional máximo de TASK-017 se limita a `FirstAdminOnboardingIntent authoritative binding + current VerificationChallenge issuance/replacement/verification composition + valid proof consumed + SessionGrant correlated + durable authoritative handoff = IMPLEMENTED AND VERIFIED`. Permanecen `RF-004 = PARTIAL / NOT END-TO-END`, `RF-012 = INCOMPLETE` y `handoff ready != Auth user created != PlatformUser created != CompanyMembership created != profile completed != enabled tenant authority != first-admin onboarding completed`.
+
+`TASK-018 = NOT DETERMINED / NOT AUTHORIZED` y no existe autorización automática del siguiente incremento.
 
 Este documento:
 
@@ -895,9 +903,18 @@ Este documento:
 - registra `ADR-0020 canonicalization review = APPROVED`;
 - registra `ADR-0020 repository incorporation review = APPROVED`;
 - registra `first-admin onboarding intent-binding architectural prerequisite = RESOLVED`;
+- registra `TASK-017 = DONE / CLOSED`;
+- registra `TASK-017 FINAL HUMAN IMPLEMENTATION REVIEW = APPROVED`;
+- registra `TASK-017 FINAL CLOSURE = APPROVED`;
+- registra `TASK-017 canonical commit = 27c59c23a2945f44453b10ded79257b2fe182129`;
+- registra `authoritative first-admin onboarding intent / challenge / proof-consume / SessionGrant / handoff foundation = IMPLEMENTED AND VERIFIED`;
 - mantiene `first COMPANY_ADMIN = NOT IMPLEMENTED`;
 - mantiene `full onboarding = NOT IMPLEMENTED`;
 - mantiene `TASK-016 DONE != FL-01 DONE`;
+- mantiene `RF-004 = PARTIAL / NOT END-TO-END`;
+- mantiene `RF-012 = INCOMPLETE`;
+- mantiene `Auth user / PlatformUser / initial CompanyMembership / profile completion / enabled tenant authority / first-admin onboarding completion = PENDING`;
+- mantiene `USER_CREATED produced by TASK-017 = NO`;
 - mantiene `PAY-OPEN-001 = UNRESOLVED`;
 - mantiene `PAY-OPEN-008 = UNRESOLVED`;
 - mantiene `Auth funcional = NO`;
@@ -907,7 +924,7 @@ Este documento:
 - mantiene `Fase 2 = NOT DONE`;
 - mantiene `Phase 2 Exit Gate = NOT DEFINED / NOT SATISFIED`;
 - mantiene `Fase 3 = NOT STARTED`;
-- mantiene `TASK-017 = NOT DETERMINED / NOT GENERATED / NOT STARTED`;
+- mantiene `TASK-018 = NOT DETERMINED / NOT AUTHORIZED`;
 - mantiene `Siguiente TASK autorizada automáticamente = NO`.
 
 ## 10.3 Separación entre cierre de Fase 1 y entrada a Fase 2
@@ -1183,9 +1200,13 @@ La materialización `private = NON-EXPOSED SCHEMA` es purpose-specific de CORR-0
 
 `ADR-0020 architecture decision = ACCEPTED BY HUMAN APPROVAL`, `ADR-0020 CANONICALIZATION REVIEW = APPROVED` y `ADR-0020 REPOSITORY INCORPORATION REVIEW = APPROVED`; por tanto, `first-admin onboarding intent-binding architectural prerequisite = RESOLVED`. Este estado es posterior al inicio de Fase 2 y previo a la implementación de first-admin onboarding; `ADR-0020 accepted != first admin implemented`.
 
+`TASK-017 = DONE / CLOSED`, `TASK-017 FINAL HUMAN IMPLEMENTATION REVIEW = APPROVED` y `TASK-017 FINAL CLOSURE = APPROVED`. Su canonical commit es `27c59c23a2945f44453b10ded79257b2fe182129`. Su resultado consolidado termina en `existing active MaintenanceCompany → authoritative FirstAdminOnboardingIntent → current challenge lifecycle → current proof consumed → durable authoritative onboarding handoff → [TASK-017 ENDS]`.
+
+Permanecen `RF-004 = PARTIAL / NOT END-TO-END`, `RF-012 = INCOMPLETE`, `Auth user creation for first admin = NO`, `PlatformUser creation for first admin = NO`, `initial CompanyMembership creation = NO`, `profile completion = NO`, `enabled tenant authority = NO`, `first-admin onboarding completion = NO` y `USER_CREATED producer timing = NOT RESOLVED`. `TASK-017 handoff != tenant membership != enabled tenant authority != first-admin onboarding completion`.
+
 Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Application authorization completa = NO`, `route authorization funcional completa = NO`, `resource authorization funcional completa = NO`, `Client = NO`, `UserClientAccess completo = NO`, `SupportAccessGrant completo = NO`, `Client authorization = NO`, `Support authorization = NO`, `Storage funcional = NO`, `Realtime funcional = NO`, `Offline authorization = NO`, `Offline funcional = NO`, `UI/Auth flow funcional completo = NO`, `onboarding funcional completo = NO`, `alta funcional completa = NO`, `lifecycle funcional completo de usuarios/memberships = NO`, `SUPER_ADMIN grant funcional = NO`, `SUPER_ADMIN revoke funcional = NO`, `SUPER_ADMIN bootstrap funcional = NO`, `SUPER_ADMIN management funcional = NO`, `AuditEvent producer TASK-012 = NO` y `auditoría funcional completa = NO`. `authenticated != authorized` permanece vigente. `ADR-0019 = ACCEPTED` permanece como antecedente arquitectónico; la especificación inicialmente bloqueada y los Gates posteriores de TASK-013 permanecen como historia normativa.
 
-Se preservan `Fase 2 = INICIADA / NOT DONE`, `Phase 2 Exit Gate = NOT DEFINED / NOT SATISFIED`, `Fase 3 = NOT STARTED`, `TASK-017 = NOT DETERMINED / NOT GENERATED / NOT STARTED` y `Siguiente TASK autorizada automáticamente = NO`.
+Se preservan `Fase 2 = INICIADA / NOT DONE`, `Phase 2 = IN PROGRESS / NOT CLOSED`, `Phase 2 Exit Gate = NOT DEFINED / NOT SATISFIED`, `Fase 3 = NOT STARTED`, `TASK-018 = NOT DETERMINED / NOT AUTHORIZED` y `Siguiente TASK autorizada automáticamente = NO`.
 
 ---
 
@@ -1470,6 +1491,14 @@ Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh f
 **ADR-0020 canonicalization review: APPROVED**
 **ADR-0020 repository incorporation review: APPROVED**
 **first-admin onboarding intent-binding architectural prerequisite: RESOLVED**
+**TASK-017: DONE / CLOSED**
+**TASK-017 FINAL HUMAN IMPLEMENTATION REVIEW: APPROVED**
+**TASK-017 FINAL CLOSURE: APPROVED**
+**TASK-017 canonical commit: 27c59c23a2945f44453b10ded79257b2fe182129**
+**FirstAdminOnboardingIntent foundation: IMPLEMENTED AND VERIFIED**
+**VerificationChallenge current-proof composition for TASK-017: IMPLEMENTED AND VERIFIED**
+**valid proof consume + SessionGrant correlation: IMPLEMENTED AND VERIFIED**
+**first-admin authoritative handoff: IMPLEMENTED AND VERIFIED**
 **SUPER_ADMIN ordinary tenant bypass: no**
 **ordinary service-role path: no**
 **generic privileged client: no**
@@ -1477,6 +1506,12 @@ Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh f
 **functional Auth user creation for first admin: no**
 **PlatformUser creation for first admin: no**
 **initial CompanyMembership creation: no**
+**profile completion: no**
+**enabled tenant authority: no**
+**first-admin onboarding completed: no**
+**USER_CREATED produced by TASK-017: no**
+**RF-004 end-to-end: no**
+**RF-012 complete: no**
 **functional onboarding: no**
 **full company + admin signup/onboarding: no**
 **Subscription: no**
@@ -1499,7 +1534,6 @@ Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh f
 **Fase 2 completada: no**
 **Phase 2 Exit Gate: NOT DEFINED / NOT SATISFIED**
 **Fase 3 iniciada: no**
-**TASK-017 determinada: no**
-**TASK-017 generada: no**
-**TASK-017 iniciada: no**
+**TASK-018 determinada: no**
+**TASK-018 autorizada: no**
 **Siguiente TASK autorizada automáticamente: no**
