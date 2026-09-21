@@ -1378,9 +1378,26 @@ Outcome visible único para new-user y existing-compatible-user:
 ```text
 SESSION ESTABLISHED
 NEXT STEP = PROFILE COMPLETION REQUIRED
+
+POST_AUTH_SUCCESS_DESTINATION =
+/pending-profile
+
+SESSION_ESTABLISHED
+→ /pending-profile
+
+SESSION_ALREADY_ESTABLISHED
+→ /pending-profile
 ```
 
-No revelar al usuario si provider creation o reconciliation ocurrió.
+Ambos outcomes convergen al mismo pathname y a la misma shell visible. No revelar al usuario si provider creation o reconciliation ocurrió ni transportar metadata que permita diferenciarlos.
+
+`/pending-profile` significa exclusivamente:
+
+```text
+Supabase Auth session established
++
+first-admin profile completion pending
+```
 
 ### 20.4 Retryable failure
 
@@ -1404,11 +1421,35 @@ No es visible como variante funcional. La UI de éxito es deliberadamente idént
 
 ### 20.7 Navigation posterior
 
-Después de success, la navegación sólo puede continuar hacia la futura etapa de profile completion/pending onboarding.
+Después de `SESSION_ESTABLISHED` o `SESSION_ALREADY_ESTABLISHED`, la navegación de success continúa exactamente a `/pending-profile`.
 
 TASK-018 no define los campos del perfil ni una tenant dashboard autorizada.
 
-Si aún no existe la future profile surface en el repositorio, TASK-018 puede terminar en una pantalla/interstitial mínima de continuación pendiente, sin mostrar datos tenant ni habilitar administración.
+Work Item D sólo puede crear una shell mínima de continuación pendiente en `/pending-profile`, sin mostrar datos tenant ni habilitar administración.
+
+La navegación no requiere ni transporta en URL, query, fragment, body o estado controlado por browser: `intentId`, email, `maintenanceCompanyId`, tenant, role, Auth user ID, `PlatformUser` ID, `CompanyMembership` ID, grant ID, challenge ID, provider state, technical password, access token, refresh token ni reconciliation outcome. El trusted post-verification handoff permanece server-internal y `intentId` continúa siendo locator, no bearer.
+
+### 20.8 Frontera de la shell `/pending-profile`
+
+La shell mínima sólo puede representar genéricamente:
+
+- sesión establecida;
+- configuración de perfil pendiente.
+
+No implementa ni especifica físicamente profile form, profile fields, profile persistence, dashboard, tenant UI, membership UI, route authorization framework, logout nuevo ni navegación funcional posterior.
+
+Llegar o renderizar `/pending-profile` no significa:
+
+- `PlatformUser` created;
+- `PlatformUser` profile persisted;
+- `CompanyMembership` created;
+- `CompanyMembership` enabled;
+- `COMPANY_ADMIN` authority granted;
+- first-admin onboarding completed;
+- RF-012 complete;
+- RF-004 complete;
+- tenant authorization ready;
+- dashboard access authorized.
 
 ---
 
@@ -1581,17 +1622,30 @@ La futura ejecución debe inspeccionar el repositorio real antes de fijar paths.
 
 **Contexto:** same server flow should carry trusted handoff internally.
 
-**Alcance:** loading, bounded retry, terminal error, success/pending-profile navigation.
+**Alcance:** loading, bounded retry, terminal error y success navigation con contrato exacto:
 
-**Fuera de alcance:** profile form, tenant admin UI, full onboarding.
+```text
+POST_AUTH_SUCCESS_DESTINATION =
+/pending-profile
 
-**Cambios esperados:** mínima surface UI/handler conforme estructura real del repositorio.
+SESSION_ESTABLISHED
+→ /pending-profile
 
-**Seguridad/RLS:** no authority from browser email/tenant/role; intent locator not bearer.
+SESSION_ALREADY_ESTABLISHED
+→ /pending-profile
+```
+
+Ambos outcomes deben producir el mismo success visible, el mismo pathname y la misma shell, sin metadata diferenciadora.
+
+**Fuera de alcance:** profile form, profile persistence, tenant admin UI, tenant authority, dashboard, route authorization framework y full onboarding.
+
+**Cambios esperados:** mínima surface UI/handler conforme estructura real del repositorio y minimal pending-profile shell only en `/pending-profile`.
+
+**Seguridad/RLS:** no authority from browser email/tenant/role; intent locator not bearer; trusted post-verification handoff server-internal; no secrets, tokens, technical password ni identificadores de autoridad transportados por browser hacia `/pending-profile`.
 
 **Criterios:** AC-018-084..090.
 
-**Pruebas:** double-submit, offline, generic error, no account enumeration.
+**Pruebas:** double-submit, offline, generic error, no account enumeration; pathname exacto `/pending-profile`; convergencia de `SESSION_ESTABLISHED` y `SESSION_ALREADY_ESTABLISHED`; misma shell visible; ausencia de metadata diferenciadora; no profile form; no tenant authority; no secrets/tokens/browser authority transport.
 
 ### Work item E — Regression + Hosted Development evidence
 
@@ -1636,7 +1690,12 @@ La futura ejecución debe inspeccionar el repositorio real antes de fijar paths.
 17. final compatibility guard;
 18. response loss classifications;
 19. preexisting browser session not used as target authority;
-20. no visible distinction new-vs-existing user.
+20. no visible distinction new-vs-existing user;
+21. `SESSION_ESTABLISHED` navigates to the exact pathname `/pending-profile`;
+22. `SESSION_ALREADY_ESTABLISHED` navigates to the exact pathname `/pending-profile`;
+23. both success outcomes render the same visible shell without differentiating metadata or copy;
+24. `/pending-profile` renders only session-established + profile-completion-pending state;
+25. `/pending-profile` contains no profile form and grants no tenant authority.
 
 ### 24.2 Concurrency tests
 
@@ -1692,7 +1751,9 @@ At least:
 - inspect bundle for Admin secret/technical password imports;
 - provider duplicate account does not trigger password takeover;
 - provider error does not leak account existence;
-- concurrent race cannot create tenant authority.
+- concurrent race cannot create tenant authority;
+- `/pending-profile` navigation contains no `intentId`, email, tenant, role, identity/membership/grant/challenge identifiers, provider state, technical password, access token, refresh token or reconciliation outcome in browser-controlled transport;
+- direct rendering of `/pending-profile` cannot create profile/membership state, grant authority or authorize dashboard access.
 
 ### 24.6 Hosted Development verification — future, separately authorized
 
@@ -1994,7 +2055,7 @@ RETURN TO REVISOR CENTRAL
 
 **AC-018-084.** UI post-verification ofrece pending/loading sin depender de double-submit prevention para seguridad.
 
-**AC-018-085.** Success visible no diferencia “Auth user creado” de “Auth user reconciliado”.
+**AC-018-085.** Success visible no diferencia “Auth user creado” de “Auth user reconciliado”; `SESSION_ESTABLISHED` y `SESSION_ALREADY_ESTABLISHED` convergen al mismo destino visible `/pending-profile`, sin diferenciación visible.
 
 **AC-018-086.** Error visible no enumera cuentas, tenants, memberships ni provider details sensibles.
 
@@ -2115,6 +2176,14 @@ RETURN TO REVISOR CENTRAL
 **DoD-018-035.** Idempotency/concurrency/response-loss tests pasan.
 
 **DoD-018-036.** Security/RLS/browser-authority negative tests pasan.
+
+Para Work Item D, `DoD-018-033` y `DoD-018-036` exigen conjuntamente que:
+
+- exista `/pending-profile`;
+- `SESSION_ESTABLISHED` y `SESSION_ALREADY_ESTABLISHED` converjan al mismo destino y a la misma shell visible;
+- la route sea únicamente una shell mínima de sesión establecida + configuración de perfil pendiente;
+- no implemente profile form, persistencia, tenant authority, dashboard ni capacidades posteriores;
+- pasen las pruebas de pathname exacto, uniformidad visible, ausencia de metadata diferenciadora y ausencia de secrets/tokens/browser authority transport.
 
 **DoD-018-037.** TASK-011/TASK-013/TASK-017 regressions pasan.
 
