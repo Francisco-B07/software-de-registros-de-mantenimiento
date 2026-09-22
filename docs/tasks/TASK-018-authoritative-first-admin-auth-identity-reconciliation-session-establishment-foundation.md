@@ -1360,7 +1360,36 @@ Eso es partial provisioning, no onboarding completion. La identidad se conserva 
 
 ### 20.1 Entry
 
-La UI continúa desde el mismo flujo que presentó el proof a TASK-017. El browser puede conservar un locator opaco y estado visual, pero el server-side orchestration debe recibir el handoff autoritativo desde la boundary TASK-017, no reconstruirlo desde browser inputs.
+The pre-auth first-admin verification entry pathname is exactly:
+
+```text
+FIRST_ADMIN_VERIFICATION_PATHNAME =
+/first-admin/verification/{intentId}
+```
+
+`{intentId}` is the opaque `FirstAdminOnboardingIntent.id` locator supplied by route/navigation. It is pre-auth navigation state only: it is not proof, bearer authority, tenant authority, handoff authority or session authority.
+
+The route composes the first-admin verification form with `intentId` as readonly technical state/prop. The visible editable proof contract remains exactly:
+
+```text
+email
++
+verification code
+```
+
+No manual/editable `intentId`, UUID or `Referencia de acceso` input is part of the user-visible form.
+
+The form may submit the route-supplied `intentId` in the POST body as a lookup locator together with the user-entered email/code and the existing verification-operation correlation. The server must re-resolve authoritative intent/current-challenge/handoff state from PostgreSQL; browser state never becomes authority.
+
+The trusted continuation remains one server orchestration:
+
+```text
+TASK-017 verify
+→ authoritative handoffReady
+→ TASK-018 establish(intentId)
+```
+
+TASK-018 must not reconstruct handoff authority from browser inputs and must not introduce a second browser-side bearer transition between TASK-017 verification and TASK-018 establishment.
 
 ### 20.2 Pending
 
@@ -1509,6 +1538,8 @@ Preferir:
 
 No usar full target email en logs ordinarios; aplicar minimización/redacción.
 
+Do not deliberately log or duplicate the full pre-auth verification URL when the separated `intent ID` is sufficient for server-side correlation. Automatic infrastructure access logging of a pathname does not make the locator a secret or authority, but it does not authorize copying the full verification URL into additional application telemetry or third-party analytics.
+
 ### 22.3 Secret deny-list
 
 Nunca loguear:
@@ -1618,11 +1649,22 @@ La futura ejecución debe inspeccionar el repositorio real antes de fijar paths.
 
 ### Work item D — Minimal UI integration
 
-**Objetivo:** conectar post-verification server orchestration a pending/success/failure UI sin exponer provider state.
+**Objetivo:** conectar el dedicated pre-auth first-admin verification route con el verification form y con la misma trusted post-verification server orchestration, preservando pending/success/failure UI y sin exponer provider state ni autoridad.
 
-**Contexto:** same server flow should carry trusted handoff internally.
+**Contexto:** el locator llega exclusivamente por route/navigation mediante el pathname aprobado `/first-admin/verification/{intentId}`. `intentId` es locator técnico, no proof ni bearer. TASK-017 produce/reconcilia `handoffReady` y la misma server orchestration continúa a TASK-018.
 
-**Alcance:** loading, bounded retry, terminal error y success navigation con contrato exacto:
+**Alcance:**
+
+- dedicated route entrypoint `app/first-admin/verification/[intentId]/page.tsx`;
+- el route entrypoint recibe el dynamic segment y lo trata exclusivamente como opaque locator;
+- `FirstAdminVerificationForm` recibe `intentId` como readonly prop/estado técnico;
+- los únicos proof inputs editables visibles son email + verification code;
+- no existe input manual/editable `intentId`, UUID o `Referencia de acceso`;
+- el submit puede transportar `intentId` en el POST body como lookup locator, junto con email, code y la correlation identity existente;
+- el server re-resuelve authoritative intent/current challenge/handoff state y no confía en el locator como authority;
+- `app/page.tsx` deja de ser una first-admin verification surface que renderiza el form sin locator; puede conservar únicamente una shell neutral si el repositorio la necesita;
+- loading/pending, bounded retry y terminal error permanecen;
+- success conserva exactamente:
 
 ```text
 POST_AUTH_SUCCESS_DESTINATION =
@@ -1635,17 +1677,33 @@ SESSION_ALREADY_ESTABLISHED
 → /pending-profile
 ```
 
-Ambos outcomes deben producir el mismo success visible, el mismo pathname y la misma shell, sin metadata diferenciadora.
+- ambos success outcomes producen el mismo pathname y la misma shell visible, sin metadata diferenciadora;
+- success utiliza exactamente replacement navigation mediante `router.replace("/pending-profile")`; `/pending-profile` no transporta locator, y la URL visible post-auth resultante contiene exactamente `/pending-profile`, sin locator, query ni fragment.
 
-**Fuera de alcance:** profile form, profile persistence, tenant admin UI, tenant authority, dashboard, route authorization framework y full onboarding.
+**Fuera de alcance:** profile form, profile persistence, tenant admin UI, tenant authority, dashboard, route authorization framework, full onboarding, concrete email provider, provider credentials, Work Item E y Hosted Development.
 
-**Cambios esperados:** mínima surface UI/handler conforme estructura real del repositorio y minimal pending-profile shell only en `/pending-profile`.
+**Cambios esperados:** corrección mínima de la surface UI/handler conforme al repositorio real; dedicated verification route; form con readonly route-supplied locator; eliminación del manual locator field; root page sin first-admin form sin locator; API Route sin semantic trust change; same trusted post-verification service orchestration; minimal pending-profile shell only en `/pending-profile` sin cambios funcionales a CORR-029.
 
-**Seguridad/RLS:** no authority from browser email/tenant/role; intent locator not bearer; trusted post-verification handoff server-internal; no secrets, tokens, technical password ni identificadores de autoridad transportados por browser hacia `/pending-profile`.
+**Seguridad/RLS:**
 
-**Criterios:** AC-018-084..090.
+- verification URL contiene únicamente el locator técnico necesario;
+- no URL email/code/tenant/company/role/challenge/grant/Auth-user/access-token/refresh-token/technical-password;
+- verification page private/no-store;
+- `Referrer-Policy: no-referrer` o equivalente demostrable;
+- no duplicar deliberadamente full verification URL en application telemetry/logging;
+- no authority from browser email/tenant/role;
+- `intentId` not bearer and UUID unpredictability is not an authorization control;
+- trusted post-verification handoff remains server-internal;
+- no second browser bearer request between verify and establish;
+- no localStorage/sessionStorage/IndexedDB/Dexie authority or locator persistence introduced;
+- no new schema/RLS/privileged capability;
+- no secrets, tokens, technical password or authority identifiers transported to `/pending-profile`.
 
-**Pruebas:** double-submit, offline, generic error, no account enumeration; pathname exacto `/pending-profile`; convergencia de `SESSION_ESTABLISHED` y `SESSION_ALREADY_ESTABLISHED`; misma shell visible; ausencia de metadata diferenciadora; no profile form; no tenant authority; no secrets/tokens/browser authority transport.
+**Criterios:** `AC-018-084..090` permanecen `UNCHANGED`. Los requisitos adicionales de route/navigation/security quedan exigidos por §20.1, este Work Item D, §22.2, §24 y §28.5 sin crear ni renumerar acceptance criteria.
+
+**Pruebas:** dedicated route; visible email+code only; absence of manual `intentId`/`Referencia de acceso`; request locator comes from route; invalid/cross-intent locator grants no authority/session; correct locator + wrong proof still fails through TASK-017 attempt semantics; correct proof continues in the same trusted server orchestration; success uses replacement navigation through `router.replace("/pending-profile")`; post-auth visible URL contains no locator, query or fragment; exact `/pending-profile` success destination; pre-auth URL hygiene; private/no-store; no-referrer; root page does not render a first-admin form requiring manual locator; verify occurs before establish and establish only after authoritative `handoffReady`; no account enumeration; online-only; no browser secrets or authority transport.
+
+**Gate:** this documentation contract does not authorize Work Item D correction, implementation, staging, Hosted Development or Work Item E. Each remains subject to its separate human Gate.
 
 ### Work item E — Regression + Hosted Development evidence
 
@@ -1696,6 +1754,15 @@ Ambos outcomes deben producir el mismo success visible, el mismo pathname y la m
 23. both success outcomes render the same visible shell without differentiating metadata or copy;
 24. `/pending-profile` renders only session-established + profile-completion-pending state;
 25. `/pending-profile` contains no profile form and grants no tenant authority.
+26. `/first-admin/verification/{intentId}` renders the first-admin verification form with the route-supplied opaque locator;
+27. the visible editable proof fields are exactly email + code and there is no editable/manual `intentId`, UUID or `Referencia de acceso` field;
+28. submit uses the locator supplied by the route for `body.intentId`, while email/code remain user inputs and `verificationOperationId` keeps its existing correlation contract;
+29. invalid or cross-intent locator does not grant handoff, session or tenant authority and yields a bounded non-enumerating outcome;
+30. correct locator + wrong proof does not bypass TASK-017 code/current-challenge verification;
+31. correct locator + matching email + valid current code can continue only through authoritative `handoffReady` in the same trusted server orchestration;
+32. pre-auth verification URL contains only the technical locator and excludes email, code, tenant/company ID, role, challenge ID, grant ID, Auth user ID, access/refresh tokens and technical password;
+33. verification page demonstrates private/no-store plus `no-referrer` or equivalent, the root page does not render a first-admin verification form that requires manual locator entry, success uses replacement navigation through `router.replace("/pending-profile")`, and the resulting post-auth visible URL contains no locator, query or fragment;
+34. presented email alone cannot resolve or select a first-admin intent; removing/bypassing the route-supplied `intentId` locator or attempting email-only intent lookup must fail and cannot produce handoff, session or tenant authority.
 
 ### 24.2 Concurrency tests
 
@@ -1754,6 +1821,11 @@ At least:
 - concurrent race cannot create tenant authority;
 - `/pending-profile` navigation contains no `intentId`, email, tenant, role, identity/membership/grant/challenge identifiers, provider state, technical password, access token, refresh token or reconciliation outcome in browser-controlled transport;
 - direct rendering of `/pending-profile` cannot create profile/membership state, grant authority or authorize dashboard access.
+- direct knowledge of a valid-format or real `intentId` alone cannot establish handoff/session or tenant authority;
+- the verification form cannot substitute a manually edited technical locator because no editable/manual locator field exists;
+- no email/code/tenant/role/challenge/grant/token/technical-password material appears in the pre-auth verification URL;
+- application telemetry does not deliberately duplicate the full verification URL when `intentId` correlation is sufficient;
+- presented email alone cannot resolve or select a first-admin intent; removing/bypassing the route-supplied `intentId` locator or attempting email-only intent lookup must fail and cannot produce handoff, session or tenant authority.
 
 ### 24.6 Hosted Development verification — future, separately authorized
 
@@ -2179,11 +2251,22 @@ RETURN TO REVISOR CENTRAL
 
 Para Work Item D, `DoD-018-033` y `DoD-018-036` exigen conjuntamente que:
 
+- exista el dedicated pre-auth route `/first-admin/verification/{intentId}`;
+- el route suministre `intentId` como opaque readonly locator al verification form;
+- los únicos proof inputs editables visibles sean email + code;
+- no exista input editable/manual `intentId`, UUID o `Referencia de acceso`;
+- el POST utilice el locator suministrado por route/navigation y no uno introducido manualmente;
+- la server boundary re-resuelva authoritative intent/current challenge/handoff state y no use UUID validity/entropy como authorization control;
+- la verification URL contenga únicamente el locator técnico necesario y excluya email/code/tenant/role/challenge/grant/Auth-user/tokens/technical-password;
+- la verification page cumpla private/no-store y `no-referrer` o equivalente demostrable;
+- application logging/telemetry no duplique deliberadamente el full verification URL cuando el `intentId` separado sea suficiente;
+- `app/page.tsx` no renderice una first-admin verification surface sin locator aprobado;
+- TASK-017 verify ocurra antes de TASK-018 establish y establish sólo ocurra después de authoritative `handoffReady` dentro de la misma trusted server orchestration;
 - exista `/pending-profile`;
 - `SESSION_ESTABLISHED` y `SESSION_ALREADY_ESTABLISHED` converjan al mismo destino y a la misma shell visible;
-- la route sea únicamente una shell mínima de sesión establecida + configuración de perfil pendiente;
-- no implemente profile form, persistencia, tenant authority, dashboard ni capacidades posteriores;
-- pasen las pruebas de pathname exacto, uniformidad visible, ausencia de metadata diferenciadora y ausencia de secrets/tokens/browser authority transport.
+- la route `/pending-profile` sea únicamente una shell mínima de sesión establecida + configuración de perfil pendiente;
+- `/pending-profile` no transporte el locator y no implemente profile form, persistencia, tenant authority, dashboard ni capacidades posteriores;
+- pasen las pruebas de pathname exacto, visible-field contract, request locator provenance, URL hygiene, cache/referrer, no-account-enumeration, uniformidad visible, ausencia de metadata diferenciadora y ausencia de secrets/tokens/browser authority transport.
 
 **DoD-018-037.** TASK-011/TASK-013/TASK-017 regressions pasan.
 

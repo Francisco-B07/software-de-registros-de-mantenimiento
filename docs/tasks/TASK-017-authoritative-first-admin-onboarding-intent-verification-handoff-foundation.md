@@ -1533,11 +1533,13 @@ The UI must not imply that the first admin already exists or has tenant access.
 
 Minimum behavior:
 
-1. receive/retain an opaque intent locator through the future approved delivery/navigation mechanism;
-2. enter the target email and verification code, or equivalent proof inputs consistent with product;
-3. submit verification using one logical verification operation identity;
-4. receive only a bounded success/failure result;
-5. on success, continue only to a future RF-012 surface; TASK-017 itself does not show profile completion or tenant administration.
+1. receive the provider-neutral first-admin verification email containing the current verification code and a pre-auth verification link whose pathname is exactly `/first-admin/verification/{intentId}`;
+2. obtain/retain `intentId` from that pathname as an opaque stable locator supplied by route/navigation; `intentId` is not bearer authority, proof, tenant authority or handoff authority;
+3. show only the target email and verification code as editable proof inputs; no editable/manual `intentId`, UUID or `Referencia de acceso` field exists;
+4. submit verification using the route-supplied `intentId`, target email, verification code and one logical verification operation identity;
+5. the server-side verification boundary resolves the authoritative intent and its current challenge from PostgreSQL and applies the existing email/code/current-lifecycle checks;
+6. receive only a bounded success/failure result;
+7. on success, the same trusted server orchestration may continue from authoritative `handoffReady` into TASK-018; TASK-017 itself does not show profile completion or tenant administration.
 
 ### 26.3 API/application contracts
 
@@ -1672,7 +1674,22 @@ TASK-017 may define a narrow application port conceptually equivalent to:
 FirstAdminVerificationCodeDelivery
 ```
 
-whose responsibility is only to receive transient delivery material after authoritative issuance.
+whose responsibility is only to receive provider-neutral transient delivery material after authoritative issuance:
+
+```text
+target email
++
+transient verification code
++
+stable intentId locator
++
+verification pathname/URL using:
+  trusted application origin
+  +
+  /first-admin/verification/{intentId}
+```
+
+The verification link does not replace the code, is not a second proof and is not authority. The absolute URL may be generated server-side from trusted application origin configuration plus the stable locator; no persisted verification URL is required.
 
 The port must not:
 
@@ -1682,6 +1699,9 @@ The port must not:
 - authorize resend;
 - persist plaintext code for later use;
 - become an event bus or queue framework.
+- treat the verification link or `intentId` as proof, bearer, tenant authority or handoff authority;
+- construct the absolute verification URL from an arbitrary origin supplied by the target browser;
+- add email, code, tenant/company ID, role, challenge ID, grant ID, Auth user ID, access/refresh tokens or technical password to the verification URL.
 
 ### 29.3 Concrete provider
 
@@ -1722,16 +1742,20 @@ authorized resend
 → predecessor invalidated as applicable
 ```
 
+The resend keeps the same stable `FirstAdminOnboardingIntent.id` locator and produces the new current challenge/code according to the already-approved lifecycle. The provider-neutral delivery material is regenerated as the same verification link pathname `/first-admin/verification/{intentId}` for that stable locator plus the new current verification code. The code is never encoded in the verification URL. Resend does not create a new onboarding-intent locator.
+
 ### 29.7 RF-004 status
 
 Until a concrete external delivery adapter and its operational contract are separately decided and implemented:
 
 ```text
-RF-004 end-to-end =
-NOT COMPLETE
+RF-004 =
+PARTIAL / NOT END-TO-END
 ```
 
 This does not block implementing the authoritative intent/challenge/handoff foundation.
+
+The provider-neutral content/navigation contract is nevertheless closed for TASK-017: every usable first-admin code delivery carries the current verification code plus the verification link for the same stable intent locator. Concrete provider selection remains out of scope.
 
 ---
 
@@ -2059,9 +2083,9 @@ Every criterion must be individually verifiable as `PASS` or `FAIL`.
 
 **AC-017-125.** No se persiste plaintext code para future delivery retry.
 
-**AC-017-126.** Cuando code material ya no está disponible, una nueva entrega futura requiere authorized resend/new emission.
+**AC-017-126.** Cuando code material ya no está disponible, una nueva entrega futura requiere authorized resend/new emission; el resend conserva el mismo stable intent locator y produce el nuevo current challenge/code conforme al lifecycle aprobado.
 
-**AC-017-127.** No se selecciona production email provider.
+**AC-017-127.** No se selecciona production email provider; el provider-neutral delivery material incluye verification code + verification link con pathname exacto `/first-admin/verification/{intentId}` construido server-side desde trusted application origin y el stable intent locator.
 
 **AC-017-128.** No se selecciona provider retry/backoff policy.
 
@@ -2316,6 +2340,10 @@ At minimum:
 9. `SessionGrant` is never returned as browser bearer authority;
 10. UI/application outcomes are bounded;
 11. ambiguous timeout maps to reconciliation, not automatic new operation.
+12. provider-neutral delivery material contains the current verification code plus a verification link whose pathname is exactly `/first-admin/verification/{intentId}`;
+13. the verification link uses the same stable intent locator across resend while the current challenge/code changes according to the existing lifecycle;
+14. the verification URL contains no email, code, tenant/company ID, role, challenge ID, grant ID, Auth user ID, access/refresh tokens or technical password;
+15. the delivery/link contract does not require a concrete production email provider and does not persist plaintext code or the full verification URL.
 
 ### I. Regression tests
 
@@ -2395,9 +2423,9 @@ TASK-017 can only be considered `DONE / CLOSED` after all applicable items below
 
 **DoD-017-019.** Server/application boundaries permanecen dentro del monolito modular y TypeScript strict.
 
-**DoD-017-020.** Provider-neutral email delivery boundary no se presenta como delivery end-to-end.
+**DoD-017-020.** Provider-neutral email delivery boundary incluye el current verification code + verification link `/first-admin/verification/{intentId}` para el mismo stable intent locator, sin seleccionar concrete production provider y sin presentarse como delivery end-to-end.
 
-**DoD-017-021.** RF-004 permanece reportado PARTIAL salvo que un Gate posterior apruebe e implemente un adapter externo.
+**DoD-017-021.** RF-004 permanece reportado exactamente `PARTIAL / NOT END-TO-END` salvo que un Gate posterior apruebe e implemente un adapter externo.
 
 **DoD-017-022.** Todos los DB/schema tests TASK-017 pasan.
 
@@ -2558,10 +2586,15 @@ A future authorized execution should be split into small, reviewable steps while
 **Scope:**
 
 - typed server-only delivery port;
-- transient code passed only after DB commit;
+- transient current verification code passed only after DB commit;
+- stable `intentId` locator belonging to the same onboarding intent;
+- provider-neutral verification link material whose pathname is exactly `/first-admin/verification/{intentId}`;
+- absolute-link composition from trusted application origin configuration plus the stable locator, without trusting target-browser origin;
+- same stable locator across resend while the new current challenge/code follows the already-approved lifecycle;
 - fake/in-memory test adapter;
 - delivery outcome mapping;
-- no plaintext persistence.
+- no plaintext-code persistence;
+- no persisted full verification URL requirement.
 
 **Out of scope:**
 
@@ -2573,11 +2606,11 @@ A future authorized execution should be split into small, reviewable steps while
 
 **Expected changes:** strict TypeScript interface/orchestration only.
 
-**Security/RLS:** no code/secret logs; no client exposure.
+**Security/RLS:** no code/secret logs; no client secret exposure; `intentId` and verification link are locator/navigation only and never proof, bearer, handoff authority or tenant authority; verification URL contains no email/code/tenant/role/challenge/grant/Auth-user/token/technical-password material; no RLS/schema change.
 
 **Acceptance:** AC-017-121..130.
 
-**Tests:** delivery after commit, failure leaves issuance intact, same-execution retry semantics, no persistence.
+**Tests:** delivery only after commit; failure leaves issuance intact; same-execution retry semantics; no plaintext persistence; exact verification pathname; code + link material; same locator across resend with new code; URL minimization; no concrete provider dependency.
 
 ### Work item E — Full regression and evidence package
 
