@@ -198,7 +198,7 @@ No es usuario del SaaS en el MVP.
 
 **RF-011.** Un código vencido NO DEBE poder recuperarse ni reutilizarse.
 
-**RF-012.** El primer `COMPANY_ADMIN` DEBE ingresar utilizando correo y código válido y completar su perfil.
+**RF-012.** El primer `COMPANY_ADMIN` DEBE ingresar utilizando correo y código válido y completar su perfil. El perfil mínimo requerido consiste exclusivamente en `first_name` y `last_name`, ambos recortados y no vacíos. El email deriva de Auth y NO es un campo editable de profile completion. `profile_completed_at` es metadata de lifecycle gestionada por el sistema y NO es ingresada por el usuario. El perfil se considera completo únicamente cuando ambos nombres son válidos y existe `profile_completed_at`. Teléfono, avatar, cargo, dirección, documento, locale, timezone, preferencias, datos comerciales y alcance de cliente NO son requisitos de este completion.
 
 **RF-013.** Un `COMPANY_ADMIN` autorizado DEBE poder dar de alta nuevos `COMPANY_ADMIN` y `TECHNICIAN` mediante el mismo patrón de correo + código.
 
@@ -682,9 +682,9 @@ Cuando un `TECHNICIAN` tiene acceso a un cliente:
 
 Esta sección es conceptual. NO define tablas SQL.
 
-- **PlatformUser:** identidad autenticada de plataforma.
+- **PlatformUser:** identidad global de plataforma y propietaria de los datos de perfil `first_name`, `last_name` y `profile_completed_at`.
 - **MaintenanceCompany:** tenant.
-- **CompanyMembership/UserProfile:** pertenencia de `COMPANY_ADMIN` o `TECHNICIAN` a una empresa, rol y estado.
+- **CompanyMembership:** pertenencia de `COMPANY_ADMIN` o `TECHNICIAN` a una empresa, rol, `is_enabled` y estado de la relación tenant-scoped. No existe una entidad conceptual `UserProfile` separada.
 - **UserClientAccess:** autorización de un usuario sobre clientes concretos de su empresa.
 - **SupportAccessGrant:** concesión excepcional de acceso de `SUPER_ADMIN`, con alcance y revocación.
 - **AuditEvent:** evento de seguridad/auditoría no eliminable por operación normal.
@@ -790,6 +790,14 @@ No forman parte del dominio MVP:
 
 **INV-031.** El lifecycle de `CompanyMembership` se decide contra el estado autoritativo vigente de PostgreSQL: antes de confirmar se reevalúan autoridad del actor, tenant, target, rol, `is_enabled` y continuidad administrativa. Si el actor perdió autoridad se deniega; si la intención ya está satisfecha se aplica `INV-030`; si la transición sigue siendo válida puede confirmarse. Una mutación real y su `AuditEvent` requerido comparten una frontera atómica, sin exigir al caller un token de estado o versión esperados.
 
+**INV-032.** Una identidad o sesión Auth no equivale a autorización tenant. En el onboarding del primer administrador puede existir antes de materializar `PlatformUser`, pero antes de completar el perfil no existe `CompanyMembership` ni autoridad tenant.
+
+**INV-033.** El profile completion autoritativo del primer administrador DEBE preceder a la creación de su primera `CompanyMembership` habilitada. El resultado exitoso establece o reconcilia `PlatformUser` y su perfil, crea o reconcilia la membership inicial con rol fijo `COMPANY_ADMIN` e `is_enabled = true`, registra exactamente un `USER_CREATED` y completa terminalmente el `FirstAdminOnboardingIntent` como un único resultado observable.
+
+**INV-034.** `FirstAdminOnboardingIntent` es la única autoridad durable de completion; handoff ready no equivale a onboarding completed. Un intent puede producir como máximo un onboarding de primer administrador completado. Los retries con el mismo `operation_id` reconcilian el mismo resultado lógico sin duplicar `PlatformUser`, `CompanyMembership`, `USER_CREATED` ni completion; una operación distinta no puede eludir un intent terminal. Ante concurrencia existe como máximo un winner autoritativo y los demás intentos reconcilian el resultado confirmado o fallan cerrados. Ante timeout ambiguo se reconcilia primero la misma operación, sin exigir un lock global de plataforma.
+
+**INV-035.** `INV-028` protege la continuidad de una empresa que ya posee administración activa y NO prohíbe crear la membership inicial del primer `COMPANY_ADMIN` mediante la operación purpose-specific de onboarding.
+
 ---
 
 ## 12. Flujos principales
@@ -801,9 +809,13 @@ No forman parte del dominio MVP:
 3. Ingresa el correo del primer `COMPANY_ADMIN`.
 4. Se emite un código válido por 8 horas y 3 intentos.
 5. Si se reenvía, se genera un código nuevo y se invalida el anterior.
-6. El administrador ingresa con correo + código.
-7. Completa su perfil.
-8. Queda habilitado para administrar su empresa.
+6. El administrador ingresa con correo + código, establece una sesión válida y llega a `/pending-profile`, que significa profile completion pendiente y no concede autoridad tenant.
+7. Ingresa exclusivamente `first_name` y `last_name`, ambos recortados y no vacíos.
+8. La operación autoritativa purpose-specific de completion resuelve el Auth subject y la correlación de onboarding, valida intent, email, empresa, propósito, handoff, estado terminal, identidad, operación y perfil.
+9. En una única transición atómica establece o reconcilia `PlatformUser`, persiste el perfil y `profile_completed_at`, y establece la primera `CompanyMembership` con rol `COMPANY_ADMIN` e `is_enabled = true`.
+10. La misma transición registra exactamente un `USER_CREATED`, con actor y tenant derivados del `FirstAdminOnboardingIntent`, y completa terminalmente ese intent.
+11. Sólo después del commit queda establecida la autoridad tenant.
+12. El usuario llega a `/onboarding-complete`, una shell mínima de completion exitosa que no implica dashboard, autorización completa de rutas/recursos, `Client`, `UserClientAccess`, `SupportAccessGrant` ni cierre de Fase 2. El pathname no es autoridad: un acceso directo futuro debe validarse contra estado autoritativo.
 
 ### FL-02 — Alta de usuario tenant
 
@@ -1162,6 +1174,8 @@ Como mínimo DEBEN registrarse como eventos no eliminables por operación normal
 Cada evento debe permitir identificar al menos actor, empresa afectada, acción, momento y alcance.
 
 En el lifecycle de `CompanyMembership`, únicamente una mutación real autorizada genera la acción existente correspondiente: deshabilitar/revocar genera `USER_DISABLED_OR_REVOKED`, reintegrar genera `USER_REINSTATED` y cambiar realmente el rol genera `USER_ROLE_CHANGED`. Un no-op autorizado con `changed = false` y toda operación denegada generan cero `AuditEvent`.
+
+Para el primer administrador, la action existente `USER_CREATED` se registra exactamente una vez durante la completion autoritativa exitosa y en la misma transición atómica que establece/reconcilia `PlatformUser` y su perfil, establece la membership inicial habilitada y completa terminalmente el `FirstAdminOnboardingIntent`. No se produce al emitir, reenviar o verificar el challenge por sí solo; crear únicamente la identidad Auth; establecer únicamente la sesión; renderizar `/pending-profile`; ni ante una validación fallida. El actor histórico deriva de `FirstAdminOnboardingIntent.initiated_by_platform_user_id` y la empresa afectada de `FirstAdminOnboardingIntent.maintenance_company_id`; retry o reconciliación no duplica el evento. No se añade una nueva `AuditEvent.action`.
 
 Además deben existir las trazas históricas implícitas de versiones de formularios, revisiones de mantenimiento, snapshots/versiones de informes, movimientos de créditos y eventos de pago.
 

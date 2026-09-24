@@ -329,6 +329,8 @@ Las métricas y filtros concretos continúan pendientes mediante `DO-074`.
 
 **Identidad conceptual:** global.
 
+**Datos de perfil propios:** `first_name`, `last_name` y `profile_completed_at`. Los nombres deben estar recortados y no vacíos; el timestamp es metadata de lifecycle gestionada por el sistema. El email deriva de Auth y no es un campo editable del perfil. No existe una entidad `UserProfile` separada.
+
 **Relaciones principales:**
 
 - puede representar un `SUPER_ADMIN`;
@@ -336,7 +338,7 @@ Las métricas y filtros concretos continúan pendientes mediante `DO-074`.
 - puede ser actor de auditoría;
 - puede ser sujeto de acceso excepcional.
 
-**Ciclo de vida:** creada/reconocida → verificada según flujo → activa; su identidad e historial no desaparecen al deshabilitar una membership.
+**Ciclo de vida:** creada/reconocida → verificada según flujo → activa; su identidad e historial no desaparecen al deshabilitar una membership. En el onboarding first-admin, la identidad/sesión Auth puede preceder a la materialización de `PlatformUser`: la transición autoritativa de profile completion crea o reconcilia el `PlatformUser` compatible. Una identidad existente incompatible falla cerrada; este timing no se generaliza a otros flujos de usuario.
 
 **Mutabilidad:** mutable en datos propios permitidos.
 
@@ -420,6 +422,8 @@ No se define aquí su representación criptográfica ni física.
 
 **Ciclo de vida:**
 
+- para first-admin no existe membership pre-profile;
+- la transición autoritativa exitosa de profile completion crea o reconcilia la primera membership con rol `COMPANY_ADMIN` e `is_enabled = true`;
 - habilitada;
 - deshabilitada/revocada;
 - reintegrada.
@@ -435,6 +439,7 @@ No se define aquí su representación criptográfica ni física.
 
 - sólo roles `COMPANY_ADMIN` o `TECHNICIAN`;
 - ningún usuario tenant pertenece a más de un tenant;
+- la creación inicial first-admin es purpose-specific, deriva tenant, target y rol del estado autoritativo y no introduce estados `PENDING`, `PROVISIONAL` ni `BOOTSTRAP_DISABLED`;
 - deshabilitación no elimina identidad ni historial.
 - conocer la membership target no concede autoridad: su lifecycle posterior exige actor `COMPANY_ADMIN` habilitado y mismo tenant;
 - el actor `COMPANY_ADMIN` no puede deshabilitar/revocar su propia membership ni cambiar su propio rol, incluso al mismo rol;
@@ -1439,6 +1444,10 @@ La futura persistencia puede almacenar referencias tenant adicionales por razone
 # 6. Modelo de identidad y pertenencia
 
 La identidad, la pertenencia y el alcance de cliente son conceptos separados.
+
+En el onboarding del primer administrador también se distingue la identidad/sesión de Supabase Auth de `PlatformUser` y de `CompanyMembership`. Durante pre-profile puede existir Auth sin que exista todavía `PlatformUser`; no existe `CompanyMembership` y no hay autoridad tenant. La continuación se autoriza únicamente por la correlación purpose-specific del onboarding, no por la mera ausencia de membership.
+
+La completion autoritativa valida el perfil y entonces establece/reconcilia `PlatformUser`, crea/reconcilia la primera `CompanyMembership` con rol `COMPANY_ADMIN` e `is_enabled = true`, registra `USER_CREATED` y completa terminalmente el intent. Sólo tras el commit la relación ordinaria `PlatformUser → CompanyMembership` establece autoridad tenant sujeta a las reglas normales.
 
 ## 6.1 Preguntas que responde cada concepto
 
@@ -2527,6 +2536,8 @@ Como mínimo:
 
 Para `CompanyMembership`, esos eventos se generan sólo ante mutaciones reales autorizadas: `USER_DISABLED_OR_REVOKED`, `USER_REINSTATED` o `USER_ROLE_CHANGED`, según corresponda. Un no-op autorizado con `changed = false` y toda denegación generan cero `AuditEvent`; no se añade ninguna acción al catálogo.
 
+En el onboarding first-admin, la completion autoritativa exitosa produce exactamente un `USER_CREATED`. Reintentos y reconciliaciones no lo duplican, y no se crea una action `FIRST_ADMIN_ONBOARDING_COMPLETED`.
+
 ## 19.5 No duplicación indiscriminada
 
 No todo cambio de dominio necesita además un `AuditEvent`.
@@ -2566,10 +2577,13 @@ No se pretende convertir el diseño en DDD ceremonial.
 
 **Operaciones conceptualmente consistentes:**
 
+- completar purpose-specifically el onboarding inicial del primer administrador, iniciado por `SUPER_ADMIN`, sin requerir una membership actora preexistente del target y derivando tenant, target y rol desde estado autoritativo;
 - cambiar rol;
 - asignar/revocar clientes;
 - deshabilitar;
 - reintegrar.
+
+La completion inicial protege una única frontera conceptual de consistencia: establecimiento/reconciliación de `PlatformUser` y perfil + primera `CompanyMembership` habilitada + `USER_CREATED` + completion terminal del `FirstAdminOnboardingIntent`. El resultado es todo confirmado o nada confirmado: no existe un estado durable soportado con membership habilitada y perfil no completado, evento sin completion exitosa ni completion terminal sin evento. La membership sólo queda habilitada después de validar y completar el perfil; el mecanismo físico de transacción queda para la implementación futura.
 
 ---
 
@@ -2900,13 +2914,22 @@ Alta iniciada
     ├── vencido/agotado → inválido
     └── reenvío → anterior invalidado + nuevo código
 → verificación válida
-→ perfil completado
-→ membership habilitada
+→ handoff autoritativo
+→ identidad/sesión Auth
+→ perfil pendiente
+→ profile completion autoritativa
+    ├── PlatformUser/perfil establecido o reconciliado
+    ├── membership COMPANY_ADMIN habilitada establecida
+    ├── USER_CREATED exactamente una vez
+    └── onboarding intent completado terminalmente
+→ onboarding completado
     ├── cambio de rol
     ├── cambio de clientes
     └── deshabilitación/revocación
         → posible reintegración
 ```
+
+El perfil se completa antes de habilitar autoridad tenant. El mismo `operation_id` correlaciona el mismo resultado lógico y un mismo intent produce como máximo un resultado first-admin completado; operaciones distintas no eluden su estado terminal.
 
 Identidad e historial permanecen.
 

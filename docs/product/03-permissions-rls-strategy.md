@@ -240,6 +240,8 @@ Debe responder al menos conceptualmente:
 
 Una identidad tenant sin membership habilitada no posee acceso tenant online.
 
+En first-admin pre-profile no existe `CompanyMembership`: una sesión Auth presente sin membership no concede autoridad tenant. La creación inicial es una excepción purpose-specific de onboarding, fija rol `COMPANY_ADMIN` e `is_enabled = true` sólo tras validar/completar el perfil y no amplía el CRUD genérico de memberships.
+
 Conocer el identificador del target no concede autoridad. El lifecycle posterior requiere un actor con membership habilitada, rol `COMPANY_ADMIN` y el mismo tenant del target. Un cambio de rol autorizado sobre una membership deshabilitada mantiene `is_enabled = false` y no restablece autoridad; una reintegración utiliza el rol vigente, nunca uno histórico. Sólo después de validar actor, target, tenant, permiso, self-target, continuidad administrativa y demás invariantes, una intención ya satisfecha sobre un target permitido es éxito idempotente con `changed = false`, sin mutación ni `AuditEvent`; una denegación tampoco genera evento y nunca se convierte en ese éxito.
 
 ---
@@ -537,6 +539,18 @@ Una identidad autenticada puede operar como usuario tenant únicamente si:
 
 `SUPER_ADMIN` sigue un flujo diferente porque no posee membership tenant.
 
+La excepción first-admin sigue una cadena estrecha y autoritativa:
+
+```text
+Supabase Auth identity/session
+→ authoritative first-admin onboarding correlation
+→ profile-completion purpose-specific transition
+→ PlatformUser
+→ CompanyMembership
+```
+
+Antes de completion, la ausencia de `PlatformUser` o `CompanyMembership` no implica `SUPER_ADMIN` ni autoridad tenant. Sólo el estado purpose-specific de onboarding aprobado autoriza continuar; una identidad existente incompatible falla cerrada.
+
 ---
 
 # 6. Resolución del tenant efectivo
@@ -548,6 +562,8 @@ Para `COMPANY_ADMIN` y `TECHNICIAN`, el tenant autorizado debe derivarse de la `
 No del request.
 
 Un parámetro `maintenance_company_id` puede existir eventualmente como dato técnico, pero nunca debe ser aceptado sin comparación contra la membership y el recurso.
+
+En la completion first-admin pre-membership, el tenant se deriva exclusivamente de `FirstAdminOnboardingIntent.maintenance_company_id` y el role target es el fijo `COMPANY_ADMIN`. Ninguno puede derivarse del request, URL, formulario, cookie, estado del browser ni valores elegidos por el caller. Después del commit de la membership habilitada, la resolución ordinaria vuelve a depender de ella.
 
 ---
 
@@ -1556,6 +1572,8 @@ por sí solo.
 
 Para `COMPANY_ADMIN`, un backend privilegiado tampoco puede ampliar silenciosamente el alcance hacia ejecución inicial de mantenimiento.
 
+La operación iniciada por usuario `complete first-admin onboarding` es una frontera purpose-specific. Su input funcional se limita a `first_name`, `last_name` y `operation_id`; el caller no elige `maintenance_company_id`, tenant, role, `CompanyMembership` id, `PlatformUser` id, `FirstAdminOnboardingIntent` id, target email ni actor `SUPER_ADMIN`. El backend debe reconstruir y verificar current Auth subject, handoff/correlación autoritativa, intent vigente, tenant y email/identidad vinculados, propósito first-admin, estado terminal, correlación de operación y validez del perfil. Esto no selecciona todavía RPC, Server Action, Route Handler ni otra frontera física.
+
 ## 17.5 Frontera Auth purpose-specific de ADR-0019
 
 ADR-0019, con estado `ACCEPTED`, aprueba una excepción Auth estrecha para el lifecycle Identity/Auth:
@@ -1856,10 +1874,18 @@ Algunas operaciones requieren coordinación en backend confiable, autoridad de p
 ## 22.1 Alta inicial
 
 - creación de `MaintenanceCompany`;
-- alta del primer `COMPANY_ADMIN`;
-- coordinación del desafío de verificación.
+- creación del `FirstAdminOnboardingIntent` para el primer `COMPANY_ADMIN`;
+- coordinación del desafío de verificación y handoff autoritativo;
+- establecimiento de identidad/sesión Auth;
+- completion del perfil mínimo;
+- establecimiento/reconciliación de `PlatformUser`;
+- creación/reconciliación de la primera membership con rol `COMPANY_ADMIN` e `is_enabled = true`;
+- `USER_CREATED` exactamente una vez;
+- completion terminal del onboarding intent.
 
 Son operaciones de plataforma.
+
+La atomicidad exigida para la transition posterior al perfil cubre `PlatformUser`/perfil, membership inicial habilitada, `USER_CREATED` y estado terminal del intent; no exige que la creación anterior de la empresa ocurra en la misma operación. Permanecen prohibidos un writer privilegiado genérico de usuarios, un client `service-role` genérico, `INSERT` genérico de membership o auditoría desde browser y tenant/role elegidos por el caller.
 
 ---
 
@@ -1922,7 +1948,7 @@ La presencia de credenciales privilegiadas no sustituye el grant.
 | Recurso | Tenant-owned | Client-scoped | `COMPANY_ADMIN` | `TECHNICIAN` | `SUPER_ADMIN` normal | `SUPER_ADMIN` con grant | Inmutabilidad especial |
 |---|---:|---:|---|---|---|---|---|
 | `MaintenanceCompany` | No como dato tenant normal | No | Su tenant | Contexto mínimo | Gestión global autorizada | N/A | No |
-| `CompanyMembership` | Sí | No | Administra su tenant | Sólo contexto propio | Sólo onboarding inicial donde aplique | Scope usuarios/permisos, sin CRUD extra inferido | Historial conservado |
+| `CompanyMembership` | Sí | No | Administra su tenant | Sólo contexto propio | Sin CRUD tenant ordinario; excepción exclusiva para onboarding inicial first-admin purpose-specific | Scope usuarios/permisos, sin CRUD extra inferido | Historial conservado; la excepción inicial no otorga INSERT/UPDATE genérico, acceso tenant ordinario, client scope, maintenance permissions ni semántica de `SupportAccessGrant` |
 | `UserClientAccess` | Sí | Relaciona cliente | Administra dentro del tenant | Lee/consume propio alcance | No | Scope usuarios/permisos | Cambios auditados |
 | `SupportAccessGrant` | Sí | Parcialmente | Concede/modifica/revoca | No | No acceso por defecto | Consume su propio grant | Cambios auditados |
 | `Client` | Sí | Sí | Administrar | Leer autorizado | No | Sólo clientes concedidos + scope | No |
@@ -2116,6 +2142,8 @@ Deben dejar traza:
 
 En el lifecycle de `CompanyMembership`, sólo una mutación real autorizada deja la acción existente correspondiente: `USER_DISABLED_OR_REVOKED`, `USER_REINSTATED` o `USER_ROLE_CHANGED`. Un no-op autorizado con `changed = false` y toda denegación generan cero `AuditEvent`; el catálogo de acciones permanece sin cambios.
 
+La completion first-admin exitosa deja exactamente un `USER_CREATED` dentro de la misma transición atómica que establece/reconcilia el perfil y la membership y completa terminalmente el intent. Un retry/no-op reconciliado no duplica el evento; un failure o deny no crea un evento ficticio.
+
 ---
 
 ## 25.2 Contenido mínimo
@@ -2142,6 +2170,8 @@ Cuando corresponda debe además identificar:
 El actor no debe aceptarse desde un campo libre enviado por frontend.
 
 Debe derivarse del contexto autenticado o del proceso interno que ejecutó la operación.
+
+Para `USER_CREATED` first-admin, el actor histórico deriva de `FirstAdminOnboardingIntent.initiated_by_platform_user_id` y el tenant de `FirstAdminOnboardingIntent.maintenance_company_id`; no derivan de un campo del browser, del target first-admin actual ni de un actor id libre. Esta regla impide spoofing sin seleccionar todavía la técnica física concreta.
 
 ---
 
