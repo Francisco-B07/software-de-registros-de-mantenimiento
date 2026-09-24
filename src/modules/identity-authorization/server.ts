@@ -15,8 +15,18 @@ import {
   type CompanyMembershipLifecycleInput,
 } from "./application/apply-company-membership-lifecycle";
 import { createSupabaseCompanyMembershipLifecycleSource } from "./infrastructure/supabase/company-membership-lifecycle-source";
-import { createFirstAdminOnboardingService } from "./application/first-admin-onboarding-service";
+import {
+  createFirstAdminAuthHandoffService,
+  createFirstAdminOnboardingService,
+} from "./application/first-admin-onboarding-service";
+import { createFirstAdminAuthProvisioningService } from "./application/first-admin-auth-provisioning-service";
+import { createFirstAdminAuthIdentityReconciliationService } from "./application/first-admin-auth-identity-reconciliation-service";
+import {
+  createFirstAdminAuthSessionEstablishmentService,
+} from "./application/first-admin-auth-session-establishment-service";
+import { createFirstAdminPostVerificationService } from "./application/first-admin-post-verification-service";
 import type { FirstAdminVerificationCodeDelivery } from "./application/first-admin-onboarding";
+import type { SupabaseServerCookieMethods } from "../../infrastructure/supabase/server";
 
 export type {
   CurrentAuthorizationContext,
@@ -38,6 +48,9 @@ export type {
   UpdateTechnicalPasswordInput,
 } from "./application/auth-session-bridge";
 export type { EstablishTechnicalIdentityInput } from "./application/auth-session-bridge-service";
+export type { FirstAdminAuthIdentityReconciliationResult } from "./application/first-admin-auth-identity-reconciliation-service";
+export type { FirstAdminAuthSessionEstablishmentResult } from "./application/first-admin-auth-session-establishment-service";
+export type { FirstAdminPostVerificationResult } from "./application/first-admin-post-verification-service";
 export type { CurrentGlobalAuthorizationResult } from "./application/resolve-current-global-authorization";
 export type {
   CompanyMembershipLifecycleInput,
@@ -46,11 +59,17 @@ export type {
 export type {
   DeliveryOutcome,
   EstablishFirstAdminOnboardingIntentInput,
+  FirstAdminAuthHandoffContext,
+  FirstAdminAuthHandoffIdentityCompatibility,
+  FirstAdminAuthHandoffResult,
+  FirstAdminAuthProvisioningOutcome,
+  FirstAdminAuthProvisioningResult,
   FirstAdminOnboardingIssueResult,
   FirstAdminOnboardingVerificationResult,
   FirstAdminVerificationCodeDelivery,
   FirstAdminVerificationCodeDeliveryInput,
   ResendFirstAdminOnboardingChallengeInput,
+  ResolveFirstAdminAuthHandoffInput,
   VerifyFirstAdminOnboardingChallengeInput,
 } from "./application/first-admin-onboarding";
 
@@ -101,4 +120,41 @@ export function getFirstAdminOnboardingService(
   delivery: FirstAdminVerificationCodeDelivery,
 ) {
   return createFirstAdminOnboardingService(delivery);
+}
+
+export function getFirstAdminAuthHandoffService() {
+  return createFirstAdminAuthHandoffService();
+}
+
+export function getFirstAdminAuthProvisioningService() {
+  return createFirstAdminAuthProvisioningService();
+}
+
+export function getFirstAdminAuthIdentityReconciliationService() {
+  return createFirstAdminAuthIdentityReconciliationService();
+}
+
+export function getFirstAdminAuthSessionEstablishmentService(
+  requestCookies: SupabaseServerCookieMethods,
+) {
+  return createFirstAdminAuthSessionEstablishmentService(requestCookies);
+}
+
+const verificationOnlyDelivery: FirstAdminVerificationCodeDelivery =
+  Object.freeze({
+    async deliver() {
+      throw new Error("Challenge delivery is unavailable in this boundary.");
+    },
+  });
+
+export function getFirstAdminPostVerificationService(
+  requestCookies: SupabaseServerCookieMethods,
+) {
+  return createFirstAdminPostVerificationService({
+    sessionEstablishmentService:
+      createFirstAdminAuthSessionEstablishmentService(requestCookies),
+    verificationService: createFirstAdminOnboardingService(
+      verificationOnlyDelivery,
+    ),
+  });
 }

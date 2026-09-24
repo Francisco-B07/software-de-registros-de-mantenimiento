@@ -62,6 +62,83 @@ export type FirstAdminOnboardingVerificationResult = Readonly<{
   outcome: "CONSUMED" | "EXHAUSTED" | "INVALID";
 }>;
 
+export type FirstAdminAuthHandoffIdentityCompatibility =
+  | "NO_APPLICATION_IDENTITY"
+  | "COMPATIBLE_EXISTING_APPLICATION_IDENTITY"
+  | "INCOMPATIBLE_IDENTITY";
+
+export type FirstAdminAuthHandoffContext = Readonly<{
+  authBridgeCredentialId: string;
+  boundAuthUserId: string | null;
+  currentChallengeId: string;
+  handoffSessionGrantId: string;
+  identityCompatibility: Exclude<
+    FirstAdminAuthHandoffIdentityCompatibility,
+    "INCOMPATIBLE_IDENTITY"
+  >;
+  intentId: string;
+  maintenanceCompanyId: string;
+  targetEmail: string;
+}>;
+
+export type FirstAdminAuthHandoffResult =
+  | Readonly<{
+      context: FirstAdminAuthHandoffContext;
+      outcome: "ELIGIBLE";
+    }>
+  | Readonly<{
+      identityCompatibility: FirstAdminAuthHandoffIdentityCompatibility;
+      outcome: "GRANT_EXPIRED" | "GRANT_REVOKED" | "GRANT_CONSUMED";
+    }>
+  | Readonly<{ outcome: "IDENTITY_INCOMPATIBLE" }>
+  | Readonly<{ outcome: "SECURITY_CORRELATION_FAILURE" }>
+  | Readonly<{ outcome: "INFRASTRUCTURE_FAILURE" }>;
+
+export type FirstAdminPostSignInAuthHandoffCorrelationResult =
+  | Readonly<{
+      authBridgeCredentialId: string;
+      bridgeAuthUserId: string;
+      currentChallengeId: string;
+      grantAuthUserId: string;
+      handoffSessionGrantId: string;
+      identityCompatibility: Exclude<
+        FirstAdminAuthHandoffIdentityCompatibility,
+        "INCOMPATIBLE_IDENTITY"
+      >;
+      intentId: string;
+      maintenanceCompanyId: string;
+      outcome: "CORRELATED_CONSUMED";
+      targetEmail: string;
+    }>
+  | Readonly<{ outcome: "NOT_CONSUMED" }>
+  | Readonly<{ outcome: "IDENTITY_INCOMPATIBLE" }>
+  | Readonly<{ outcome: "SECURITY_CORRELATION_FAILURE" }>
+  | Readonly<{ outcome: "INFRASTRUCTURE_FAILURE" }>;
+
+export type ResolveFirstAdminAuthHandoffInput = Readonly<{
+  intentId: string;
+}>;
+
+export type FirstAdminAuthProvisioningOutcome =
+  | "CREATED"
+  | "DUPLICATE_OR_CONFLICT"
+  | "DEFINITE_FAILURE"
+  | "AMBIGUOUS_FAILURE";
+
+export type FirstAdminAuthProvisioningResult =
+  | Readonly<{
+      authUserId: string;
+      outcome: "CREATED";
+    }>
+  | Readonly<{
+      outcome: Exclude<FirstAdminAuthProvisioningOutcome, "CREATED">;
+    }>;
+
+export type FirstAdminAuthProvisioningSourceInput = Readonly<{
+  authoritativeEmail: string;
+  technicalPassword: string;
+}>;
+
 export type FirstAdminVerificationCodeDeliveryInput = Readonly<{
   challengeId: string;
   code: string;
@@ -122,6 +199,22 @@ export interface FirstAdminOnboardingServerSource {
     technicalPasswordKeyVersion: string;
     verificationOperationId: string;
   }>): Promise<FirstAdminOnboardingVerificationResult>;
+}
+
+export interface FirstAdminAuthHandoffSource {
+  resolveAuthHandoff(intentId: string): Promise<unknown>;
+}
+
+export interface FirstAdminAuthTechnicalPasswordStateSource {
+  resolveTechnicalPasswordState(
+    authBridgeCredentialId: string,
+  ): Promise<unknown>;
+}
+
+export interface FirstAdminAuthProvisioningSource {
+  provisionVerifiedFirstAdminIdentity(
+    input: FirstAdminAuthProvisioningSourceInput,
+  ): Promise<FirstAdminAuthProvisioningResult>;
 }
 
 export function genericFirstAdminOnboardingDenial(): Error {

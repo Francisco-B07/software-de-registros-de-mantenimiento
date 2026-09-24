@@ -4,6 +4,7 @@ import { getPrivateAuthConfig } from "../../../../infrastructure/config/auth-pri
 import { getSupabasePublicConfig } from "../../../../infrastructure/config/supabase-public";
 
 import type {
+  FirstAdminAuthHandoffSource,
   FirstAdminOnboardingServerSource,
   FirstAdminOnboardingVerificationResult,
 } from "../../application/first-admin-onboarding";
@@ -39,7 +40,8 @@ function parseBytea(value: unknown): Uint8Array {
   return new Uint8Array(Buffer.from(value.slice(2), "hex"));
 }
 
-export function createSupabaseFirstAdminOnboardingServerSource(): FirstAdminOnboardingServerSource {
+export function createSupabaseFirstAdminOnboardingServerSource(): FirstAdminOnboardingServerSource &
+  FirstAdminAuthHandoffSource {
   const { supabaseSecretKey } = getPrivateAuthConfig();
   const { url } = getSupabasePublicConfig();
   const client = createClient(url, supabaseSecretKey, {
@@ -50,7 +52,7 @@ export function createSupabaseFirstAdminOnboardingServerSource(): FirstAdminOnbo
     },
   });
 
-  const source: FirstAdminOnboardingServerSource = {
+  const source: FirstAdminOnboardingServerSource & FirstAdminAuthHandoffSource = {
     async getChallengeMaterial(intentId, email, verificationOperationId) {
       const response = await client.rpc(
         "get_first_admin_onboarding_challenge_material",
@@ -132,7 +134,28 @@ export function createSupabaseFirstAdminOnboardingServerSource(): FirstAdminOnbo
         outcome,
       }) satisfies FirstAdminOnboardingVerificationResult;
     },
+
+    async resolveAuthHandoff(intentId) {
+      const response = await client.rpc("resolve_first_admin_auth_handoff", {
+        p_intent_id: intentId,
+      });
+
+      if (response.error !== null) {
+        throw new Error("First-admin auth handoff resolution failed.");
+      }
+
+      return response.data;
+    },
   };
 
   return Object.freeze(source);
+}
+
+export function createSupabaseFirstAdminAuthHandoffSource(): FirstAdminAuthHandoffSource {
+  const source = createSupabaseFirstAdminOnboardingServerSource();
+
+  return Object.freeze({
+    resolveAuthHandoff: (intentId: string) =>
+      source.resolveAuthHandoff(intentId),
+  });
 }

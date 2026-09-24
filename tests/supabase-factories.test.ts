@@ -82,6 +82,25 @@ describe("Supabase client factories", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("accepts a caller-scoped writable cookie adapter without consulting global cookies", async () => {
+    const client = { boundary: "request-scoped-server" };
+    const getAll = vi.fn(() => [
+      { name: "request-cookie", value: "request-value" },
+    ]);
+    const setAll = vi.fn();
+    createServerClientMock.mockReturnValue(client);
+
+    await expect(
+      createSupabaseServerClient({ getAll, setAll }),
+    ).resolves.toBe(client);
+    expect(cookiesMock).not.toHaveBeenCalled();
+    expect(createServerClientMock).toHaveBeenCalledWith(
+      publicUrl,
+      publishableKey,
+      { cookies: { getAll, setAll } },
+    );
+  });
+
   it("tolerates only the known Server Component cookie write limitation", async () => {
     const expectedError = new Error(
       "Cookies can only be modified in a Server Action or Route Handler.",

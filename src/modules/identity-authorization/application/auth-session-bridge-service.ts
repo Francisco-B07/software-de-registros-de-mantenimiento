@@ -1,7 +1,7 @@
 import {
   getPrivateAuthConfig,
   resolvePrivateKey,
-} from "@infrastructure/config/auth-private";
+} from "../../../infrastructure/config/auth-private";
 
 import { deriveTechnicalPassword } from "../infrastructure/crypto/technical-password";
 import { createSupabaseAuthAdminBoundary } from "../infrastructure/supabase/auth-admin-boundary";
@@ -14,6 +14,16 @@ import {
 
 type AdminBoundary = ReturnType<typeof createSupabaseAuthAdminBoundary>;
 type SignInBoundary = ReturnType<typeof createSupabaseTechnicalSignInBoundary>;
+
+function requireSuccessfulSignIn(
+  result: Awaited<ReturnType<SignInBoundary["signIn"]>>,
+): AuthProvisioningResult {
+  if (result.outcome !== "SESSION_CANDIDATE") {
+    throw genericAuthBridgeDenial();
+  }
+
+  return Object.freeze({ authUserId: result.authUserId });
+}
 
 export type EstablishTechnicalIdentityInput = Readonly<{
   authBridgeCredentialId: string;
@@ -49,34 +59,48 @@ export function createAuthSessionBridgeService(
             technicalPassword,
           });
 
-          if (signedIn.authUserId !== input.authUserId) {
+          if (
+            signedIn.outcome !== "SESSION_CANDIDATE" ||
+            signedIn.authUserId !== input.authUserId
+          ) {
             throw genericAuthBridgeDenial();
           }
 
-          return signedIn;
+          return Object.freeze({ authUserId: signedIn.authUserId });
         }
 
-        try {
-          return await signInBoundary.signIn({
-            email: input.email,
-            technicalPassword,
+        const reconciliationResult = await signInBoundary.signIn({
+          email: input.email,
+          technicalPassword,
+        });
+        if (reconciliationResult.outcome === "SESSION_CANDIDATE") {
+          return Object.freeze({
+            authUserId: reconciliationResult.authUserId,
           });
-        } catch {
-          const created = await adminBoundary.createVerifiedEmailUser({
-            email: input.email,
-            technicalPassword,
-          });
-          const signedIn = await signInBoundary.signIn({
-            email: input.email,
-            technicalPassword,
-          });
-
-          if (signedIn.authUserId !== created.authUserId) {
-            throw genericAuthBridgeDenial();
-          }
-
-          return signedIn;
         }
+        if (
+          reconciliationResult.outcome !== "DEFINITE_CREDENTIAL_FAILURE"
+        ) {
+          throw genericAuthBridgeDenial();
+        }
+
+        const created = await adminBoundary.createVerifiedEmailUser({
+          email: input.email,
+          technicalPassword,
+        });
+        const signedIn = await signInBoundary.signIn({
+          email: input.email,
+          technicalPassword,
+        });
+
+        if (
+          signedIn.outcome !== "SESSION_CANDIDATE" ||
+          signedIn.authUserId !== created.authUserId
+        ) {
+          throw genericAuthBridgeDenial();
+        }
+
+        return requireSuccessfulSignIn(signedIn);
       } catch {
         throw genericAuthBridgeDenial();
       }
