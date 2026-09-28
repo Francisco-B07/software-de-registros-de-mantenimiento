@@ -263,15 +263,21 @@ describe("TASK-018 Work Item D minimal UI integration", () => {
     expect(body).not.toMatch(/sensitive|provider|identity/i);
   });
 
-  it("renders only the minimal pending-profile shell", () => {
+  it("keeps pending-profile server-gated while allowing later UI composition", () => {
     const shell = readFileSync(
       new URL("../app/pending-profile/page.tsx", import.meta.url),
       "utf8",
     );
 
-    expect(shell).toContain("Sesión establecida");
-    expect(shell).toContain("Perfil pendiente");
-    expect(shell).not.toMatch(/<form|<input|dashboard|membership|tenant|from\(|rpc\(/i);
+    const firstAwaitIndex = shell.search(/\bawait\b/);
+    const uiReturnIndex = shell.search(/\breturn\s*\(/);
+
+    expect(shell).not.toMatch(/^\s*["']use client["'];?/m);
+    expect(firstAwaitIndex).toBeGreaterThan(-1);
+    expect(uiReturnIndex).toBeGreaterThan(firstAwaitIndex);
+    expect(shell).not.toMatch(
+      /\b(?:searchParams|useSearchParams|localStorage|sessionStorage|intentId|maintenanceCompanyId|tenantId|role|membershipId|grantId|challengeId|accessToken|refreshToken|providerState|reconciliationOutcome)\b|location\.(?:search|hash)|\.(?:from|rpc)\s*\(/i,
+    );
   });
 
   it("does not transport authority material in the success destination", () => {

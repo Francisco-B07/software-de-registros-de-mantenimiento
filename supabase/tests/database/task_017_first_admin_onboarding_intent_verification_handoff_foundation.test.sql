@@ -9,26 +9,79 @@ select ok(
   'T017-SCHEMA-001 intent table exists'
 );
 
-select is(
+select ok(
   (
-    select array_agg(column_name order by ordinal_position)::text
-    from information_schema.columns
-    where table_schema = 'public'
-      and table_name = 'first_admin_onboarding_intents'
+    with task_017_owned_columns(column_name) as (
+      values
+        ('id'),
+        ('maintenance_company_id'),
+        ('target_email'),
+        ('initiated_by_platform_user_id'),
+        ('establishment_operation_id'),
+        ('current_challenge_id'),
+        ('handoff_session_grant_id'),
+        ('handoff_ready_at'),
+        ('created_at')
+    ),
+    task_019_compatibility_columns(column_name) as (
+      values
+        ('completion_operation_id'),
+        ('completed_platform_user_id'),
+        ('completed_company_membership_id'),
+        ('completed_at')
+    ),
+    allowed_columns(column_name) as (
+      select column_name from task_017_owned_columns
+      union all
+      select column_name from task_019_compatibility_columns
+    )
+    select
+      not exists (
+        select column_name from task_017_owned_columns
+        except
+        select column_name
+        from information_schema.columns
+        where table_schema = 'public'
+          and table_name = 'first_admin_onboarding_intents'
+      )
+      and not exists (
+        select column_name
+        from information_schema.columns
+        where table_schema = 'public'
+          and table_name = 'first_admin_onboarding_intents'
+        except
+        select column_name from allowed_columns
+      )
   ),
-  '{id,maintenance_company_id,target_email,initiated_by_platform_user_id,establishment_operation_id,current_challenge_id,handoff_session_grant_id,handoff_ready_at,created_at}',
-  'T017-SCHEMA-002 exact approved column set exists'
+  'T017-SCHEMA-002 all TASK-017 columns and only explicitly compatible TASK-019 extensions exist'
 );
 
-select is(
+select ok(
   (
-    select array_agg(data_type order by ordinal_position)::text
-    from information_schema.columns
-    where table_schema = 'public'
-      and table_name = 'first_admin_onboarding_intents'
+    with task_017_owned_types(column_name, data_type) as (
+      values
+        ('id', 'uuid'),
+        ('maintenance_company_id', 'uuid'),
+        ('target_email', 'text'),
+        ('initiated_by_platform_user_id', 'uuid'),
+        ('establishment_operation_id', 'uuid'),
+        ('current_challenge_id', 'uuid'),
+        ('handoff_session_grant_id', 'uuid'),
+        ('handoff_ready_at', 'timestamp with time zone'),
+        ('created_at', 'timestamp with time zone')
+    )
+    select not exists (
+      select 1
+      from task_017_owned_types as expected
+      left join information_schema.columns as actual
+        on actual.table_schema = 'public'
+        and actual.table_name = 'first_admin_onboarding_intents'
+        and actual.column_name = expected.column_name
+      where actual.column_name is null
+        or actual.data_type <> expected.data_type
+    )
   ),
-  '{uuid,uuid,text,uuid,uuid,uuid,uuid,"timestamp with time zone","timestamp with time zone"}',
-  'T017-SCHEMA-003 exact column types exist'
+  'T017-SCHEMA-003 exact TASK-017-owned column types exist independently of later extensions'
 );
 
 select is(
@@ -90,15 +143,122 @@ select ok(
   'T017-RLS-007 supabase_auth_admin has no intent CRUD'
 );
 
-select is(
+select ok(
   (
-    select count(*)::integer
-    from pg_constraint
-    where conrelid = 'public.first_admin_onboarding_intents'::regclass
-      and contype = 'f'
+    with actual_foreign_keys as (
+      select
+        constraint_definition.oid as constraint_oid,
+        source_attribute.attname::text as source_column,
+        target_schema.nspname::text as target_schema,
+        target_table.relname::text as target_table,
+        target_attribute.attname::text as target_column,
+        constraint_definition.confdeltype::text as delete_action
+      from pg_constraint as constraint_definition
+      cross join lateral unnest(
+        constraint_definition.conkey,
+        constraint_definition.confkey
+      ) with ordinality as key_map(source_attnum, target_attnum, key_ordinality)
+      join pg_attribute as source_attribute
+        on source_attribute.attrelid = constraint_definition.conrelid
+        and source_attribute.attnum = key_map.source_attnum
+      join pg_class as target_table
+        on target_table.oid = constraint_definition.confrelid
+      join pg_namespace as target_schema
+        on target_schema.oid = target_table.relnamespace
+      join pg_attribute as target_attribute
+        on target_attribute.attrelid = constraint_definition.confrelid
+        and target_attribute.attnum = key_map.target_attnum
+      where constraint_definition.conrelid = 'public.first_admin_onboarding_intents'::regclass
+        and constraint_definition.contype = 'f'
+    ),
+    required_task_017_foreign_keys(
+      source_column,
+      target_schema,
+      target_table,
+      target_column,
+      delete_action
+    ) as (
+      values
+        ('maintenance_company_id', 'public', 'maintenance_companies', 'id', 'r'),
+        ('initiated_by_platform_user_id', 'public', 'platform_users', 'id', 'r'),
+        ('current_challenge_id', 'public', 'verification_challenges', 'id', 'r'),
+        ('handoff_session_grant_id', 'public', 'auth_session_grants', 'id', 'r')
+    ),
+    task_019_compatibility_foreign_keys(
+      source_column,
+      target_schema,
+      target_table,
+      target_column,
+      delete_action
+    ) as (
+      values
+        ('completed_platform_user_id', 'public', 'platform_users', 'id', 'r'),
+        ('completed_company_membership_id', 'public', 'company_memberships', 'id', 'r')
+    ),
+    allowed_foreign_keys as (
+      select * from required_task_017_foreign_keys
+      union all
+      select * from task_019_compatibility_foreign_keys
+    )
+    select
+      not exists (
+        select constraint_oid
+        from actual_foreign_keys
+        group by constraint_oid
+        having count(*) <> 1
+      )
+      and not exists (
+        select
+          source_column,
+          target_schema,
+          target_table,
+          target_column,
+          delete_action
+        from actual_foreign_keys
+        group by
+          source_column,
+          target_schema,
+          target_table,
+          target_column,
+          delete_action
+        having count(*) > 1
+      )
+      and not exists (
+        select
+          source_column,
+          target_schema,
+          target_table,
+          target_column,
+          delete_action
+        from required_task_017_foreign_keys
+        except
+        select
+          source_column,
+          target_schema,
+          target_table,
+          target_column,
+          delete_action
+        from actual_foreign_keys
+      )
+      and not exists (
+        select
+          source_column,
+          target_schema,
+          target_table,
+          target_column,
+          delete_action
+        from actual_foreign_keys
+        except
+        select
+          source_column,
+          target_schema,
+          target_table,
+          target_column,
+          delete_action
+        from allowed_foreign_keys
+      )
   ),
-  4,
-  'T017-SCHEMA-006 all four approved foreign keys exist'
+  'T017-SCHEMA-006 exact TASK-017 foreign keys and only explicitly compatible TASK-019 foreign keys exist'
 );
 
 select ok(
@@ -187,9 +347,9 @@ select ok(
     select 1 from information_schema.columns
     where table_schema = 'public'
       and table_name = 'first_admin_onboarding_intents'
-      and column_name in ('role', 'purpose', 'status', 'completed_at', 'onboarding_completed_at')
+      and column_name in ('role', 'purpose', 'status', 'onboarding_completed_at')
   ),
-  'T017-SCOPE-001 no role purpose status or completion field was invented'
+  'T017-SCOPE-001 no unauthorized role purpose status or onboarding completion field was invented'
 );
 
 select ok(

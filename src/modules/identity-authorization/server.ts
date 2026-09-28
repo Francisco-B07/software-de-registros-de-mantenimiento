@@ -25,6 +25,7 @@ import {
   createFirstAdminAuthSessionEstablishmentService,
 } from "./application/first-admin-auth-session-establishment-service";
 import { createFirstAdminPostVerificationService } from "./application/first-admin-post-verification-service";
+import { createFirstAdminProfileCompletionService } from "./application/first-admin-profile-completion-service";
 import type { FirstAdminVerificationCodeDelivery } from "./application/first-admin-onboarding";
 import type { SupabaseServerCookieMethods } from "../../infrastructure/supabase/server";
 
@@ -51,6 +52,11 @@ export type { EstablishTechnicalIdentityInput } from "./application/auth-session
 export type { FirstAdminAuthIdentityReconciliationResult } from "./application/first-admin-auth-identity-reconciliation-service";
 export type { FirstAdminAuthSessionEstablishmentResult } from "./application/first-admin-auth-session-establishment-service";
 export type { FirstAdminPostVerificationResult } from "./application/first-admin-post-verification-service";
+export type {
+  FirstAdminOnboardingState,
+  FirstAdminProfileCompletionInput,
+  FirstAdminProfileCompletionResult,
+} from "./application/first-admin-profile-completion";
 export type { CurrentGlobalAuthorizationResult } from "./application/resolve-current-global-authorization";
 export type {
   CompanyMembershipLifecycleInput,
@@ -138,6 +144,10 @@ export function getFirstAdminAuthSessionEstablishmentService(
   requestCookies: SupabaseServerCookieMethods,
 ) {
   return createFirstAdminAuthSessionEstablishmentService(requestCookies);
+}
+
+export function getFirstAdminProfileCompletionService() {
+  return createFirstAdminProfileCompletionService();
 }
 
 const verificationOnlyDelivery: FirstAdminVerificationCodeDelivery =
