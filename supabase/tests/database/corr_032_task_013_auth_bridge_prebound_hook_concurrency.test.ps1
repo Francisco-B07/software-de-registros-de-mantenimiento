@@ -3,9 +3,11 @@ param()
 
 $ErrorActionPreference = "Stop"
 
-if ($null -eq (Get-Command psql -ErrorAction SilentlyContinue)) {
+$psqlCommand = Get-Command psql -ErrorAction SilentlyContinue
+if ($null -eq $psqlCommand) {
   throw "psql is required for the CORR-032 concurrency harness."
 }
+$script:corr032PsqlPath = $psqlCommand.Source
 
 $corr032Jobs = [System.Collections.Generic.List[object]]::new()
 $previousConnectTimeout = $env:PGCONNECT_TIMEOUT
@@ -39,15 +41,123 @@ function Add-Corr032Timeouts {
   return "set statement_timeout = '30s'; set lock_timeout = '20s'; $Sql"
 }
 
+function ConvertTo-Corr032SafeDiagnosticText {
+  param([AllowEmptyString()][string]$Text)
+
+  if ([string]::IsNullOrEmpty($Text)) {
+    return "<empty>"
+  }
+
+  $safeText = $Text
+  $safeText = [regex]::Replace(
+    $safeText,
+    '(?i)(postgres(?:ql)?://[^:\s/@]+:)[^@\s]+@',
+    '$1<redacted>@'
+  )
+  $safeText = [regex]::Replace(
+    $safeText,
+    '(?im)(PGPASSWORD\s*=\s*)\S+',
+    '$1<redacted>'
+  )
+  $safeText = [regex]::Replace(
+    $safeText,
+    '(?im)((?:password|access_token|refresh_token|service_role|secret_key)\s*[=:]\s*)\S+',
+    '$1<redacted>'
+  )
+  return $safeText.Trim()
+}
+
+function New-Corr032PsqlFailureMessage {
+  param(
+    [Parameter(Mandatory = $true)][string]$Context,
+    [Parameter(Mandatory = $true)][int]$ExitCode,
+    [AllowEmptyString()][string]$Stdout,
+    [AllowEmptyString()][string]$Stderr
+  )
+
+  $safeStdout = ConvertTo-Corr032SafeDiagnosticText -Text $Stdout
+  $safeStderr = ConvertTo-Corr032SafeDiagnosticText -Text $Stderr
+  $sqlState = "NOT EXPOSED"
+  $severity = "NOT EXPOSED"
+  $message = "NOT EXPOSED"
+  $detail = "NOT EXPOSED"
+  $hint = "NOT EXPOSED"
+
+  $errorMatch = [regex]::Match(
+    $safeStderr,
+    '(?m)^(?<severity>ERROR|FATAL|PANIC):\s+(?<state>[0-9A-Z]{5}):\s*(?<message>[^\r\n]*)\r?$'
+  )
+  if ($errorMatch.Success) {
+    $sqlState = $errorMatch.Groups['state'].Value
+    $severity = $errorMatch.Groups['severity'].Value
+    $message = $errorMatch.Groups['message'].Value
+  }
+
+  $detailMatch = [regex]::Match($safeStderr, '(?m)^DETAIL:\s*(?<value>[^\r\n]*)\r?$')
+  if ($detailMatch.Success) {
+    $detail = $detailMatch.Groups['value'].Value
+  }
+  $hintMatch = [regex]::Match($safeStderr, '(?m)^HINT:\s*(?<value>[^\r\n]*)\r?$')
+  if ($hintMatch.Success) {
+    $hint = $hintMatch.Groups['value'].Value
+  }
+
+  return @(
+    "$Context failed.",
+    "numeric exit code = $ExitCode",
+    "safe stdout =",
+    $safeStdout,
+    "safe stderr =",
+    $safeStderr,
+    "SQLSTATE = $sqlState",
+    "severity = $severity",
+    "message = $message",
+    "detail = $detail",
+    "hint = $hint"
+  ) -join [Environment]::NewLine
+}
+
 function Invoke-Corr032Psql {
   param([Parameter(Mandatory = $true)][string]$Sql)
 
-  $output = & psql --no-psqlrc --quiet --set=ON_ERROR_STOP=1 --tuples-only --no-align `
-    --command (Add-Corr032Timeouts -Sql $Sql) 2>&1
-  if ($LASTEXITCODE -ne 0) {
-    throw "Bounded CORR-032 psql command failed."
+  $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+  $startInfo.FileName = $script:corr032PsqlPath
+  $startInfo.UseShellExecute = $false
+  $startInfo.RedirectStandardOutput = $true
+  $startInfo.RedirectStandardError = $true
+  $startInfo.CreateNoWindow = $true
+  foreach ($argument in @(
+      "--no-psqlrc",
+      "--quiet",
+      "--set=ON_ERROR_STOP=1",
+      "--set=VERBOSITY=verbose",
+      "--tuples-only",
+      "--no-align",
+      "--command",
+      (Add-Corr032Timeouts -Sql $Sql)
+    )) {
+    $startInfo.ArgumentList.Add($argument)
   }
-  return ($output -join [Environment]::NewLine).Trim()
+
+  $process = [System.Diagnostics.Process]::new()
+  $process.StartInfo = $startInfo
+  try {
+    $process.Start() | Out-Null
+    $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+    $stderrTask = $process.StandardError.ReadToEndAsync()
+    $process.WaitForExit()
+    $stdout = $stdoutTask.GetAwaiter().GetResult()
+    $stderr = $stderrTask.GetAwaiter().GetResult()
+    $exitCode = $process.ExitCode
+  } finally {
+    $process.Dispose()
+  }
+
+  if ($exitCode -ne 0) {
+    throw (New-Corr032PsqlFailureMessage -Context "Bounded CORR-032 psql command" `
+      -ExitCode $exitCode -Stdout $stdout -Stderr $stderr)
+  }
+  return $stdout.Trim()
 }
 
 function Start-Corr032HookJob {
@@ -76,14 +186,75 @@ function Start-Corr032ControlJob {
 
   $boundedSql = Add-Corr032Timeouts -Sql $Sql
   $job = Start-Job -ScriptBlock {
-    param($Statement)
-    $result = & psql --no-psqlrc --quiet --set=ON_ERROR_STOP=1 --tuples-only --no-align `
-      --command $Statement 2>&1
-    if ($LASTEXITCODE -ne 0) {
-      throw "Bounded CORR-032 control worker failed."
+    param($Statement, $PsqlPath)
+
+    $startInfo = [System.Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $PsqlPath
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $startInfo.CreateNoWindow = $true
+    foreach ($argument in @(
+        "--no-psqlrc",
+        "--quiet",
+        "--set=ON_ERROR_STOP=1",
+        "--set=VERBOSITY=verbose",
+        "--tuples-only",
+        "--no-align",
+        "--command",
+        $Statement
+      )) {
+      $startInfo.ArgumentList.Add($argument)
     }
-    return ($result -join [Environment]::NewLine).Trim()
-  } -ArgumentList $boundedSql
+
+    $process = [System.Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    try {
+      $process.Start() | Out-Null
+      $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+      $stderrTask = $process.StandardError.ReadToEndAsync()
+      $process.WaitForExit()
+      $stdout = $stdoutTask.GetAwaiter().GetResult()
+      $stderr = $stderrTask.GetAwaiter().GetResult()
+      $exitCode = $process.ExitCode
+    } finally {
+      $process.Dispose()
+    }
+
+    if ($exitCode -ne 0) {
+      $safeStdout = if ([string]::IsNullOrEmpty($stdout)) { "<empty>" } else { $stdout.Trim() }
+      $safeStderr = if ([string]::IsNullOrEmpty($stderr)) { "<empty>" } else { $stderr.Trim() }
+      $safeStdout = [regex]::Replace(
+        $safeStdout,
+        '(?i)(postgres(?:ql)?://[^:\s/@]+:)[^@\s]+@',
+        '$1<redacted>@'
+      )
+      $safeStderr = [regex]::Replace(
+        $safeStderr,
+        '(?i)(postgres(?:ql)?://[^:\s/@]+:)[^@\s]+@',
+        '$1<redacted>@'
+      )
+      $safeStdout = [regex]::Replace(
+        $safeStdout,
+        '(?im)(PGPASSWORD\s*=\s*)\S+',
+        '$1<redacted>'
+      )
+      $safeStderr = [regex]::Replace(
+        $safeStderr,
+        '(?im)(PGPASSWORD\s*=\s*)\S+',
+        '$1<redacted>'
+      )
+      throw (@(
+          "Bounded CORR-032 control worker psql nonzero.",
+          "numeric exit code = $exitCode",
+          "safe stdout =",
+          $safeStdout,
+          "safe stderr =",
+          $safeStderr
+        ) -join [Environment]::NewLine)
+    }
+    return $stdout.Trim()
+  } -ArgumentList $boundedSql, $script:corr032PsqlPath
   $script:corr032Jobs.Add($job) | Out-Null
   return $job
 }
@@ -96,11 +267,21 @@ function Receive-Corr032Job {
     Stop-Job -Job $Job -ErrorAction SilentlyContinue
     throw "CORR-032 concurrent worker timed out."
   }
-  $result = Receive-Job -Job $Job -ErrorAction SilentlyContinue
+  $workerErrors = @()
+  $result = Receive-Job -Job $Job -ErrorAction SilentlyContinue -ErrorVariable +workerErrors
   $state = $Job.State
   Remove-Job -Job $Job -Force -ErrorAction SilentlyContinue
   if ($state -ne "Completed") {
-    throw "CORR-032 concurrent worker failed with state $state."
+    $workerDiagnostic = if ($workerErrors.Count -eq 0) {
+      "NOT EXPOSED"
+    } else {
+      ConvertTo-Corr032SafeDiagnosticText -Text (($workerErrors | Out-String).Trim())
+    }
+    throw (@(
+        "CORR-032 concurrent worker failed with state $state.",
+        "worker diagnostic =",
+        $workerDiagnostic
+      ) -join [Environment]::NewLine)
   }
   return ($result -join [Environment]::NewLine).Trim()
 }
@@ -241,6 +422,13 @@ values
    '32900000-0000-4000-8500-000000000003');
 "@
 
+$primaryFailure = $null
+$cleanupFailures = [System.Collections.Generic.List[string]]::new()
+$cleanupTrackedJobs = -1
+$cleanupFixtureResidue = -1
+$cleanupSessionResidue = -1
+$connectTimeoutRestored = $false
+
 try {
   Invoke-Corr032Psql -Sql $setupSql | Out-Null
 
@@ -379,11 +567,46 @@ rollback;
 "@
   Assert-Corr032 -Condition ($grantLockProof -eq "LOCKED") -Label "C032-CON-007"
 
-  $gateCancelled = Invoke-Corr032Psql -Sql @"
-select pg_cancel_backend(pid)::text
+  $gateCancellationEvidence = Invoke-Corr032Psql -Sql @"
+begin;
+do `$identity`$
+begin
+  if session_user <> 'supabase_admin' or current_user <> 'postgres' then
+    raise exception using
+      errcode = '42501',
+      message = 'CORR-032 cancellation baseline identity mismatch';
+  end if;
+  perform set_config('corr032.cancel_baseline_session_user', session_user, true);
+  perform set_config('corr032.cancel_baseline_current_user', current_user, true);
+end;
+`$identity`$;
+set local role supabase_admin;
+do `$identity`$
+begin
+  if session_user <> 'supabase_admin' or current_user <> 'supabase_admin' then
+    raise exception using
+      errcode = '42501',
+      message = 'CORR-032 bounded cancellation identity mismatch';
+  end if;
+end;
+`$identity`$;
+select current_setting('corr032.cancel_baseline_session_user')
+  || '|' || current_setting('corr032.cancel_baseline_current_user')
+  || '|' || session_user
+  || '|' || current_user
+  || '|' || pg_cancel_backend(pid)::text
 from pg_stat_activity
 where application_name = '$preconditionGateName';
+commit;
 "@
+  $gateCancellationFields = @($gateCancellationEvidence -split '\|')
+  if ($gateCancellationFields.Count -ne 5) {
+    throw "CORR-032 cancellation evidence was ambiguous."
+  }
+  Write-Output "CORR-032 CANCELLATION BASELINE = session_user=$($gateCancellationFields[0]) current_user=$($gateCancellationFields[1])"
+  Write-Output "CORR-032 CANCELLATION BOUNDED AUTHORITY = session_user=$($gateCancellationFields[2]) current_user=$($gateCancellationFields[3])"
+  Write-Output "CORR-032 PG_CANCEL_BACKEND CALLS = 1"
+  $gateCancelled = $gateCancellationFields[4]
   Assert-Corr032 -Condition ($gateCancelled -eq "true") -Label "C032-CON-008"
   Remove-Corr032CancelledGateJob -Job $gateJob
   Receive-Corr032Job -Job $blockerJob | Out-Null
@@ -404,16 +627,122 @@ select
   Assert-Corr032 -Condition ($preconditionOutcome -eq "DENY") -Label "C032-CON-009"
   Assert-Corr032 -Condition ($preconditionState -eq "1|1") -Label "C032-CON-010"
 
-  Write-Output "CORR-032 CONCURRENCY HARNESS = PASS"
+}
+catch {
+  $primaryFailure = $_
 }
 finally {
-  $corr032Jobs | Where-Object { $_.State -in @("Running", "NotStarted") } |
-    Stop-Job -ErrorAction SilentlyContinue
-  $corr032Jobs | Remove-Job -Force -ErrorAction SilentlyContinue
-  Invoke-Corr032Psql -Sql $cleanupSql | Out-Null
-  if ($null -eq $previousConnectTimeout) {
-    Remove-Item -LiteralPath Env:PGCONNECT_TIMEOUT -ErrorAction SilentlyContinue
-  } else {
-    $env:PGCONNECT_TIMEOUT = $previousConnectTimeout
+  foreach ($trackedJob in @($corr032Jobs)) {
+    $existingJob = Get-Job -Id $trackedJob.Id -ErrorAction SilentlyContinue
+    if ($null -eq $existingJob) {
+      continue
+    }
+    if ($existingJob.State -in @("Running", "NotStarted")) {
+      try {
+        Stop-Job -Job $existingJob -ErrorAction Stop
+      } catch {
+        $cleanupFailures.Add(
+          "job stop failure: $(ConvertTo-Corr032SafeDiagnosticText -Text $_.Exception.Message)"
+        )
+      }
+    }
+    try {
+      Remove-Job -Job $existingJob -Force -ErrorAction Stop
+    } catch {
+      $cleanupFailures.Add(
+        "job removal failure: $(ConvertTo-Corr032SafeDiagnosticText -Text $_.Exception.Message)"
+      )
+    }
+  }
+
+  $cleanupTrackedJobs = @(
+    $corr032Jobs | Where-Object {
+      $job = Get-Job -Id $_.Id -ErrorAction SilentlyContinue
+      $null -ne $job -and $job.State -in @("Running", "NotStarted")
+    }
+  ).Count
+  if ($cleanupTrackedJobs -ne 0) {
+    $cleanupFailures.Add("tracked jobs still active: $cleanupTrackedJobs")
+  }
+
+  try {
+    Invoke-Corr032Psql -Sql $cleanupSql | Out-Null
+  } catch {
+    $cleanupFailures.Add(
+      "fixture cleanup failure: $(ConvertTo-Corr032SafeDiagnosticText -Text $_.Exception.Message)"
+    )
+  }
+
+  try {
+    $cleanupFixtureResidue = [int](Invoke-Corr032Psql -Sql @"
+select
+  (select count(*) from public.auth_session_grants where id::text like '32900000-%')
+  + (select count(*) from public.auth_bridge_credentials where id::text like '32900000-%')
+  + (select count(*) from public.verification_challenges where id::text like '32900000-%')
+  + (select count(*) from auth.users where id::text like '32900000-%');
+"@)
+    if ($cleanupFixtureResidue -ne 0) {
+      $cleanupFailures.Add("fixture residue remained: $cleanupFixtureResidue")
+    }
+  } catch {
+    $cleanupFailures.Add(
+      "fixture residue verification failure: $(ConvertTo-Corr032SafeDiagnosticText -Text $_.Exception.Message)"
+    )
+  }
+
+  try {
+    $cleanupSessionResidue = [int](Invoke-Corr032Psql -Sql @"
+select count(*)
+from pg_stat_activity
+where application_name in (
+  '$preconditionGateName',
+  '$preconditionBlockerName',
+  '$preconditionHookName'
+);
+"@)
+    if ($cleanupSessionResidue -ne 0) {
+      $cleanupFailures.Add("precondition session residue remained: $cleanupSessionResidue")
+    }
+  } catch {
+    $cleanupFailures.Add(
+      "session residue verification failure: $(ConvertTo-Corr032SafeDiagnosticText -Text $_.Exception.Message)"
+    )
+  }
+
+  try {
+    if ($null -eq $previousConnectTimeout) {
+      Remove-Item -LiteralPath Env:PGCONNECT_TIMEOUT -ErrorAction Stop
+      $connectTimeoutRestored = $null -eq $env:PGCONNECT_TIMEOUT
+    } else {
+      $env:PGCONNECT_TIMEOUT = $previousConnectTimeout
+      $connectTimeoutRestored = $env:PGCONNECT_TIMEOUT -eq $previousConnectTimeout
+    }
+  } catch {
+    $cleanupFailures.Add(
+      "PGCONNECT_TIMEOUT restoration failure: $(ConvertTo-Corr032SafeDiagnosticText -Text $_.Exception.Message)"
+    )
+  }
+  if (-not $connectTimeoutRestored) {
+    $cleanupFailures.Add("PGCONNECT_TIMEOUT restoration verification failed")
   }
 }
+
+if ($null -ne $primaryFailure -or $cleanupFailures.Count -ne 0) {
+  $failureParts = [System.Collections.Generic.List[string]]::new()
+  if ($null -ne $primaryFailure) {
+    $failureParts.Add(
+      "primary failure:`n$(ConvertTo-Corr032SafeDiagnosticText -Text $primaryFailure.Exception.Message)"
+    )
+  }
+  if ($cleanupFailures.Count -ne 0) {
+    $failureParts.Add("cleanup failures:`n$($cleanupFailures -join [Environment]::NewLine)")
+  }
+  throw ($failureParts -join [Environment]::NewLine)
+}
+
+Write-Output "CORR-032 CLEANUP TRACKED JOBS = $cleanupTrackedJobs"
+Write-Output "CORR-032 CLEANUP FIXTURE RESIDUE = $cleanupFixtureResidue"
+Write-Output "CORR-032 CLEANUP SESSION RESIDUE = $cleanupSessionResidue"
+Write-Output "CORR-032 PGCONNECT_TIMEOUT RESTORED = YES"
+Write-Output "CORR-032 CLEANUP = PASS"
+Write-Output "CORR-032 CONCURRENCY HARNESS = PASS"
