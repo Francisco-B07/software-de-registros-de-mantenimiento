@@ -340,20 +340,28 @@ Fase 1 no implementa capacidades de producto posteriores aunque existan invarian
 
 ## 6.1 Fase 2 — Multitenancy, autenticación, roles y RLS
 
-Debe esperar:
+El boundary de Fase 2 comprende exclusivamente las foundations/capabilities no dependientes de `Client` dentro de:
 
-- implementación de autenticación funcional;
-- alta/verificación de usuarios;
-- `PlatformUser` físico;
-- `CompanyMembership` físico;
+- multitenancy;
+- identidad y autenticación;
+- `PlatformUser` y `CompanyMembership` físicos;
 - roles funcionales;
-- `UserClientAccess` físico;
-- `SupportAccessGrant` físico;
+- autorización autoritativa online y foundations de autorización de aplicación;
 - invalidación efectiva de sesiones;
-- autorización de aplicación;
 - policies RLS de producto;
-- lógica de tenant resolution operativa;
-- implementación de soporte excepcional.
+- lógica de tenant resolution operativa.
+
+`Client` permanece en Fase 3. Por ello, no son requisitos para cerrar Fase 2:
+
+- `UserClientAccess` físico;
+- `SupportAccessGrant` físico/completo;
+- soporte completo dependiente de `Client`.
+
+El diferimiento por prerequisites físicos no elimina ni debilita estas capabilities del MVP. `UserClientAccess` conserva su relación `CompanyMembership + Client` y la obligación de que membership y `Client` pertenezcan al mismo tenant. No se introduce un `SupportAccessGrant` parcial de Fase 2: la capability completa debe conservar conjuntamente sus semánticas tenant-wide y client-scoped y continuar cuando existan sus prerequisites reales.
+
+`RF-013`..`RF-017` permanecen sin cambios y `RF-015` continúa siendo obligatorio: cero clientes asignados no satisface `RF-015`. Una foundation de onboarding previa a `Client` no equivale a creación completa de usuario, onboarding completo de membership ni onboarding completo de usuarios posteriores; ese lifecycle sólo puede completarse cuando sea posible satisfacer la asignación de clientes requerida.
+
+Esta delimitación de sequencing no declara implementada ni completa ninguna capability, no cierra Fase 2 y no define ni satisface su Exit Gate.
 
 Aunque `ADR-0002` está `ACCEPTED`, no autoriza por sí solo el diseño físico ni la implementación de autorización completa.
 
