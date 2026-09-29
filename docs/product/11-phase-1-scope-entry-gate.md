@@ -1452,9 +1452,13 @@ Con esta aprobación, Fase 1 queda autorizada documentalmente. La implementació
 
 `ADR-0020 architecture decision = ACCEPTED BY HUMAN APPROVAL`, `ADR-0020 CANONICALIZATION REVIEW = APPROVED` y `ADR-0020 REPOSITORY INCORPORATION REVIEW = APPROVED`; por tanto, `first-admin onboarding intent-binding architectural prerequisite = RESOLVED`. Esta decisión arquitectónica aceptada no implementa first-admin onboarding ni determina TASK-017.
 
-Permanecen `SUPER_ADMIN ordinary tenant bypass = NO`, `ordinary service-role path = NO`, `generic privileged client = NO`, `first COMPANY_ADMIN creation = NO`, `PlatformUser creation for first admin = NO`, `initial CompanyMembership creation = NO`, `functional onboarding = NO`, `full company + admin signup/onboarding = NO`, `Subscription = NO` y `promotional entitlement = NO`. `PAY-OPEN-001 = UNRESOLVED` y `PAY-OPEN-008 = UNRESOLVED`; `TASK-016 DOES NOT RESOLVE PAY-OPEN-001` y `TASK-016 DOES NOT RESOLVE PAY-OPEN-008`. Ningún timestamp de creación, `creation_operation_id`, `created_at`, estado activo del tenant, tiempo de implementación, Hosted apply o Git commit se convierte en ancla comercial. `MaintenanceCompany creation implemented != full company onboarding implemented` y `TASK-016 DONE != FL-01 DONE`.
+`TASK-017 = DONE / CLOSED` y `TASK-017 FINAL CLOSURE = APPROVED`; su resultado se limita a la foundation autoritativa de intent/challenge/proof-consume/SessionGrant/handoff del primer administrador. `TASK-018 = DONE / CLOSED` y `TASK-018 FINAL HUMAN CLOSURE = APPROVED`; su resultado se limita a first-admin Auth identity reconciliation y session establishment foundation. `USER_CREATED produced by TASK-017 = NO` y `USER_CREATED produced by TASK-018 = NO` permanecen sin cambios.
 
-Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Application authorization completa = NO`, `route authorization funcional completa = NO`, `resource authorization funcional completa = NO`, `Client = NO`, `UserClientAccess completo = NO`, `SupportAccessGrant completo = NO`, `Client authorization = NO`, `Support authorization = NO`, `Storage funcional = NO`, `Realtime funcional = NO`, `Offline authorization = NO`, `Offline funcional = NO`, `UI/Auth flow funcional completo = NO`, `onboarding funcional completo = NO`, `alta funcional completa = NO`, `lifecycle funcional completo de usuarios/memberships = NO`, `SUPER_ADMIN grant funcional = NO`, `SUPER_ADMIN revoke funcional = NO`, `SUPER_ADMIN bootstrap funcional = NO`, `SUPER_ADMIN management funcional = NO`, `AuditEvent producer TASK-012 = NO` y `auditoría funcional completa = NO`. `ADR-0019 = ACCEPTED` permanece como antecedente arquitectónico; la especificación inicialmente bloqueada y los Gates separados que condujeron a la implementación y cierre de TASK-013 permanecen como historia normativa. `authenticated != authorized` y `Auth session != tenant authorization` continúan vigentes.
+`TASK-019 = CLOSED` y `TASK-019 HUMAN CLOSURE = APPROVED`. Su implementation commit es `9ddaffaa4c89041640547fdef951b4e2d018dbc5`. La cadena purpose-specific TASK-017/018/019 deja `first-admin Auth/session flow = IMPLEMENTED WITHIN APPROVED TASK-017/018/019 BOUNDARY`, `first-admin PlatformUser establishment/reconciliation = IMPLEMENTED`, `first COMPANY_ADMIN profile completion = IMPLEMENTED`, `initial enabled COMPANY_ADMIN membership establishment = IMPLEMENTED`, `first-admin enabled tenant authority after authoritative completion commit = IMPLEMENTED / OBSERVABLE`, `first-admin onboarding completion = IMPLEMENTED` y `TASK-019 USER_CREATED producer = IMPLEMENTED`. `RF-012 first-admin flow = IMPLEMENTED WITHIN TASK-017/018/019 BOUNDARY`, mientras `RF-004 end-to-end = NO / PARTIAL`.
+
+`CORR-039 = CLOSED` y su boundary permanece intacto: `Client = Phase 3`, `physical UserClientAccess required before Phase 2 close = NO`, `physical/full SupportAccessGrant required before Phase 2 close = NO`, `full Client-dependent support required before Phase 2 close = NO`, `ordinary later-user onboarding remains incomplete until RF-015 can be satisfied = YES`, `pre-Client later-user onboarding foundation split = YES` y `move minimal Client into Phase 2 = NO`. `RF-013`, `RF-014`, `RF-015`, `RF-016` y `RF-017` permanecen `UNCHANGED`; `RF-015 = MANDATORY / UNCHANGED` y `zero client assignment satisfies RF-015 = NO`.
+
+Permanecen `ordinary later-user onboarding = INCOMPLETE`, `generic user creation = INCOMPLETE`, `generic CompanyMembership creation = INCOMPLETE`, `later-user email + code orchestration = INCOMPLETE`, `later-user Auth/session composition = INCOMPLETE`, `later-user initial role assignment = INCOMPLETE`, `later-user profile completion = INCOMPLETE`, `later-user USER_CREATED producer = INCOMPLETE`, `pre-Client later-user onboarding foundation = INCOMPLETE`, `reusable independent primitives = PRESENT` y `ordinary later-user composition = ABSENT`. Continúan `generic Auth functional lifecycle = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Application authorization completa = NO`, `route authorization funcional completa = NO`, `resource authorization funcional completa = NO`, `Client físico = NO`, `UserClientAccess completo = NO`, `SupportAccessGrant completo = NO`, `Client authorization = NO`, `Support authorization = NO`, `Storage funcional = NO`, `Realtime funcional = NO`, `Offline authorization = NO`, `Offline funcional = NO`, `UI/Auth flow funcional genérico completo = NO`, `lifecycle funcional genérico completo de usuarios/memberships = NO`, `SUPER_ADMIN grant funcional = NO`, `SUPER_ADMIN revoke funcional = NO`, `SUPER_ADMIN bootstrap funcional = NO`, `SUPER_ADMIN management funcional = NO`, `AuditEvent producer TASK-012 = NO` y `auditoría funcional completa = NO`. Permanecen `SUPER_ADMIN ordinary tenant bypass = NO`, `ordinary generic service-role request path = NO`, `generic privileged client = NO`, `Subscription = NO` y `promotional entitlement = NO`. `PAY-OPEN-001 = UNRESOLVED` y `PAY-OPEN-008 = UNRESOLVED`; `TASK-016 DOES NOT RESOLVE PAY-OPEN-001` y `TASK-016 DOES NOT RESOLVE PAY-OPEN-008`. Ningún timestamp de creación, `creation_operation_id`, `created_at`, estado activo del tenant, tiempo de implementación, Hosted apply o Git commit se convierte en ancla comercial. `MaintenanceCompany creation implemented != full company onboarding implemented` y `TASK-016 DONE != FL-01 DONE`. `ADR-0019 = ACCEPTED` permanece como antecedente arquitectónico. `tenant = MaintenanceCompany`, `authenticated != authorized`, `Auth session != tenant authorization`, `current authoritative PostgreSQL state > stale claims` y `RLS = primary remote isolation boundary` continúan vigentes.
 
 ---
 
@@ -1530,19 +1534,33 @@ Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh f
 **first-admin Auth identity reconciliation: IMPLEMENTED / VERIFIED**
 **session establishment foundation: IMPLEMENTED / VERIFIED**
 **SUPER_ADMIN ordinary tenant bypass: no**
-**ordinary service-role path: no**
+**ordinary generic service-role request path: no**
 **generic privileged client: no**
-**first COMPANY_ADMIN creation: no**
-**PlatformUser creation for first admin: no**
-**initial CompanyMembership creation: no**
-**profile completion: no**
-**enabled tenant authority: no**
-**first-admin onboarding completed: no**
+**TASK-019: CLOSED**
+**TASK-019 HUMAN CLOSURE: APPROVED**
+**TASK-019 implementation commit: 9ddaffaa4c89041640547fdef951b4e2d018dbc5**
+**first-admin Auth/session flow: IMPLEMENTED WITHIN APPROVED TASK-017/018/019 BOUNDARY**
+**first-admin PlatformUser establishment/reconciliation: IMPLEMENTED**
+**first COMPANY_ADMIN profile completion: IMPLEMENTED**
+**initial enabled COMPANY_ADMIN membership establishment: IMPLEMENTED**
+**first-admin enabled tenant authority after authoritative completion commit: IMPLEMENTED / OBSERVABLE**
+**first-admin onboarding completion: IMPLEMENTED**
 **USER_CREATED produced by TASK-017: no**
 **USER_CREATED produced by TASK-018: no**
-**RF-004 end-to-end: no**
-**RF-012 complete: no**
-**functional onboarding: no**
+**TASK-019 USER_CREATED producer: IMPLEMENTED**
+**RF-004 end-to-end: NO / PARTIAL**
+**RF-012 first-admin flow: IMPLEMENTED WITHIN TASK-017/018/019 BOUNDARY**
+**ordinary later-user onboarding: INCOMPLETE**
+**generic user creation: INCOMPLETE**
+**generic CompanyMembership creation: INCOMPLETE**
+**later-user email + code orchestration: INCOMPLETE**
+**later-user Auth/session composition: INCOMPLETE**
+**later-user initial role assignment: INCOMPLETE**
+**later-user profile completion: INCOMPLETE**
+**later-user USER_CREATED producer: INCOMPLETE**
+**pre-Client later-user onboarding foundation: INCOMPLETE**
+**reusable independent primitives: PRESENT**
+**ordinary later-user composition: ABSENT**
 **full company + admin signup/onboarding: no**
 **Subscription: no**
 **promotional entitlement: no**
@@ -1552,17 +1570,46 @@ Continúan `Auth funcional = NO`, `Auth SSR lifecycle completo = NO`, `Refresh f
 **TASK-016 DOES NOT RESOLVE PAY-OPEN-008**
 **MaintenanceCompany creation implemented != full company onboarding implemented**
 **TASK-016 DONE != FL-01 DONE**
-**Auth funcional: no**
-**lifecycle funcional completo de usuarios/memberships: no**
+**generic Auth functional lifecycle: no**
+**lifecycle funcional genérico completo de usuarios/memberships: no**
 **Application authorization completa: no**
 **route authorization funcional completa: no**
 **resource authorization funcional completa: no**
-**Client: no**
+**CORR-039: CLOSED**
+**Client: Phase 3**
+**Client físico: no**
 **UserClientAccess completo: no**
 **SupportAccessGrant completo: no**
+**physical UserClientAccess required before Phase 2 close: no**
+**physical/full SupportAccessGrant required before Phase 2 close: no**
+**full Client-dependent support required before Phase 2 close: no**
+**ordinary later-user onboarding remains incomplete until RF-015 can be satisfied: yes**
+**pre-Client later-user onboarding foundation split: yes**
+**move minimal Client into Phase 2: no**
+**RF-013: UNCHANGED**
+**RF-014: UNCHANGED**
+**RF-015: MANDATORY / UNCHANGED**
+**RF-016: UNCHANGED**
+**RF-017: UNCHANGED**
+**zero client assignment satisfies RF-015: no**
 **auditoría funcional completa: no**
-**Fase 2 completada: no**
-**Phase 2 Exit Gate: NOT DEFINED / NOT SATISFIED**
-**Fase 3 iniciada: no**
-**TASK-019: NOT DETERMINED / NOT AUTHORIZED**
+**tenant: MaintenanceCompany**
+**authenticated != authorized**
+**Auth session != tenant authorization**
+**current authoritative PostgreSQL state > stale claims**
+**RLS: primary remote isolation boundary**
+**architecture change: no**
+**product requirement change: no**
+**domain change: no**
+**security change: no**
+**RLS change: no**
+**multitenancy change: no**
+**Auth architecture change: no**
+**offline change: no**
+**new ADR required: no**
+**Phase 2: IN PROGRESS / NOT CLOSED**
+**Phase 2 Exit Gate: NOT YET DEFINED**
+**Phase 3: NOT STARTED**
+**next TASK: NOT DETERMINED**
+**TASK-020: NOT DETERMINED**
 **Siguiente TASK autorizada automáticamente: no**
