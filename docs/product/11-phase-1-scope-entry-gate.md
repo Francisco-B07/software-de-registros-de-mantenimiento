@@ -1458,6 +1458,8 @@ Con esta aprobación, Fase 1 queda autorizada documentalmente. La implementació
 
 `CORR-039 = CLOSED` y su boundary permanece intacto: `Client = Phase 3`, `physical UserClientAccess required before Phase 2 close = NO`, `physical/full SupportAccessGrant required before Phase 2 close = NO`, `full Client-dependent support required before Phase 2 close = NO`, `ordinary later-user onboarding remains incomplete until RF-015 can be satisfied = YES`, `pre-Client later-user onboarding foundation split = YES` y `move minimal Client into Phase 2 = NO`. `RF-013`, `RF-014`, `RF-015`, `RF-016` y `RF-017` permanecen `UNCHANGED`; `RF-015 = MANDATORY / UNCHANGED` y `zero client assignment satisfies RF-015 = NO`.
 
+`ADR-0021 architecture decision = ACCEPTED / HUMAN APPROVED under existing project meaning`, `ADR-0021 remote persistence = VERIFIED`, `ADR-0021 remote commit = 408e71ae40e8a9cf49a88b8320f629ecbe4b1b81`, `CORR-041 = CLOSED` y `ADR-0021 architectural prerequisite for TASK-020 = RESOLVED`. La arquitectura seleccionada permanece `dedicated LaterUserEnrollmentIntent`, separada de `FirstAdminOnboardingIntent`, con `LaterUserEnrollmentIntent ownership = TENANT-OWNED BUSINESS STATE` y `RLS = MANDATORY / PRIMARY REMOTE TENANT ISOLATION BOUNDARY`. `TASK-017/018/019 purpose-specific implementation != generic later-user API`. La siguiente TASK determinada es `TASK-020 — Authoritative Later-User Enrollment Intent, Verification and Handoff Foundation`; `TASK-020 = DETERMINED`, `TASK-020 specification = NOT GENERATED`, `TASK-020 implementation = NOT AUTHORIZED` y `Codex for TASK-020 = NOT AUTHORIZED`.
+
 Permanecen `ordinary later-user onboarding = INCOMPLETE`, `generic user creation = INCOMPLETE`, `generic CompanyMembership creation = INCOMPLETE`, `later-user email + code orchestration = INCOMPLETE`, `later-user Auth/session composition = INCOMPLETE`, `later-user initial role assignment = INCOMPLETE`, `later-user profile completion = INCOMPLETE`, `later-user USER_CREATED producer = INCOMPLETE`, `pre-Client later-user onboarding foundation = INCOMPLETE`, `reusable independent primitives = PRESENT` y `ordinary later-user composition = ABSENT`. Continúan `generic Auth functional lifecycle = NO`, `Auth SSR lifecycle completo = NO`, `Refresh funcional de access token = NO`, `Proxy/middleware Auth funcional = NO`, `Authorization ready = NO`, `Application authorization completa = NO`, `route authorization funcional completa = NO`, `resource authorization funcional completa = NO`, `Client físico = NO`, `UserClientAccess completo = NO`, `SupportAccessGrant completo = NO`, `Client authorization = NO`, `Support authorization = NO`, `Storage funcional = NO`, `Realtime funcional = NO`, `Offline authorization = NO`, `Offline funcional = NO`, `UI/Auth flow funcional genérico completo = NO`, `lifecycle funcional genérico completo de usuarios/memberships = NO`, `SUPER_ADMIN grant funcional = NO`, `SUPER_ADMIN revoke funcional = NO`, `SUPER_ADMIN bootstrap funcional = NO`, `SUPER_ADMIN management funcional = NO`, `AuditEvent producer TASK-012 = NO` y `auditoría funcional completa = NO`. Permanecen `SUPER_ADMIN ordinary tenant bypass = NO`, `ordinary generic service-role request path = NO`, `generic privileged client = NO`, `Subscription = NO` y `promotional entitlement = NO`. `PAY-OPEN-001 = UNRESOLVED` y `PAY-OPEN-008 = UNRESOLVED`; `TASK-016 DOES NOT RESOLVE PAY-OPEN-001` y `TASK-016 DOES NOT RESOLVE PAY-OPEN-008`. Ningún timestamp de creación, `creation_operation_id`, `created_at`, estado activo del tenant, tiempo de implementación, Hosted apply o Git commit se convierte en ancla comercial. `MaintenanceCompany creation implemented != full company onboarding implemented` y `TASK-016 DONE != FL-01 DONE`. `ADR-0019 = ACCEPTED` permanece como antecedente arquitectónico. `tenant = MaintenanceCompany`, `authenticated != authorized`, `Auth session != tenant authorization`, `current authoritative PostgreSQL state > stale claims` y `RLS = primary remote isolation boundary` continúan vigentes.
 
 ---
@@ -1598,6 +1600,16 @@ Permanecen `ordinary later-user onboarding = INCOMPLETE`, `generic user creation
 **Auth session != tenant authorization**
 **current authoritative PostgreSQL state > stale claims**
 **RLS: primary remote isolation boundary**
+**ADR-0021 architecture decision: ACCEPTED / HUMAN APPROVED under existing project meaning**
+**ADR-0021 remote persistence: VERIFIED**
+**ADR-0021 remote commit: 408e71ae40e8a9cf49a88b8320f629ecbe4b1b81**
+**CORR-041: CLOSED**
+**ADR-0021 architectural prerequisite for TASK-020: RESOLVED**
+**selected architecture: dedicated LaterUserEnrollmentIntent**
+**FirstAdminOnboardingIntent != LaterUserEnrollmentIntent**
+**LaterUserEnrollmentIntent ownership: TENANT-OWNED BUSINESS STATE**
+**RLS for LaterUserEnrollmentIntent: MANDATORY / PRIMARY REMOTE TENANT ISOLATION BOUNDARY**
+**TASK-017/018/019 purpose-specific implementation != generic later-user API**
 **architecture change: no**
 **product requirement change: no**
 **domain change: no**
@@ -1610,6 +1622,9 @@ Permanecen `ordinary later-user onboarding = INCOMPLETE`, `generic user creation
 **Phase 2: IN PROGRESS / NOT CLOSED**
 **Phase 2 Exit Gate: NOT YET DEFINED**
 **Phase 3: NOT STARTED**
-**next TASK: NOT DETERMINED**
-**TASK-020: NOT DETERMINED**
+**next TASK: TASK-020 — Authoritative Later-User Enrollment Intent, Verification and Handoff Foundation**
+**TASK-020: DETERMINED**
+**TASK-020 specification: NOT GENERATED**
+**TASK-020 implementation: NOT AUTHORIZED**
+**Codex for TASK-020: NOT AUTHORIZED**
 **Siguiente TASK autorizada automáticamente: no**
