@@ -27,6 +27,9 @@ import {
 import { createFirstAdminPostVerificationService } from "./application/first-admin-post-verification-service";
 import { createFirstAdminProfileCompletionService } from "./application/first-admin-profile-completion-service";
 import type { FirstAdminVerificationCodeDelivery } from "./application/first-admin-onboarding";
+import { createLaterUserEnrollmentService } from "./application/later-user-enrollment-service";
+import type { LaterUserVerificationCodeDelivery } from "./application/later-user-enrollment";
+import { createUnavailableLaterUserVerificationDelivery } from "./infrastructure/delivery/later-user-verification-delivery";
 import type { SupabaseServerCookieMethods } from "../../infrastructure/supabase/server";
 
 export type {
@@ -78,6 +81,17 @@ export type {
   ResolveFirstAdminAuthHandoffInput,
   VerifyFirstAdminOnboardingChallengeInput,
 } from "./application/first-admin-onboarding";
+export type {
+  EstablishLaterUserEnrollmentIntentInput,
+  LaterUserDeliveryOutcome,
+  LaterUserEnrollmentIssueResult,
+  LaterUserEnrollmentVerificationResult,
+  LaterUserIntendedRole,
+  LaterUserVerificationCodeDelivery,
+  LaterUserVerificationCodeDeliveryInput,
+  ResendLaterUserEnrollmentChallengeInput,
+  VerifyLaterUserEnrollmentChallengeInput,
+} from "./application/later-user-enrollment";
 
 export function resolveCurrentAuthorizationContext(
   identity: ValidatedAuthIdentity | null | undefined,
@@ -126,6 +140,18 @@ export function getFirstAdminOnboardingService(
   delivery: FirstAdminVerificationCodeDelivery,
 ) {
   return createFirstAdminOnboardingService(delivery);
+}
+
+export function getLaterUserEnrollmentService(
+  delivery: LaterUserVerificationCodeDelivery,
+) {
+  return createLaterUserEnrollmentService(delivery);
+}
+
+export function getLaterUserEnrollmentVerificationService() {
+  return createLaterUserEnrollmentService(
+    createUnavailableLaterUserVerificationDelivery(),
+  );
 }
 
 export function getFirstAdminAuthHandoffService() {
