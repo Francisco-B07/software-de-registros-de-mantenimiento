@@ -83,6 +83,7 @@ $operationC = "19190000-0000-4000-8000-000000000804"
 $operationDTarget = "19190000-0000-4000-8000-000000000805"
 $operationDUnrelated = "19190000-0000-4000-8000-000000000806"
 $operationDDenied = "19190000-0000-4000-8000-000000000807"
+$scenarioDGateId = "19190000-0000-4000-8000-000000000999"
 
 function Add-Task019Timeouts {
   param([Parameter(Mandatory = $true)][string]$Sql)
@@ -473,6 +474,9 @@ function Assert-Task019CompletedState {
 $cleanupSql = @"
 drop trigger if exists task019_concurrency_test_delay on public.audit_events;
 drop function if exists public.task019_concurrency_test_delay();
+drop table if exists public.task019_concurrency_test_gate;
+drop sequence if exists public.task019_concurrency_test_target_ready_seq;
+drop sequence if exists public.task019_concurrency_test_unrelated_ready_seq;
 
 begin;
 create temporary table task019_cleanup_platform_users (
@@ -482,7 +486,15 @@ create temporary table task019_cleanup_platform_users (
 insert into task019_cleanup_platform_users (id)
 select platform_user_id
 from public.platform_user_auth_subjects
-where auth_subject_id::text like '19190000-%'
+where auth_subject_id in (
+  '$actorSubject',
+  '$subjectA',
+  '$subjectB',
+  '$subjectC',
+  '$subjectDTarget',
+  '$subjectDUnrelated',
+  '$subjectDDenied'
+)
 on conflict do nothing;
 
 insert into task019_cleanup_platform_users (id)
@@ -490,32 +502,166 @@ values ('$actorPlatformUser')
 on conflict do nothing;
 
 delete from public.audit_events
-where maintenance_company_id::text like '19190000-%'
+where maintenance_company_id in (
+     '$companyA',
+     '$companyB',
+     '$companyC',
+     '$companyDTarget',
+     '$companyDUnrelated',
+     '$companyDDenied'
+   )
    or actor_platform_user_id in (select id from task019_cleanup_platform_users)
    or subject_platform_user_id in (select id from task019_cleanup_platform_users);
 
 delete from public.first_admin_onboarding_intents
-where id::text like '19190000-%'
-   or maintenance_company_id::text like '19190000-%';
+where id in (
+     '$intentA',
+     '$intentB',
+     '$intentC',
+     '$intentDTarget',
+     '$intentDUnrelated',
+     '$intentDDenied'
+   )
+   or maintenance_company_id in (
+     '$companyA',
+     '$companyB',
+     '$companyC',
+     '$companyDTarget',
+     '$companyDUnrelated',
+     '$companyDDenied'
+   );
 
 delete from public.company_memberships
-where maintenance_company_id::text like '19190000-%'
+where maintenance_company_id in (
+     '$companyA',
+     '$companyB',
+     '$companyC',
+     '$companyDTarget',
+     '$companyDUnrelated',
+     '$companyDDenied'
+   )
    or platform_user_id in (select id from task019_cleanup_platform_users);
 
 delete from public.platform_user_auth_subjects
-where auth_subject_id::text like '19190000-%'
+where auth_subject_id in (
+     '$actorSubject',
+     '$subjectA',
+     '$subjectB',
+     '$subjectC',
+     '$subjectDTarget',
+     '$subjectDUnrelated',
+     '$subjectDDenied'
+   )
    or platform_user_id in (select id from task019_cleanup_platform_users);
 
 delete from public.platform_users
 where id in (select id from task019_cleanup_platform_users)
-   or id::text like '19190000-%';
+   or id = '$actorPlatformUser';
 
-delete from public.auth_session_grants where id::text like '19190000-%';
-delete from public.auth_bridge_credentials where id::text like '19190000-%';
-delete from public.verification_challenges where id::text like '19190000-%';
-delete from public.maintenance_companies where id::text like '19190000-%';
-delete from auth.users where id::text like '19190000-%';
+delete from public.auth_subject_authority_anchors
+where auth_subject_id in (
+  '$actorSubject',
+  '$subjectA',
+  '$subjectB',
+  '$subjectC',
+  '$subjectDTarget',
+  '$subjectDUnrelated',
+  '$subjectDDenied'
+);
+
+delete from public.auth_session_grants
+where id in (
+  '19190000-0000-4000-8000-000000000401',
+  '19190000-0000-4000-8000-000000000402',
+  '19190000-0000-4000-8000-000000000403',
+  '19190000-0000-4000-8000-000000000404',
+  '19190000-0000-4000-8000-000000000405',
+  '19190000-0000-4000-8000-000000000406'
+);
+delete from public.auth_bridge_credentials
+where id in (
+  '19190000-0000-4000-8000-000000000301',
+  '19190000-0000-4000-8000-000000000302',
+  '19190000-0000-4000-8000-000000000303',
+  '19190000-0000-4000-8000-000000000304',
+  '19190000-0000-4000-8000-000000000305',
+  '19190000-0000-4000-8000-000000000306'
+);
+delete from public.verification_challenges
+where id in (
+  '$challengeA',
+  '$challengeB',
+  '$challengeC',
+  '$challengeDTarget',
+  '$challengeDUnrelated',
+  '$challengeDDenied'
+);
+delete from public.maintenance_companies
+where id in (
+  '$companyA',
+  '$companyB',
+  '$companyC',
+  '$companyDTarget',
+  '$companyDUnrelated',
+  '$companyDDenied'
+);
+delete from auth.users
+where id in (
+  '$actorSubject',
+  '$subjectA',
+  '$subjectB',
+  '$subjectC',
+  '$subjectDTarget',
+  '$subjectDUnrelated',
+  '$subjectDDenied'
+);
 commit;
+"@
+
+$fixtureResidueSql = @"
+select
+  (select count(*) from public.auth_subject_authority_anchors
+   where auth_subject_id in (
+     '$actorSubject', '$subjectA', '$subjectB', '$subjectC',
+     '$subjectDTarget', '$subjectDUnrelated', '$subjectDDenied'
+   )) || '|' ||
+  (select count(*) from public.platform_users
+   where id in (__TASK019_PLATFORM_USER_FIXTURE_IDS__)) || '|' ||
+  (
+    (select count(*) from auth.users
+     where id in ('$actorSubject', '$subjectA', '$subjectB', '$subjectC', '$subjectDTarget', '$subjectDUnrelated', '$subjectDDenied')) +
+    (select count(*) from public.maintenance_companies
+     where id in ('$companyA', '$companyB', '$companyC', '$companyDTarget', '$companyDUnrelated', '$companyDDenied')) +
+    (select count(*) from public.verification_challenges
+     where id in ('$challengeA', '$challengeB', '$challengeC', '$challengeDTarget', '$challengeDUnrelated', '$challengeDDenied')) +
+    (select count(*) from public.auth_bridge_credentials
+     where id in (
+       '19190000-0000-4000-8000-000000000301', '19190000-0000-4000-8000-000000000302',
+       '19190000-0000-4000-8000-000000000303', '19190000-0000-4000-8000-000000000304',
+       '19190000-0000-4000-8000-000000000305', '19190000-0000-4000-8000-000000000306'
+     )) +
+    (select count(*) from public.auth_session_grants
+     where id in (
+       '19190000-0000-4000-8000-000000000401', '19190000-0000-4000-8000-000000000402',
+       '19190000-0000-4000-8000-000000000403', '19190000-0000-4000-8000-000000000404',
+       '19190000-0000-4000-8000-000000000405', '19190000-0000-4000-8000-000000000406'
+     )) +
+    (select count(*) from public.first_admin_onboarding_intents
+     where id in ('$intentA', '$intentB', '$intentC', '$intentDTarget', '$intentDUnrelated', '$intentDDenied')) +
+    (select count(*) from public.platform_user_auth_subjects
+     where auth_subject_id in ('$actorSubject', '$subjectA', '$subjectB', '$subjectC', '$subjectDTarget', '$subjectDUnrelated', '$subjectDDenied')) +
+    (select count(*) from public.company_memberships
+     where maintenance_company_id in ('$companyA', '$companyB', '$companyC', '$companyDTarget', '$companyDUnrelated', '$companyDDenied')) +
+    (select count(*) from public.audit_events
+     where maintenance_company_id in ('$companyA', '$companyB', '$companyC', '$companyDTarget', '$companyDUnrelated', '$companyDDenied'))
+  ) || '|' ||
+  (
+    (case when to_regclass('public.task019_concurrency_test_gate') is null then 0 else 1 end) +
+    (case when to_regclass('public.task019_concurrency_test_target_ready_seq') is null then 0 else 1 end) +
+    (case when to_regclass('public.task019_concurrency_test_unrelated_ready_seq') is null then 0 else 1 end) +
+    (case when to_regprocedure('public.task019_concurrency_test_delay()') is null then 0 else 1 end) +
+    (select count(*) from pg_trigger where tgname = 'task019_concurrency_test_delay' and not tgisinternal)
+  );
 "@
 
 $setupSql = @"
@@ -598,21 +744,68 @@ from (
 ) as fixture(intent_id, company_id, email, establishment_id, challenge_id, grant_id)
 join public.auth_session_grants as session_grant on session_grant.id = fixture.grant_id;
 
+create unlogged table public.task019_concurrency_test_gate (
+  id uuid primary key,
+  released boolean not null
+);
+
+insert into public.task019_concurrency_test_gate (id, released)
+values ('$scenarioDGateId', false);
+
+create sequence public.task019_concurrency_test_target_ready_seq
+  start with 1 increment by 1 no cycle;
+
+create sequence public.task019_concurrency_test_unrelated_ready_seq
+  start with 1 increment by 1 no cycle;
+
 create function public.task019_concurrency_test_delay()
 returns trigger
 language plpgsql
 set search_path = ''
 as `$task019_delay`$
+declare
+  v_released boolean;
+  v_deadline timestamp with time zone;
 begin
   if new.maintenance_company_id in (
     '$companyA'::uuid,
     '$companyB'::uuid,
-    '$companyC'::uuid,
-    '$companyDTarget'::uuid,
-    '$companyDUnrelated'::uuid
+    '$companyC'::uuid
   ) then
     perform pg_catalog.pg_sleep(5);
+    return new;
+  elsif new.maintenance_company_id = '$companyDTarget'::uuid then
+    perform pg_catalog.nextval('public.task019_concurrency_test_target_ready_seq'::regclass);
+  elsif new.maintenance_company_id = '$companyDUnrelated'::uuid then
+    perform pg_catalog.nextval('public.task019_concurrency_test_unrelated_ready_seq'::regclass);
+  else
+    return new;
   end if;
+
+  v_deadline := pg_catalog.clock_timestamp() + interval '20 seconds';
+  loop
+    select gate.released
+    into v_released
+    from public.task019_concurrency_test_gate as gate
+    where gate.id = '$scenarioDGateId'::uuid;
+
+    if not found then
+      raise exception using
+        errcode = 'P0001',
+        message = 'TASK-019 Scenario D deterministic gate is missing';
+    end if;
+
+    exit when v_released;
+
+    if pg_catalog.clock_timestamp() >= v_deadline then
+      raise exception using
+        errcode = '57014',
+        message = 'TASK-019 Scenario D deterministic gate timed out';
+    end if;
+
+    perform pg_catalog.pg_sleep(0.05);
+  end loop;
+
   return new;
 end;
 `$task019_delay`$;
@@ -622,7 +815,12 @@ before insert on public.audit_events
 for each row execute function public.task019_concurrency_test_delay();
 "@
 
+$primaryFailure = $null
+$cleanupFailures = [System.Collections.Generic.List[string]]::new()
+$scenarioExecutionCompleted = $false
+
 try {
+  try {
   Write-Output "fixture authority = local PostgreSQL administrative setup/cleanup only"
   Write-Output "caller authority = authenticated role through public TASK-017/TASK-019 boundaries"
   Write-Output "worker Auth subjects = $subjectA,$subjectB,$subjectC,$subjectDTarget,$subjectDUnrelated,$subjectDDenied"
@@ -747,46 +945,71 @@ where waiter.application_name = '$cTask017Name'
   $dDeniedName = "t019_d_cross_subject_denied"
   $dTarget = Start-Task019Worker -Name $dTargetName -Sql (New-Task019CompletionSql -SubjectId $subjectDTarget `
     -FirstName "Target" -LastName "Tenant" -OperationId $operationDTarget -ApplicationName $dTargetName)
-  Wait-Task019SqlValue -Expected "1" -Label "SCENARIO D target tenant reached transactional delay" -Sql @"
-select count(*) from pg_stat_activity
-where application_name = '$dTargetName' and state = 'active'
-  and wait_event_type = 'Timeout' and wait_event = 'PgSleep';
+  Wait-Task019SqlValue -Expected "1" -Label "SCENARIO D target deterministic readiness" -Sql @"
+select case when is_called and last_value = 1 then '1' else '0' end
+from public.task019_concurrency_test_target_ready_seq;
 "@
   $dUnrelated = Start-Task019Worker -Name $dUnrelatedName -Sql (New-Task019CompletionSql -SubjectId $subjectDUnrelated `
     -FirstName "Unrelated" -LastName "Tenant" -OperationId $operationDUnrelated -ApplicationName $dUnrelatedName)
-  Wait-Task019SqlValue -Expected "2" -Label "SCENARIO D unrelated tenant not globally blocked" -Sql @"
-select count(*) from pg_stat_activity
-where application_name in ('$dTargetName', '$dUnrelatedName')
-  and state = 'active' and wait_event_type = 'Timeout' and wait_event = 'PgSleep';
+  $scenarioDGateStateSql = @"
+select
+  (select case when is_called and last_value = 1 then '1' else '0' end
+   from public.task019_concurrency_test_target_ready_seq) || '|' ||
+  (select case when is_called and last_value = 1 then '1' else '0' end
+   from public.task019_concurrency_test_unrelated_ready_seq) || '|' ||
+  (select count(*)::text
+   from pg_stat_activity
+   where application_name in ('$dTargetName', '$dUnrelatedName')
+     and state = 'active') || '|' ||
+  (select released::text
+   from public.task019_concurrency_test_gate
+   where id = '$scenarioDGateId'::uuid);
 "@
+  Wait-Task019SqlValue -Expected "1|1|2|false" -Label "SCENARIO D dual deterministic readiness and held overlap" `
+    -Sql $scenarioDGateStateSql
   Write-Output "SCENARIO D shared historical actor KEY SHARE compatibility = PASS"
-  Write-Output "SCENARIO D unrelated tenant bounded overlap = PASS"
+  Write-Output "SCENARIO D target readiness = LATCHED"
+  Write-Output "SCENARIO D unrelated readiness = LATCHED"
+  Write-Output "SCENARIO D dual readiness = LATCHED"
+  Write-Output "SCENARIO D both valid workers held = YES"
+  Write-Output "SCENARIO D unrelated tenant deterministic overlap = PASS"
   $dDenied = Start-Task019Worker -Name $dDeniedName -Sql (New-Task019CompletionSql -SubjectId $subjectDDenied `
     -FirstName "Denied" -LastName "Subject" -OperationId $operationDDenied -ApplicationName $dDeniedName)
   $dDeniedResult = Receive-Task019Worker -Handle $dDenied
-  Wait-Task019SqlValue -Expected "2" -Label "SCENARIO D denied call completed during valid cross-tenant overlap" -Sql @"
-select count(*) from pg_stat_activity
-where application_name in ('$dTargetName', '$dUnrelatedName')
-  and state = 'active' and wait_event_type = 'Timeout' and wait_event = 'PgSleep';
+  Assert-Task019WorkerPass -Result $dDeniedResult -Label "SCENARIO D denied worker"
+  Assert-Task019 -Condition ($dDeniedResult.StdOut -eq 'DENIED|SECURITY_CORRELATION_FAILURE|NULL|NULL|NULL') `
+    -Label "T019-CON-D denied outcome"
+  $dDeniedState = Get-Task019DurableState -SubjectId $subjectDDenied -IntentId $intentDDenied -CompanyId $companyDDenied
+  Write-Output "SCENARIO D denied durable state while gate held = $dDeniedState"
+  Assert-Task019 -Condition ($dDeniedState -eq '0|0|0|0|0|0|0|NONE|NONE') `
+    -Label "SCENARIO D denied isolation while valid workers held"
+  Wait-Task019SqlValue -Expected "1|1|2|false" `
+    -Label "SCENARIO D denied call completed while both valid workers remained held" `
+    -Sql $scenarioDGateStateSql
+  Write-Output "SCENARIO D denied result during controlled overlap = PASS"
+  Write-Output "SCENARIO D denied durable mutation during controlled overlap = NONE"
+
+  $scenarioDRelease = Invoke-Task019Psql -Phase "SCENARIO D deterministic gate release" -Sql @"
+update public.task019_concurrency_test_gate
+set released = true
+where id = '$scenarioDGateId'::uuid
+returning released::text;
 "@
+  Assert-Task019 -Condition ($scenarioDRelease -eq 'true') -Label "SCENARIO D deterministic gate release"
   $dTargetResult = Receive-Task019Worker -Handle $dTarget
   $dUnrelatedResult = Receive-Task019Worker -Handle $dUnrelated
   Assert-Task019WorkerPass -Result $dTargetResult -Label "SCENARIO D target worker"
   Assert-Task019WorkerPass -Result $dUnrelatedResult -Label "SCENARIO D unrelated-tenant worker"
-  Assert-Task019WorkerPass -Result $dDeniedResult -Label "SCENARIO D denied worker"
   Assert-Task019 -Condition ($dTargetResult.StdOut -like 'COMPLETED|COMPLETED|*') -Label "T019-CON-D target outcome"
   Assert-Task019 -Condition ($dUnrelatedResult.StdOut -like 'COMPLETED|COMPLETED|*') -Label "T019-CON-D unrelated outcome"
-  Assert-Task019 -Condition ($dDeniedResult.StdOut -eq 'DENIED|SECURITY_CORRELATION_FAILURE|NULL|NULL|NULL') `
-    -Label "T019-CON-D denied outcome"
   $dTargetState = Get-Task019DurableState -SubjectId $subjectDTarget -IntentId $intentDTarget -CompanyId $companyDTarget
   Assert-Task019CompletedState -State $dTargetState -AllowedOperations @($operationDTarget) `
     -AllowedProfiles @("Target/Tenant") -Label "SCENARIO D target"
   $dUnrelatedState = Get-Task019DurableState -SubjectId $subjectDUnrelated -IntentId $intentDUnrelated -CompanyId $companyDUnrelated
   Assert-Task019CompletedState -State $dUnrelatedState -AllowedOperations @($operationDUnrelated) `
     -AllowedProfiles @("Unrelated/Tenant") -Label "SCENARIO D unrelated tenant"
-  $dDeniedState = Get-Task019DurableState -SubjectId $subjectDDenied -IntentId $intentDDenied -CompanyId $companyDDenied
-  Write-Output "SCENARIO D denied durable state = $dDeniedState"
-  Assert-Task019 -Condition ($dDeniedState -eq '0|0|0|0|0|0|0|NONE|NONE') -Label "SCENARIO D denied isolation"
+  Write-Output "SCENARIO D gate release = PASS"
+  Write-Output "SCENARIO D valid outcomes after release = PASS"
 
   Write-Output "same-operation concurrency = PASS"
   Write-Output "different-operation concurrency = PASS"
@@ -798,13 +1021,117 @@ where application_name in ('$dTargetName', '$dUnrelatedName')
   Write-Output "SQLSTATE parser ERROR token capture = NOT POSSIBLE"
   Write-Output "boundedness probe = PASS"
   Write-Output "global TASK-019 advisory lock = NOT INTRODUCED"
-  Write-Output "TASK-019 CONCURRENCY HARNESS = PASS"
+  $scenarioExecutionCompleted = $true
+  }
+  catch {
+    $primaryFailure = $_
+  }
 }
 finally {
-  $script:Task019Jobs | Where-Object { $_.State -in @("Running", "NotStarted") } |
-    Stop-Job -ErrorAction SilentlyContinue
-  $script:Task019Jobs | Remove-Job -Force -ErrorAction SilentlyContinue
-  Invoke-Task019Psql -Sql $cleanupSql -Phase "TASK-019 concurrency fixture cleanup" | Out-Null
+  try {
+    Invoke-Task019Psql -Phase "TASK-019 concurrency cleanup gate release" -Sql @"
+do `$task019_release`$
+begin
+  if pg_catalog.to_regclass('public.task019_concurrency_test_gate') is not null then
+    execute 'update public.task019_concurrency_test_gate set released = true where id = ''$scenarioDGateId''::uuid';
+  end if;
+end;
+`$task019_release`$;
+"@ | Out-Null
+  }
+  catch {
+    $cleanupFailures.Add("gate release: $($_.Exception.Message)")
+  }
+
+  try {
+    $runningJobs = @($script:Task019Jobs | Where-Object { $_.State -in @("Running", "NotStarted") })
+    if ($runningJobs.Count -gt 0) {
+      $runningJobs | Wait-Job -Timeout 8 -ErrorAction SilentlyContinue | Out-Null
+    }
+    $stillRunningJobs = @($script:Task019Jobs | Where-Object { $_.State -in @("Running", "NotStarted") })
+    if ($stillRunningJobs.Count -gt 0) {
+      $stillRunningJobs | Stop-Job -ErrorAction SilentlyContinue
+    }
+    $script:Task019Jobs | Receive-Job -ErrorAction SilentlyContinue | Out-Null
+    $script:Task019Jobs | Remove-Job -Force -ErrorAction SilentlyContinue
+  }
+  catch {
+    $cleanupFailures.Add("worker cleanup: $($_.Exception.Message)")
+  }
+
+  $platformUserFixtureIds = @($actorPlatformUser)
+  try {
+    $capturedPlatformUserFixtureIds = Invoke-Task019Psql `
+      -Phase "TASK-019 exact PlatformUser fixture identity capture" `
+      -Sql @"
+select platform_user.id::text
+from public.platform_users as platform_user
+where platform_user.id = '$actorPlatformUser'::uuid
+   or platform_user.id in (
+     select auth_subject.platform_user_id
+     from public.platform_user_auth_subjects as auth_subject
+     where auth_subject.auth_subject_id in (
+       '$actorSubject'::uuid,
+       '$subjectA'::uuid,
+       '$subjectB'::uuid,
+       '$subjectC'::uuid,
+       '$subjectDTarget'::uuid,
+       '$subjectDUnrelated'::uuid,
+       '$subjectDDenied'::uuid
+     )
+   )
+order by platform_user.id;
+"@
+    $platformUserFixtureIds = @(
+      @($actorPlatformUser) +
+      @($capturedPlatformUserFixtureIds -split '[\r\n]+' | Where-Object { $_ }) |
+        Sort-Object -Unique
+    )
+    foreach ($platformUserFixtureId in $platformUserFixtureIds) {
+      $parsedPlatformUserFixtureId = [Guid]::Empty
+      if (-not [Guid]::TryParse($platformUserFixtureId, [ref]$parsedPlatformUserFixtureId)) {
+        throw "Invalid exact PlatformUser fixture UUID: $platformUserFixtureId"
+      }
+    }
+    if ($scenarioExecutionCompleted -and $platformUserFixtureIds.Count -ne 6) {
+      throw "Expected 6 exact PlatformUser fixture UUIDs but captured $($platformUserFixtureIds.Count)."
+    }
+    Write-Output "platform_users exact fixture identity count = $($platformUserFixtureIds.Count)"
+  }
+  catch {
+    $cleanupFailures.Add("PlatformUser fixture identity capture: $($_.Exception.Message)")
+  }
+
+  $platformUserFixtureIdSql = @(
+    $platformUserFixtureIds | ForEach-Object { "'$_'::uuid" }
+  ) -join ', '
+  $fixtureResidueSql = $fixtureResidueSql.Replace(
+    '__TASK019_PLATFORM_USER_FIXTURE_IDS__',
+    $platformUserFixtureIdSql
+  )
+
+  try {
+    Invoke-Task019Psql -Sql $cleanupSql -Phase "TASK-019 concurrency fixture cleanup" | Out-Null
+  }
+  catch {
+    $cleanupFailures.Add("fixture cleanup: $($_.Exception.Message)")
+  }
+
+  try {
+    $fixtureResidue = Invoke-Task019Psql -Sql $fixtureResidueSql -Phase "TASK-019 concurrency residue verification"
+    if ($fixtureResidue -ne '0|0|0|0') {
+      throw "Expected exact residue 0|0|0|0 but observed $fixtureResidue."
+    }
+    Write-Output "auth_subject_authority_anchors fixture residue = 0"
+    Write-Output "platform_users fixture residue = 0"
+    Write-Output "other TASK-019 fixture residue = 0"
+    Write-Output "test-only gate object residue = 0"
+    Write-Output "fixture residue = 0"
+  }
+  catch {
+    $cleanupFailures.Add("residue verification: $($_.Exception.Message)")
+  }
+
   if ($null -eq $previousConnectTimeout) {
     Remove-Item -LiteralPath Env:PGCONNECT_TIMEOUT -ErrorAction SilentlyContinue
   }
@@ -812,3 +1139,27 @@ finally {
     $env:PGCONNECT_TIMEOUT = $previousConnectTimeout
   }
 }
+
+if ($null -eq $primaryFailure) {
+  Write-Output "primary execution = PASS"
+}
+else {
+  Write-Output "primary execution = FAIL"
+  Write-Output "primary failure = $($primaryFailure.Exception.Message)"
+}
+
+if ($cleanupFailures.Count -eq 0) {
+  Write-Output "cleanup execution = PASS"
+}
+else {
+  Write-Output "cleanup execution = FAIL"
+  foreach ($cleanupFailure in $cleanupFailures) {
+    Write-Output "cleanup failure = $cleanupFailure"
+  }
+}
+
+if ($null -ne $primaryFailure -or $cleanupFailures.Count -gt 0 -or -not $scenarioExecutionCompleted) {
+  throw "TASK-019 concurrency harness failed; see separate primary and cleanup evidence above."
+}
+
+Write-Output "TASK-019 CONCURRENCY HARNESS = PASS"
